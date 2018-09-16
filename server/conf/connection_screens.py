@@ -20,7 +20,7 @@ from evennia import utils
 
 CONNECTION_SCREEN = \
 """{b=============================================================={n
-             Welcome to {gArxMUSH{n
+             Welcome to {gIthirMUSH{n
 
  If you have an existing account, connect to it by typing:
       {wconnect <username> <password>{n

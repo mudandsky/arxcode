@@ -31,7 +31,7 @@
     {% block header_ext %}
     {% endblock %}
 
-    <title>Arx - {% if flatpage %}{{flatpage.title}}{% else %}{% block titleblock %}{{page_title}}{% endblock %}{% endif %}</title>
+    <title>Ithir - {% if flatpage %}{{flatpage.title}}{% else %}{% block titleblock %}{{page_title}}{% endblock %}{% endif %}</title>
   </head>
 
   <body>
@@ -41,13 +41,8 @@
     <!-- ##### Header ##### -->
 
     <div id="header">
-      <div class="superHeader">
-        <!--span>Sites:</span-->
-        <!--a href="http://evennia.com" title="The Python-based MUD server">Evennia.com</a-->
-      </div>
-
-      <div class="midHeader">
-        <img src="/static/images/arx_badge.png" height='100' width='100' align='left'/> <h1 class="headerTitle" lang="la">Arx, After the Reckoning</h1>
+      <div class="subHeader">
+        <h1 class="headerTitle" lang="la">Ithir</h1>
         <div class="headerSubTitle" title="Slogan">
         <!-- Insert a slogan here if you want -->
         {{game_slogan}}			&nbsp;
@@ -79,7 +74,7 @@
         <a href="/topics/">World</a> |
         <a href="/character/story/">Story</a> |
 		<a href="/dom/cal/list/">Events</a> |
-		<a href="/comms/journals/list/">Journals</a> |
+		<!---<a href="/comms/journals/list/">Journals</a> |--->
         <a href="/comms/boards/">Boards</a>
         {% if user.is_authenticated and user.is_staff %}
          | <a href="/admin/">Admin Interface</a>
@@ -91,6 +86,12 @@
         
       </div>
     </div>
+    <div class="dividingBorderAbove"></div>
+          <div class="fullWidth">
+                <img src="/static/images/IthirBackground.png"/>
+        <!--span>Sites:</span-->
+        <!--a href="http://evennia.com" title="The Python-based MUD server">Evennia.com</a-->
+      </div>
 
     <!-- ##### Side Menu ##### -->
     {% block sidebar %}{% endblock %}

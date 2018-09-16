@@ -1,9 +1,10 @@
 """
 Base settings that we'll inherit from
 """
+from decouple import config
 from evennia.settings_default import *
 # see documentation on python-decouple. tldr: create a config.env file at repo root, config() draws from that.
-from decouple import config
+# from decouple import config
 
 ######################################################################
 # Evennia base server config
@@ -29,9 +30,9 @@ PERMISSION_HIERARCHY = ["Guest",  # note-only used if GUEST_ENABLED=True
                         "Immortal",
                         "Developer",
                         ]
-SERVERNAME = config("SERVERNAME", default="Arx")
-GAME_SLOGAN = config("GAME_SLOGAN", default="Season Two: Heroes and Other Fables")
-TIME_ZONE = 'America/New_York'
+SERVERNAME = "Ithir"
+GAME_SLOGAN = "Return to Glory"
+TIME_ZONE = 'America/Los_Angeles'
 USE_TZ = False
 TELNET_PORTS = [3000]
 IDMAPPER_CACHE_MAXSIZE = 2000
@@ -43,7 +44,7 @@ MAX_CHAR_LIMIT = 8000
 DEBUG = False
 CHANNEL_COMMAND_CLASS = "commands.commands.channels.ArxChannelCommand"
 BASE_ROOM_TYPECLASS = "typeclasses.rooms.ArxRoom"
-DEFAULT_HOME = "#13"
+DEFAULT_HOME = "#30"
 MULTISESSION_MODE = 1
 COMMAND_DEFAULT_MSG_ALL_SESSIONS = True
 ADDITIONAL_ANSI_MAPPINGS = [(r'%r', "\r\n"),]
@@ -99,7 +100,7 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 ######################################################################
 # Game Time setup
 ######################################################################
-TIME_FACTOR = 2.0
+TIME_FACTOR = 3.0
 INVESTIGATION_PROGRESS_RATE = 0.5
 INVESTIGATION_DIFFICULTY_MOD = 5
 
@@ -121,11 +122,11 @@ LOG_FORMAT = "%(asctime)s: %(message)s"
 DATE_FORMAT = "%m/%d/%Y %I:%M:%S"
 GLOBAL_DOMAIN_INCOME_MOD = 0.75
 
-SECRET_KEY = config('SECRET_KEY')
-HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
+# SECRET_KEY = config('gjhdsgvucyvb23iybwei3kj3hbiewub')
+# HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
 import cloudinary
-cloudinary.config(cloud_name=config('CLOUDINARY_NAME'),
-                  api_key=config('CLOUDINARY_API_KEY'), api_secret=config('CLOUDINARY_API_SECRET'))
+# cloudinary.config(cloud_name=config('ithirmush'),
+  #               api_key=config('951554588875841'), api_secret=config('ZlnkSDzTw12Ms39M22Gwjj8anLE'))
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='localhost')
@@ -134,4 +135,4 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
 ADMINS = (config('ADMIN_NAME', default=''), config('ADMIN_EMAIL', default=''))
-SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
+# SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)

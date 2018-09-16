@@ -49,7 +49,7 @@ def page_index(request):
     events = RPEvent.objects.filter(finished=False, public_event=True).order_by('date')[:3]
 
     pagevars = {
-        "page_title": "After the Reckoning",
+        "page_title": "The Return to Glory",
         "news_entries": news_entries,
         "players_connected_recent": recent_users,
         "num_players_connected": nsess or "noone",

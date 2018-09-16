@@ -36,11 +36,11 @@ _vocations_ = ("noble", "courtier", "charlatan", "soldier", "knight", "priest", 
                "apothecary", "carpenter")
 _stage3_fields_ = ("concept", "gender", "age", "fealty", "family", "religion", "desc", "personality", "background",
                    "marital_status", "quote", "birthday", "social_rank", "skintone", "eyecolor", "haircolor", "height")
-_valid_fealty_ = ("Crownsworn", "Grayson", "Redrain", "Thrax", "Valardin", "Velenosa")
+_valid_fealty_ = ("Aeran", "Duindar", "Faenow", "Lorandi", "Thalerith")
 _stage3_optional_ = ("secrets", "real_concept", "real_age")
 # Minimum and maximum ages players can set for starting characters
-_min_age_ = 18
-_max_age_ = 65
+_min_age_ = 50
+_max_age_ = 900
 # We have 12 stats. no more than two at 5. tuple is in the following order:
 # (strength,dexterity,stamina,charm,command,composure,intellect,perception,wits,mana,luck,willpower)
 _voc_start_stats_ = {"noble":          (3, 3, 3,  4, 5, 4,  3, 3, 2,  2, 2, 2),
@@ -120,8 +120,8 @@ def setup_voc(char, args):
 STAT_POINTS = 12
 SKILL_POINTS = 20
 CONCEPT_MAX_LEN = 30
-DESC_MIN_LEN = 300
-DESC_MAX_LEN = 1400
+DESC_MIN_LEN = 200
+DESC_MAX_LEN = 1000
 
 XP_BONUS_BY_SRANK = {2: 0,
                      3: 20,
@@ -138,7 +138,7 @@ XP_BONUS_BY_POP = 1
 
 def census_of_fealty():
     """Returns dict of fealty name to number of active players"""
-    fealties = {"Valardin": 0, "Velenosa": 0, "Grayson": 0, "Crownsworn": 0, "Thrax": 0, "Redrain": 0}
+    fealties = {"Aeran": 0, "Duindar": 0, "Lorandi": 0, "Thalerith": 0, "Faenor": 0}
     from typeclasses.characters import Character
     for char in Character.objects.filter(roster__roster__name="Active"):
         fealty = (char.db.fealty or "").capitalize()

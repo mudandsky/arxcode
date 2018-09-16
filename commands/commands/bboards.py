@@ -21,7 +21,7 @@ BOARD_TYPECLASS = "typeclasses.bulletin_board.bboard.BBoard"
 
 def get_boards(caller):
     """
-    returns list of bulletin boards
+    returns list of bulletin board
     """
     bb_list = list(BBoard.objects.all())
     bb_list = [ob for ob in bb_list if ob.access(caller, 'read')]

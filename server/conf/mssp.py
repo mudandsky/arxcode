@@ -17,7 +17,7 @@ MSSPTable =  {
 
     # Required fieldss
 
-    "NAME":               "Arx: After the Reckoning",
+    "NAME":               "Ithir - A Return to Glory",
 
     # Generic
 
@@ -26,7 +26,7 @@ MSSPTable =  {
     "HOSTNAME":           "play.arxgame.org",       # current or new hostname
     "PORT":               ["3000"], # most important port should be last in list
     "CODEBASE":           "Evennia",
-    "CONTACT":            "arxmush@gmail.com",       # email for contacting the mud
+    "CONTACT":            "IthirMUSH@gmail.com",       # email for contacting the mud
     "CREATED":            "2016",       # year MUD was created
     "ICON":               "http://play.arxgame.org/static/images/arx_badge_small.png",       # url to icon 32x32 or larger; <32kb.
     "IP":                 "",       # current or new IP address
@@ -42,7 +42,7 @@ MSSPTable =  {
     "GAMEPLAY":           "",       # Adventure, Educational, Hack and Slash, None,
                                       # Player versus Player, Player versus Environment,
                                       # Roleplaying, Simulation, Social or Strategy
-    "STATUS":             "Open Beta",  # Alpha, Closed Beta, Open Beta, Live
+    "STATUS":             "Alpha",  # Alpha, Closed Beta, Open Beta, Live
     "GAMESYSTEM":         "Custom", # D&D, d20 System, World of Darkness, etc. Use Custom if homebrew
     "INTERMUD":           "IMC2",   # evennia supports IMC2.
     "SUBGENRE":           "None",   # LASG, Medieval Fantasy, World War II, Frankenstein,

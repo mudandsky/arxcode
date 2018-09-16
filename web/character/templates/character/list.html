@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+
 	<div class="text-center">
 	<ul class="nav nav-pills nav-justified">
 	<li {% if roster_name == "Active" %}class="active"{% endif %}>
@@ -19,7 +20,7 @@
     </ul>
 	</div>
 	<table class="table table-hover">
-	<tr class="danger">
+	<tr bgcolor="#085D05">
 		<td>Name</td>
 		<td><a href="{% url 'help_topics:topic' 'gender'%}">Gender</a></td>
 		<td><a href="{% url 'help_topics:topic' 'age'%}">Age</a></td>
@@ -30,8 +31,12 @@
 		<td>Alts</td>
 		{% endif %}
 	</tr>
+
+<style>
+	tr:nth-child(even) {background-color: #3a3a3a;}
+</style>
     {% for char in object_list %}
-	  <tr class="{% cycle 'success' 'info' %}">
+	  <tr bgcolor="#708090">
         <td>{% if char.get_absolute_url %}<a href="{{ char.get_absolute_url }}">{{ char.key }}</a>{% else %}{{ char.key }}{% endif %}</td>
 		<td>{{ char.db.gender }}</td>
 		<td>{{ char.db.age }}</td>

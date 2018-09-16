@@ -84,7 +84,7 @@ class AppsManager(Object):
             if not player:
                 caller.msg("AppManager error: No player object found for character application.")
                 return False
-            message = "Thank you for applying to play a character on ArxMUSH. This email is to "
+            message = "Thank you for applying to play a character on IthirMUSH. This email is to "
             message += "inform you that your application to play %s has been approved.\n\n" % found_app[1].key.capitalize()
             if gm_notes:
                 message += "GM Notes: %s\n" % gm_notes
@@ -106,7 +106,7 @@ class AppsManager(Object):
             message += "After logging in for your first time, you may change the password to whatever you like "
             message += "with the @password command. Enjoy ArxMUSH!"
             try:
-                msg_success = send_mail('ArxMUSH Character Application', message, 'arxmush@gmail.com',
+                msg_success = send_mail('ArxMUSH Character Application', message, 'ithirmush@gmail.com',
                                         [email], fail_silently=False)
             except Exception as err:
                 traceback.print_exc()

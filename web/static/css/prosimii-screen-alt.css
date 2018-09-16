@@ -122,7 +122,7 @@ dd {
 
 .midHeader {
   color: white;
-  background-color: rgb(61,92,122);
+  background-color: rgb(122, 121, 29);
   margin: 0;
   padding: 0.26ex 10px;
 }
@@ -167,7 +167,7 @@ dd {
 
 .subHeader {
   color: white;
-  background-color: rgb(117,144,174);
+  background-color: rgb(140, 55, 174);
   margin: 0;
   padding: 0.5ex 10px;
 }
@@ -175,15 +175,16 @@ dd {
 .subHeader a, .subHeader .highlight {
   color: white;
   background-color: transparent;
+  position: center;
   font-size: 110%;
-  font-weight: bold;
+  font-weight: normal;
   text-decoration: none;
   margin: 0;
   padding: 0 0.25ex 0 0;
 }
 
 .subHeader a:hover, .subHeader .highlight {
-  color: rgb(255,204,0);
+  color: rgb(54, 204, 30);
   background-color: transparent;
   text-decoration: none;
 }
@@ -304,7 +305,7 @@ dd {
 }
 
 .more a {
-  color: rgb(61,92,122);
+  color: rgb(203, 75, 204);
   background-color: transparent;
   font-size: 92%;
   text-decoration: underline;
@@ -313,7 +314,7 @@ dd {
 }
 
 .more a:hover {
-  color: rgb(117,144,174);
+  color: rgb(54, 204, 30);
   text-decoration: none;
 }
 
@@ -332,7 +333,7 @@ dd {
 }
 
 #footer a {
-  color: rgb(0,68,204);
+  color: rgb(203, 75, 204);
   background-color: transparent;
   text-decoration: underline;
 }

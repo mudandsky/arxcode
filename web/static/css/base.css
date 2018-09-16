@@ -10,7 +10,7 @@ body {
     font-size: 14px;
     font-family: "Roboto","Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
     color: #333;
-    background: #fff;
+    background: #555555;
 }
 
 /* LINKS */
@@ -69,7 +69,7 @@ h2 {
 }
 
 h2.subhead {
-    font-weight: normal;
+    font-weight: bold;
     margin-top: 0;
 }
 
@@ -261,7 +261,7 @@ tfoot td {
     color: #666;
     padding: 5px 10px;
     font-size: 11px;
-    background: #fff;
+    background: #555555;
     border: none;
     border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
@@ -273,15 +273,15 @@ tfoot td {
 }
 
 tr.alt {
-    background: #f6f6f6;
+    background: #555555;
 }
 
 .row1 {
-    background: #fff;
+    background: #36cc1e;
 }
 
 .row2 {
-    background: #f9f9f9;
+    background: #cb4bcc;
 }
 
 /* SORTABLE TABLES */
@@ -290,7 +290,7 @@ thead th {
     padding: 5px 10px;
     line-height: normal;
     text-transform: uppercase;
-    background: #f6f6f6;
+    background: #555555;
 }
 
 thead th a:link, thead th a:visited {
@@ -369,7 +369,7 @@ table thead th.sorted .sortoptions a.sortremove:after {
 
 table thead th.sorted .sortoptions a.sortremove:focus:after,
 table thead th.sorted .sortoptions a.sortremove:hover:after {
-    color: #447e9b;
+    color: #24511F;
 }
 
 table thead th.sorted .sortoptions a.sortremove:focus,
@@ -402,7 +402,7 @@ input, textarea, select, .form-row p, form .button {
     margin: 2px 0;
     padding: 2px 3px;
     vertical-align: middle;
-    font-family: "Roboto", "Lucida Grande", Verdana, Arial, sans-serif;
+    font-family: "Palatino Linotype"
     font-weight: normal;
     font-size: 13px;
 }
@@ -436,11 +436,11 @@ select[multiple] {
 /* FORM BUTTONS */
 
 .button, input[type=submit], input[type=button], .submit-row input, a.button {
-    background: #79aec8;
+    background: #24511F;
     padding: 10px 15px;
     border: none;
     border-radius: 4px;
-    color: #fff;
+    color: #cb4bcc;
     cursor: pointer;
 }
 
@@ -451,7 +451,7 @@ a.button {
 .button:active, input[type=submit]:active, input[type=button]:active,
 .button:focus, input[type=submit]:focus, input[type=button]:focus,
 .button:hover, input[type=submit]:hover, input[type=button]:hover {
-    background: #609ab6;
+    background: #24511F;
 }
 
 .button[disabled], input[type=submit][disabled], input[type=button][disabled] {
@@ -462,13 +462,13 @@ a.button {
     float: right;
     border: none;
     font-weight: 400;
-    background: #417690;
+    background: #24511F;
 }
 
 .button.default:active, input[type=submit].default:active,
 .button.default:focus, input[type=submit].default:focus,
 .button.default:hover, input[type=submit].default:hover {
-    background: #205067;
+    background: #2d7a40;
 }
 
 .button[disabled].default,
@@ -718,7 +718,7 @@ a.deletelink:focus, a.deletelink:hover {
 }
 
 .object-tools a:focus, .object-tools a:hover {
-    background-color: #417690;
+    background-color: #24511F;
 }
 
 .object-tools a:focus{
@@ -813,7 +813,7 @@ table#change-history tbody th {
     width: auto;
     height: 40px;
     padding: 10px 40px;
-    background: #417690;
+    background: #24511F;
     line-height: 40px;
     color: #ffc;
     overflow: hidden;
@@ -836,11 +836,11 @@ table#change-history tbody th {
     margin: 0 20px 0 0;
     font-weight: 300;
     font-size: 24px;
-    color: #f5dd5d;
+    color: #24511F;
 }
 
 #branding h1, #branding h1 a:link, #branding h1 a:visited {
-    color: #f5dd5d;
+    color: #24511F;
 }
 
 #branding h2 {
