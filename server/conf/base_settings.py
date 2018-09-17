@@ -124,15 +124,15 @@ GLOBAL_DOMAIN_INCOME_MOD = 0.75
 
 # SECRET_KEY = config('gjhdsgvucyvb23iybwei3kj3hbiewub')
 # HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
-import cloudinary
+# import cloudinary
 # cloudinary.config(cloud_name=config('ithirmush'),
-  #               api_key=config('951554588875841'), api_secret=config('ZlnkSDzTw12Ms39M22Gwjj8anLE'))
+#                 api_key=config('951554588875841'), api_secret=config('ZlnkSDzTw12Ms39M22Gwjj8anLE'))
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = config('EMAIL_HOST', default='localhost')
-EMAIL_PORT = config('EMAIL_PORT', cast=int, default=25)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
-ADMINS = (config('ADMIN_NAME', default=''), config('ADMIN_EMAIL', default=''))
-# SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
+EMAIL_HOST = config('smtp-relay.gmail.com', default='localhost')
+EMAIL_PORT = config('25', cast=int, default=25)
+EMAIL_HOST_USER = config('admin@ithirmush.org', default='')
+EMAIL_HOST_PASSWORD = config('XImmort@lElfX10', default='')
+DEFAULT_FROM_EMAIL = config('admin@ithirmush.org', default='')
+ADMINS = (config('Ithir Admin', default=''), config('admin@ithirmush.org', default=''))
+SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)

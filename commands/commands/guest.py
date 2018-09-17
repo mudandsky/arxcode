@@ -36,7 +36,7 @@ _vocations_ = ("noble", "courtier", "charlatan", "soldier", "knight", "priest", 
                "apothecary", "carpenter")
 _stage3_fields_ = ("concept", "gender", "age", "fealty", "family", "religion", "desc", "personality", "background",
                    "marital_status", "quote", "birthday", "social_rank", "skintone", "eyecolor", "haircolor", "height")
-_valid_fealty_ = ("Aeran", "Duindar", "Faenow", "Lorandi", "Thalerith")
+_valid_fealty_ = ("Aeran", "Duindar", "Faenor", "Lorandi", "Thalerith")
 _stage3_optional_ = ("secrets", "real_concept", "real_age")
 # Minimum and maximum ages players can set for starting characters
 _min_age_ = 50

@@ -23,17 +23,17 @@ if SEND_GAME_INDEX:
     GAME_INDEX_LISTING = {
         'game_status': 'beta',
         # Optional, comment out or remove if N/A
-        'game_website': 'http://play.arxgame.org',
+        'game_website': 'http://ithirmush.org',
         'short_description': 'MUX-style game in an original fantasy setting',
         # Optional but highly recommended. Markdown is supported.
         'long_description': (
-            "Arx is a MUX-style game in an original low-fantasy setting, "
-            "inspired by series such as Game of Thrones and The First Law. "
+            "Ithir is a MUX-style game in an original high-fantasy setting, "
+            "inspired by Tolkien and sent in an Elven society at odds. "
         ),
-        'listing_contact': 'brannigd@hotmail.com',
+        'listing_contact': 'admin@ithirmush.org',
         # At minimum, specify this or the web_client_url options. Both is fine, too.
-        'telnet_hostname': 'play.arxgame.org',
-        'telnet_port': 3000,
+        'telnet_hostname': 'ithirmush.org',
+        'telnet_port': 4000,
         # At minimum, specify this or the telnet_* options. Both is fine, too.
-        'web_client_url': 'http://play.arxgame.org/webclient',
+        'web_client_url': 'http://ithirmush.org/webclient/',
     }

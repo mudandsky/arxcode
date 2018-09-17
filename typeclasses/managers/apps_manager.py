@@ -106,7 +106,7 @@ class AppsManager(Object):
             message += "After logging in for your first time, you may change the password to whatever you like "
             message += "with the @password command. Enjoy ArxMUSH!"
             try:
-                msg_success = send_mail('ArxMUSH Character Application', message, 'ithirmush@gmail.com',
+                msg_success = send_mail('IthirMUSH Character Application', message, 'admin@ithirmush.org',
                                         [email], fail_silently=False)
             except Exception as err:
                 traceback.print_exc()
@@ -130,7 +130,7 @@ class AppsManager(Object):
                 return False
             message += "GM Notes: %s\n" % gm_notes
             try:
-                msg_success = send_mail('ArxMUSH Character Application', message, 'arxmush@gmail.com',
+                msg_success = send_mail('IthirMUSH Character Application', message, 'admin@ithirmush.org',
                                         [email], fail_silently=False)
             except Exception as err:
                 caller.msg("Exception encountered while trying to mail: %s" % err)
