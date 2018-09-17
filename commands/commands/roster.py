@@ -616,9 +616,9 @@ def display_header(caller, character, show_hidden=False):
     birth = character.db.birthday
     if not birth:
         birth = "Unknown"
-    religion = character.db.religion
-    if not religion:
-        religion = "Unknown"
+    patron = character.db.patron
+    if not patron:
+        patron = "Unknown"
     vocation = character.db.vocation
     if not vocation:
         vocation = "Unknown"
@@ -640,13 +640,13 @@ def display_header(caller, character, show_hidden=False):
 {wSocial Rank:{n %(srank)-20s {wConcept:{n %(concept)-20s
 {wFealty:{n %(fealty)-25s {wFamily:{n %(family)-20s
 {wGender:{n %(gender)-25s {wAge:{n %(age)-20s
-{wBirthday:{n %(birth)-23s {wReligion:{n %(religion)-20s
+{wBirthday:{n %(birth)-23s {wPatron:{n %(patron)-20s
 {wVocation:{n %(vocation)-23s {wHeight:{n %(height)-20s
 {wEye Color:{n %(eyecolor)-22s {wHair Color:{n %(haircolor)-20s
 {wSkin Tone:{n %(skintone)-22s {wMarital Status:{n %(marital_status)-20s
         """ % {'longname': longname, 'quote': utils.fill(quote), 'srank': srank,
                'concept': concept, 'fealty': fealty, 'family': family,
-               'gender': gender, 'age': age, 'birth': birth, 'religion': religion,
+               'gender': gender, 'age': age, 'birth': birth, 'patron': patron,
                'vocation': vocation, 'height': height, 'eyecolor': eyecolor,
                'haircolor': haircolor, 'skintone': skintone, 'marital_status': marital_status,
                }

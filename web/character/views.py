@@ -161,7 +161,7 @@ def character_list(request):
             'relations': get_relations(char),
             'gender': char.db.gender,
             'age': char.db.age,
-            'religion': char.db.religion,
+            'patron': char.db.patron,
             'vocation': char.db.vocation,
             'height': char.db.height,
             'hair_color': char.db.haircolor,

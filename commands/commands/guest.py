@@ -34,7 +34,7 @@ _vocations_ = ("noble", "courtier", "charlatan", "soldier", "knight", "priest", 
                "criminal", "artisan", "scholar", "lawyer", "steward", "commoner",
                "jeweler", "tailor", "weaponsmith", "armorsmith", "leatherworker",
                "apothecary", "carpenter")
-_stage3_fields_ = ("concept", "gender", "age", "fealty", "family", "religion", "desc", "personality", "background",
+_stage3_fields_ = ("concept", "gender", "age", "fealty", "family", "patron", "desc", "personality", "background",
                    "marital_status", "quote", "birthday", "social_rank", "skintone", "eyecolor", "haircolor", "height")
 _valid_fealty_ = ("Aeran", "Duindar", "Faenor", "Lorandi", "Thalerith")
 _stage3_optional_ = ("secrets", "real_concept", "real_age")
@@ -44,7 +44,7 @@ _max_age_ = 900
 # We have 12 stats. no more than two at 5. tuple is in the following order:
 # (strength,dexterity,stamina,charm,command,composure,intellect,perception,wits,mana,luck,willpower)
 _voc_start_stats_ = {"noble":          (3, 3, 3,  4, 5, 4,  3, 3, 2,  2, 2, 2),
-                     "courtier":      (2, 2, 2,  5, 4, 5,  3, 3, 4,  2, 2, 2),
+                     "courtier":       (2, 2, 2,  5, 4, 5,  3, 3, 4,  2, 2, 2),
                      "charlatan":      (2, 2, 2,  4, 3, 5,  3, 4, 4,  3, 3, 1),
                      "soldier":        (5, 4, 5,  2, 3, 4,  2, 2, 3,  2, 2, 2),
                      "knight":         (4, 4, 4,  3, 4, 4,  2, 2, 3,  2, 2, 2),
@@ -714,7 +714,7 @@ class CmdGuestAddInput(ArxPlayerCommand):
                        "{w@add/age{n, ex: {w@add/age 25{n\n" +
                        "{w@add/fealty{n, ex: {w@add/fealty Velenosa{n\n" +
                        "{w@add/family{n, ex: {w@add/family Whisper{n\n" +
-                       "{w@add/religion{n, ex: {w@add/religion Pantheon{n\n" +
+                       "{w@add/patron{n, ex: {w@add/patron Estril{n\n" +
                        "{w@add/desc{n, ex: {w@add/desc A severe girl with blue eyes...{n\n" +
                        "{w@add/concept{n, ex: {w@add/concept Humorless Handmaiden{n\n" +
                        "{w@add/background{n, ex: {w@add/background She was of humble birth..." +
