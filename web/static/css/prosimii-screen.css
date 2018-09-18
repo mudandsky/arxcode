@@ -10,7 +10,7 @@
 /* ##### Common Styles ##### */
 
 body {
-  font-family: "Palatino Linotype";
+  font-family: "Palatino Linotype"
   font-size: 73%;  /* Enables font size scaling in MSIE */
   margin: 0;
   padding: 0;
@@ -29,7 +29,7 @@ acronym, .titleTip {
 }
 
 a {
-  color: rgb(140, 140, 140);
+  color: rgb(255, 255, 255);
   background-color: transparent;
   text-decoration: underline;
   margin: 0;
@@ -50,6 +50,7 @@ ul {
   list-style-type: square;
   margin: 1em 0 1.5em 0;
   padding: 0;
+  text-align: center;
 }
 
 dl {
@@ -61,12 +62,14 @@ ul li {
   line-height: 1.5em;
   margin: 1.25ex 0 0 1.5em;
   padding: 0;
+  text-align: center;
 }
 
 ol li {
   line-height: 1.5em;
   margin: 1.25ex 0 0 2em;
   padding: 0;
+  text-align: center;
 }
 
 dt {
@@ -175,6 +178,7 @@ dd {
   margin: 0;
   padding: 0.5ex 10px;
   text-align: center;
+  padding-top: 300px;
 }
 
 .subHeader a, .subHeader .highlight {
@@ -188,7 +192,7 @@ dd {
 }
 
 .subHeader a:hover, .subHeader .highlight {
-  color: rgb(34, 127, 24);
+  color: rgb(32, 127, 70);
   background-color: transparent;
   text-decoration: none;
 }
@@ -291,7 +295,7 @@ dd {
 .quarter, .oneThird, .half, .twoThirds, .fullWidth {
   margin: 1em 0;
   float: left;
-  border-left: 1px solid rgb(204,204,204);
+  border-left: 1px solid rgb(45, 45, 45);
 }
 
 .quarter {
@@ -306,7 +310,7 @@ dd {
 
 .half {
   text-align: justify;
-  width: 46%;
+  width: 50%;
   padding: 0 1.9%;
 }
 
@@ -317,18 +321,25 @@ dd {
 }
 
 .fullWidth {
-  text-align: center;
-  width: 100%;
-    padding-top: 8px;
-  padding-right: auto;
+  position: absolute;
+  left: 50%;
+  top: 0%;
+  -webkit-transform: translateY(-50%) translateX(-50%);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 280px;
+  /*text-align: center;
+  padding-top: 0px;
+ padding-right: auto;
   padding-left: auto;
   border-left: none;
   margin: auto;
-  flex-wrap: nowrap;
+  flex-wrap: wrap; */
 }
 
 .filler {  /* use with an empty <p> element to add padding to the end of a text box */
-  border: 1px solid white;
+  border: 1px solid #2d2d2d;
 }
 
 .noBorderOnLeft {
@@ -336,7 +347,7 @@ dd {
 }
 
 .dividingBorderAbove {
-  border-top: 2px solid rgb(140, 140, 140);
+  border-top: 2px solid rgb(45, 45, 45);
 }
 
 /* More elegant alternatives to .noBorderOnLeft & .dividingBorderAbove

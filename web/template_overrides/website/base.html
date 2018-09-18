@@ -39,14 +39,18 @@
       <div id="top"><a href="#main-copy" class="doNotDisplay doNotPrint">Skip to main content.</a></div>
 
     <!-- ##### Header ##### -->
-
-    <div id="header">
+    <div class="dividingBorderAbove"></div>
+          <div class="fullWidth noBorderOnLeft">
+                <img src="/static/images/IthirBanner.jpg"/>
+        <!--span>Sites:</span-->
+        <!--a href="http://evennia.com" title="The Python-based MUD server">Evennia.com</a-->
+      </div>
+ <!---   <div id="header">
       <div class="subHeader">
         <h1 class="headerTitle" lang="la">Ithir</h1>
         <div class="headerSubTitle" title="Slogan">
-        <!-- Insert a slogan here if you want -->
-        {{game_slogan}}			&nbsp;
-        </div>
+                {{game_slogan}}			&nbsp;
+        </div> --->
 
         <br class="doNotDisplay doNotPrint" />
 
@@ -86,12 +90,7 @@
         
       </div>
     </div>
-    <div class="dividingBorderAbove"></div>
-          <div class="fullWidth">
-                <img src="/static/images/IthirBackground.png"/>
-        <!--span>Sites:</span-->
-        <!--a href="http://evennia.com" title="The Python-based MUD server">Evennia.com</a-->
-      </div>
+
 
     <!-- ##### Side Menu ##### -->
     {% block sidebar %}{% endblock %}

@@ -32,7 +32,7 @@
     <!-- news app commented out since there are no news in the database originally -->
 
     <div class="dividingBorderAbove"></div>
-    <div class="oneThird noBorderOnLeft">
+    <div class="half noBorderOnLeft">
       <h1>Latest News</h1>
       {% for entry in news_entries %}
          <a href="/news/show/{{entry.id}}" class="newsHeading">{{entry.topic.name}}: {{entry.title}}</a>
@@ -44,13 +44,13 @@
 
       <!---<p class="filler"><!-- Filler para to extend left vertical line--></p>
     </div>
-   <div class="oneThird">
+   <div class="half">
 	  <h1>Current Story</h1>
 	  <a href="/character/story/" class="newsHeading">{{ chapter.story.name}}: {{chapter.name}}</a>
 	  <p class="newsSummary">{{chapter.synopsis|mush_to_html|truncatewords:80}}</p>
 	 <!--- <p class="filler"></p>--->
    </div>
-    <div class="oneThird">
+   <!--- <div class="oneThird">
 	  <h1>Upcoming Events</h1>
 	  {% for event in events %}
 	  <a href="{% url 'dominion:display_event' event.id %}" class="newsHeading">{{event.name|mush_to_html}}</a>
@@ -58,29 +58,35 @@
 	  <p class="newsSummary">{{event.desc|mush_to_html|truncatewords:20}}</p>
 	  {% endfor %}
 	  <div class="more"><a href="{% url 'dominion:list_events' %}">More Events &raquo;</a></div>
-   </div>
+   </div> --->
 
 
 <div class="rowOfBoxes dividingBorderAbove">
 
-   <div class="quarter noBorderOnLeft">
+   <div class="half noBorderOnLeft">
       <h1>Players</h1>
       <p>
-      There's currently <strong>{{num_players_connected}}</strong> connected out of a total of <strong>{{num_players_registered}}</strong> players registered. <!--Of these, <strong>{{num_players_registered_recent}}</strong> were created this week, and <strong>{{num_players_connected_recent}}</strong> have connected within the last seven days.-->
+      There's currently <strong>{{num_players_connected}}</strong> connected out of a total of <strong>{{num_players_registered}}</strong> players registered. Of these, <strong>{{num_players_registered_recent}}</strong> were created this week, and <strong>{{num_players_connected_recent}}</strong> have connected within the last seven days.
       </p>
+       <h1>Recently Connected</h1>
+      <ul>
+      {% for player in players_connected_recent %}
+      <li>{{player.username}} -- <em>{{player.last_login|timesince}} ago</em></li>
+      {% endfor %}
+      </ul>
    </div>
 
-   <div class="quarter">
+   <!---<div class="quarter">
       <h1>Recently Connected</h1>
       <ul>
       {% for player in players_connected_recent %}
       <li>{{player.username}} -- <em>{{player.last_login|timesince}} ago</em></li>
       {% endfor %}
       </ul>
-      <p class="filler"><!-- Filler para to extend left vertical line ---></p>
-  </div>
+      <p class="filler"><!-- Filler para to extend left vertical line ---> <!---</p>
+  </div> --->
 
-   <div class="quarter">
+<!---   <div class="quarter">
       <h1>Database Stats</h1>
       <ul>
       <li>{{num_players_registered}} players (+ {{num_characters}} characters)</li>
@@ -88,11 +94,11 @@
       <li>{{num_others}} other objects</li>
 
       </ul>
-   </div>
+   </div> --->
 
-   <div class="quarter">
+   <div class="half">
       <h1>Telnet Address</h1>
-      <p>play.arxmush.org:3000</p>
+      <p>ithirMUSH.org:4000</p>
        <h1>Helpful Links</h1>
        <p><a href="https://www.pinterest.com/reilena/ithir-mountain-lands/">Pinterest - Faenor</a>
        <a href="https://www.pinterest.com/reilena/ithir-ocean-lands/">Pinterest - Aeran</a>
