@@ -20,12 +20,12 @@
     </ul>
 	</div>
 	<table class="table table-hover">
-	<tr bgcolor="#085D05">
+	<tr bgcolor="#333333">
 		<td>Name</td>
 		<td><a href="{% url 'help_topics:topic' 'gender'%}">Gender</a></td>
 		<td><a href="{% url 'help_topics:topic' 'age'%}">Age</a></td>
 		<td><a href ="{% url 'help_topics:topic' 'concept' %}">Concept</a></td>
-		<td><a href="{% url 'help_topics:topic' 'fealty' %}">Fealty</a></td>
+		<td><a href="{% url 'help_topics:topic' 'kinship' %}">Kinship</a></td>
 		<td><a href="{% url 'help_topics:topic' 'social_rank' %}">Social Rank</a></td>
 		{% if show_hidden %}
 		<td>Alts</td>
@@ -33,10 +33,10 @@
 	</tr>
 
 <style>
-	tr:nth-child(even) {background-color: #3a3a3a;}
+	tr:nth-child(even) {background-color: #336633;}
 </style>
     {% for char in object_list %}
-	  <tr bgcolor="#708090">
+	  <tr bgcolor="#336666">
         <td>{% if char.get_absolute_url %}<a href="{{ char.get_absolute_url }}">{{ char.key }}</a>{% else %}{{ char.key }}{% endif %}</td>
 		<td>{{ char.db.gender }}</td>
 		<td>{{ char.db.age }}</td>
