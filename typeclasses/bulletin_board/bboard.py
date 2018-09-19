@@ -7,7 +7,7 @@ from typeclasses.objects import Object
 from world.msgs.models import Post
 from world.msgs.managers import POST_TAG, TAG_CATEGORY
 
-PAGEROOT = "http://play.arxgame.org"
+PAGEROOT = "http://ithirmush.org"
 
 class BBoard(Object):
     """

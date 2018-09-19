@@ -103,7 +103,7 @@ LIFESTYLES = {
     }
 PRESTIGE_DECAY_AMOUNT = 0.2
 
-PAGEROOT = "http://play.arxgame.org"
+PAGEROOT = "http://ithirmush.org"
 
 
 # Create your models here.

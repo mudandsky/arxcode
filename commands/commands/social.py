@@ -397,7 +397,7 @@ class CmdFinger(ArxPlayerCommand):
                 msg += "{wStatus:{n Last logged in: %s\n" % last_online
         fealty = char.db.fealty or "None"
         msg += "{wFealty:{n %s\n" % fealty
-        pageroot = "http://play.arxgame.org"
+        pageroot = "http://ithirmush.org"
         quote = char.db.quote
         if quote:
             msg += "{wQuote:{n %s\n" % quote
