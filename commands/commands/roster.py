@@ -1,5 +1,5 @@
 """
-Roster command module.
+Roster commands module.
 
 This will handle things involving the roster manager and character sheets.
 Roster Manager will be a roster_manager object, of which only one should
@@ -429,7 +429,7 @@ class CmdAdminRoster(ArxPlayerCommand):
                 targ = caller.search(self.lhs)
                 if not targ:
                     return
-                active.entries.create(player=targ, character=targ.db.char_ob)
+                active.entries.create(player=targ, character=targ.char_ob)
                 caller.msg("Character added to active roster.")
                 return
         if 'move' in switches:
@@ -1049,14 +1049,14 @@ class CmdSheet(ArxPlayerCommand):
                 targ = caller.search(self.rhs)
                 if not targ:
                     return
-                targ = targ.db.char_ob
+                targ = targ.char_ob
             if not self.lhs:
                 char = caller
             else:
                 char = caller.search(self.lhs)
             if not char:
                 return
-            char = char.db.char_ob
+            char = char.char_ob
             if not char:
                 caller.msg("No character found.")
                 return
@@ -1102,7 +1102,7 @@ class CmdSheet(ArxPlayerCommand):
         show_hidden = False
         if caller.check_permstring("builders"):
             show_hidden = True
-        my_char = caller.db.char_ob if not caller.is_guest() else caller.db.char
+        my_char = caller.char_ob if not caller.is_guest() else caller.db.char
         if not args or args.isdigit():
             charob = my_char
             show_hidden = True
@@ -1111,7 +1111,7 @@ class CmdSheet(ArxPlayerCommand):
             if not playob:
                 caller.msg("No character found by that name.")
                 return None, False
-            charob = playob.db.char_ob
+            charob = playob.char_ob
         if not charob:
             caller.msg("No character found to @sheet.")
             return None, False
@@ -1252,7 +1252,7 @@ class CmdRelationship(ArxPlayerCommand):
         caller = self.caller
         args = self.args
         switches = self.switches
-        charob = caller.db.char_ob
+        charob = caller.char_ob
         # builders can see /list info
         show_hidden = caller.check_permstring("builders")
         # check if it's a guest modifying their character
@@ -1275,7 +1275,7 @@ class CmdRelationship(ArxPlayerCommand):
                 charob = caller.search(self.lhs)
                 if not charob:
                     return
-                charob = charob.db.char_ob
+                charob = charob.char_ob
                 if not charob:
                     caller.msg("No character.")
                     return
@@ -1309,7 +1309,7 @@ class CmdRelationship(ArxPlayerCommand):
                 char = caller.search(self.lhs)
                 if not char:
                     return
-                char = char.db.char_ob
+                char = char.char_ob
                 if not char:
                     caller.msg("No character.")
                     return
@@ -1350,7 +1350,7 @@ class CmdRelationship(ArxPlayerCommand):
             targ = caller.search(lhs)
             if not targ:
                 return
-            targ = targ.db.char_ob
+            targ = targ.char_ob
             if not targ:
                 caller.msg("No character found.")
                 return
@@ -1484,7 +1484,7 @@ class CmdComment(ArxPlayerCommand):
         caller = self.caller
         lhs = self.lhs
         comment_txt = self.rhs
-        caller_char = caller.db.char_ob
+        caller_char = caller.char_ob
         if not caller_char:
             caller.msg("Can only leave IC @comments when you have a character.")
             return
@@ -1494,7 +1494,7 @@ class CmdComment(ArxPlayerCommand):
             else:
                 char = caller.search(lhs)
                 try:
-                    char = char.db.char_ob
+                    char = char.char_ob
                 except AttributeError:
                     caller.msg("No character found by that name.")
                     return
@@ -1520,7 +1520,7 @@ class CmdComment(ArxPlayerCommand):
         if not playob:
             caller.msg("No character found by that name.")
             return
-        charob = playob.db.char_ob
+        charob = playob.char_ob
         if not charob:
             caller.msg("No character found to @comment upon.")
             return
@@ -1611,7 +1611,7 @@ class CmdAddSecret(ArxPlayerCommand):
         if not playob:
             caller.msg("No character found by that name.")
             return
-        charob = playob.db.char_ob
+        charob = playob.char_ob
         if not charob:
             caller.msg("No character found to @comment upon.")
             return
@@ -1673,7 +1673,7 @@ class CmdDelComment(ArxPlayerCommand):
         name = rhslist[0].lower()
         num = int(rhslist[1])
         player = caller.search(lhs)
-        char = player.db.char_ob
+        char = player.char_ob
         comment = char.messages.comments[name].pop(num)
         # destroy Msg
         comment.delete()
@@ -1713,7 +1713,7 @@ class CmdAdmRelationship(ArxPlayerCommand):
                 targ = self.lhslist[1].capitalize()
             else:
                 targ = caller.search(self.lhslist[1])
-                targ = targ.db.char_ob
+                targ = targ.char_ob
         except IndexError:
             caller.msg("Requires player,target=desc")
             return
@@ -1722,7 +1722,7 @@ class CmdAdmRelationship(ArxPlayerCommand):
             return
         if not player or not targ:
             return
-        charob = player.db.char_ob       
+        charob = player.char_ob
         if not charob or not targ:
             caller.msg("Character objects not found.")
             return

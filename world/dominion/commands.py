@@ -106,7 +106,7 @@ class CmdAdmDomain(ArxPlayerCommand):
             if not player:
                 caller.msg("No player found by name %s." % self.lhs)
                 return
-            char = player.db.char_ob
+            char = player.char_ob
             if not char:
                 caller.msg("No valid character object for %s." % self.lhs)
                 return
@@ -217,11 +217,11 @@ class CmdAdmDomain(ArxPlayerCommand):
                     traceback.print_exc()
                 return
             if not hasattr(player, 'Dominion'):
-                dompc = setup_utils.setup_dom_for_char(player.db.char_ob)
+                dompc = setup_utils.setup_dom_for_char(player.char_ob)
             else:
                 dompc = player.Dominion
             if "transferowner" in self.switches:
-                family = player.db.char_ob.db.family
+                family = player.char_ob.db.family
                 try:
                     house = Organization.objects.get(name__iexact=family)
                     owner = house.assets
@@ -285,11 +285,11 @@ class CmdAdmDomain(ArxPlayerCommand):
             ruled = "None"
             owned = "None"
             family = None
-            if player.db.char_ob and player.db.char_ob.db.family:
-                family = player.db.char_ob.db.family
+            if player.char_ob and player.char_ob.db.family:
+                family = player.char_ob.db.family
             if hasattr(dompc, 'ruler'):
                 ruled = ", ".join(str(ob) for ob in Domain.objects.filter(ruler_id=dompc.ruler.id))
-            if player.db.char_ob and player.db.char_ob.db.family:
+            if player.char_ob and player.char_ob.db.family:
                 owned = ", ".join(str(ob) for ob in Domain.objects.filter(
                     ruler__house__organization_owner__name__iexact=family))
             caller.msg("{wDomains ruled by {c%s{n: %s" % (dompc, ruled))
@@ -312,8 +312,8 @@ class CmdAdmDomain(ArxPlayerCommand):
                 caller.msg("{wDirect vassals of %s:{n %s" % (fealty, ", ".join(str(ob) for ob in house.vassals.all())))
             pcdomlist = []
             for pc in AccountDB.objects.filter(Dominion__ruler__isnull=False):
-                if pc.db.char_ob and pc.db.char_ob.db.fealty == fealty:
-                    if pc.db.char_ob.db.family != fealty:
+                if pc.char_ob and pc.char_ob.db.fealty == fealty:
+                    if pc.char_ob.db.family != fealty:
                         for dom in pc.Dominion.ruler.holdings.all():
                             pcdomlist.append(dom)
             if pcdomlist:
@@ -662,7 +662,7 @@ class CmdAdmAssets(ArxPlayerCommand):
                 noassets = not hasattr(player.Dominion, 'assets')
             else:
                 noassets = True
-            setup_utils.setup_dom_for_char(player.db.char_ob, nodom, noassets)
+            setup_utils.setup_dom_for_char(player.char_ob, nodom, noassets)
             caller.msg("Dominion initialized for %s. No domain created." % player)
             return
         try:
@@ -918,7 +918,7 @@ class CmdAdmOrganization(ArxPlayerCommand):
             share_str = str(clue)
             targ_type = "clue"
             briefing_type = "/briefing"
-            text = "%s has shared the %s {w%s{n to {c%s{n. It can now be used in a %s." % (caller.db.char_ob,
+            text = "%s has shared the %s {w%s{n to {c%s{n. It can now be used in a %s." % (caller.char_ob,
                                                                                            targ_type, share_str, org,
                                                                                            briefing_type)
             org.inform(text, category)
@@ -1169,7 +1169,7 @@ class CmdSetRoom(ArxCommand):
                 player = caller.player.search(lhs)
                 if not player:
                     continue
-                char = player.db.char_ob
+                char = player.char_ob
                 if not char:
                     caller.msg("No character found.")
                     continue
