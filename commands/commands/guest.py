@@ -30,10 +30,8 @@ from world.stats_and_skills import (get_partial_match, get_skill_cost,
 __all__ = ("CmdGuestLook", "CmdGuestCharCreate", "CmdGuestPrompt", "CmdGuestAddInput")
 CMD_NOINPUT = syscmdkeys.CMD_NOINPUT
 CMD_NOMATCH = syscmdkeys.CMD_NOMATCH
-_vocations_ = ("noble", "courtier", "charlatan", "soldier", "knight", "priest", "merchant",
-               "criminal", "artisan", "scholar", "lawyer", "steward", "commoner",
-               "jeweler", "tailor", "weaponsmith", "armorsmith", "leatherworker",
-               "apothecary", "carpenter")
+_vocations_ = ("noble", "highborn", "soldier", "knight", "priest", "merchant",
+                "scholar", "lawyer", "steward", "hunter", "scout", "archer", "mage", "explorer", "sailor", "scoundrel")
 _stage3_fields_ = ("concept", "gender", "age", "fealty", "family", "patron", "desc", "personality", "background",
                    "marital_status", "quote", "birthday", "social_rank", "skintone", "eyecolor", "haircolor", "height")
 _valid_fealty_ = ("Aeran", "Duindar", "Faenor", "Lorandi", "Thalerith")
@@ -44,61 +42,43 @@ _max_age_ = 900
 # We have 12 stats. no more than two at 5. tuple is in the following order:
 # (strength,dexterity,stamina,charm,command,composure,intellect,perception,wits,mana,luck,willpower)
 _voc_start_stats_ = {"noble":          (3, 3, 3,  4, 5, 4,  3, 3, 2,  2, 2, 2),
-                     "courtier":       (2, 2, 2,  5, 4, 5,  3, 3, 4,  2, 2, 2),
-                     "charlatan":      (2, 2, 2,  4, 3, 5,  3, 4, 4,  3, 3, 1),
+                     "highborn":       (2, 2, 2,  5, 4, 5,  3, 3, 4,  2, 2, 2),
                      "soldier":        (5, 4, 5,  2, 3, 4,  2, 2, 3,  2, 2, 2),
                      "knight":         (4, 4, 4,  3, 4, 4,  2, 2, 3,  2, 2, 2),
                      "priest":         (2, 2, 2,  4, 5, 4,  3, 3, 2,  3, 3, 3),
                      "merchant":       (2, 2, 2,  4, 3, 4,  3, 4, 3,  2, 3, 4),
-                     "criminal":       (4, 4, 4,  3, 3, 3,  3, 3, 3,  2, 2, 2),
-                     "tailor":         (2, 2, 2,  3, 3, 3,  4, 4, 4,  3, 3, 3),
-                     "artisan":        (2, 2, 2,  3, 3, 3,  4, 4, 4,  3, 3, 3),
-                     "weaponsmith":    (4, 4, 4,  3, 3, 3,  2, 2, 2,  3, 3, 3),
-                     "armorsmith":     (4, 4, 4,  3, 3, 3,  2, 2, 2,  3, 3, 3),
-                     "leatherworker":  (4, 4, 4,  3, 3, 3,  2, 2, 2,  3, 3, 3),
-                     "apothecary":     (2, 2, 2,  3, 3, 3,  4, 4, 4,  3, 3, 3),
-                     "carpenter":      (4, 4, 4,  3, 3, 3,  2, 2, 2,  3, 3, 3),
-                     "jeweler":        (2, 2, 2,  3, 3, 3,  4, 4, 4,  3, 3, 3),
                      "scholar":        (2, 2, 2,  3, 3, 3,  5, 5, 4,  2, 2, 3),
                      "lawyer":         (2, 2, 2,  3, 3, 3,  5, 5, 4,  2, 2, 3),
                      "steward":        (3, 3, 3,  3, 3, 3,  4, 4, 4,  2, 2, 2),
-                     "commoner":       (4, 3, 4,  3, 2, 3,  2, 3, 4,  2, 4, 2)}
+                     "hunter":         (4, 3, 4,  2, 3, 5,  2, 4, 3,  2, 2, 2),
+                     "archer":         (4, 5, 3,  2, 3, 4,  2, 4, 3,  2, 2, 2),
+                     "mage":           (2, 2, 4,  3, 3, 4,  5, 3, 3,  3, 2, 2),
+                     "explorer":       (3, 3, 2,  2, 4, 3,  3, 5, 3,  2, 3, 3),
+                     "sailor":         (3, 3, 4,  3, 4, 2,  2, 4, 4,  2, 2, 2),
+                     "scoundrel":      (4, 4, 4,  3, 4, 2,  2, 4, 4,  2, 2, 2),
+                     "scout":          (2, 4, 3,  2, 2, 4,  3, 5, 3,  2, 4, 2)}
+
 # 20 points for skills
 _voc_start_skills_ = {"noble": {"diplomacy": 3, "leadership": 3, "etiquette": 2,
                                 "law": 1, "ride": 1,
                                 "manipulation": 1, "empathy": 1, "war": 1},
-                      "courtier": {"diplomacy": 1, "etiquette": 3, "manipulation": 2,
-                                   "empathy": 2, "seduction": 3, "propaganda": 1},
-                      "charlatan": {"legerdemain": 3, "manipulation": 3, "empathy": 1,
-                                    "streetwise": 3, "occult": 1},
+                      "highborn": {"diplomacy": 1, "etiquette": 3, "manipulation": 2,
+                                   "empathy": 2, "propaganda": 1},
                       "soldier": {"medium wpn": 3, "brawl": 1, "dodge": 1,
                                   "archery": 1, "survival": 1},
                       "knight": {"medium wpn": 3, "dodge": 1, "war": 1, "etiquette": 1,
                                  "ride": 2, "leadership": 1},
                       "lawyer": {"law": 4, "etiquette": 1, "empathy": 2, "manipulation": 2,
                                  "teaching": 1, "investigation": 1, "linguistics": 1},
-                      "priest": {"theology": 3, "occult": 2, "medicine": 3,
+                      "priest": {"theology": 3, "occult": 2, "restoration": 3,
                                  "empathy": 1, "leadership": 1, "propaganda": 2},
-                      "merchant": {"economics": 3, "streetwise": 2, "manipulation": 1,
-                                   "haggling": 4, },
-                      "criminal": {"stealth": 1, "streetwise": 2,
-                                   "small wpn": 2, "brawl": 2, "dodge": 1, "legerdemain": 1},
-                      "artisan": {"smithing": 2, "alchemy": 2, "sewing": 2, "tanning": 2, "haggling": 1,
-                                  "propaganda": 1, "streetwise": 1, "teaching": 1, "woodworking": 2,
-                                  "etiquette": 1},
-                      "tailor": {"sewing": 4, "teaching": 2, "haggling": 1},
-                      "weaponsmith": {"smithing": 4, "brawl": 1, "haggling": 1},
-                      "armorsmith": {"smithing": 4, "brawl": 1, "haggling": 1},
-                      "leatherworker": {"tanning": 4, "brawl": 1, "haggling": 1},
-                      "apothecary": {"alchemy": 4, "teaching": 2, "haggling": 1},
-                      "carpenter": {"woodworking": 4, "brawl": 1, "haggling": 1},
-                      "jeweler": {"smithing": 4, "teaching": 2, "haggling": 1},
-                      "scholar": {"medicine": 3, "occult": 2, "agriculture": 1, "economics": 1,
+                      "merchant": {"economics": 3, "streetwise": 2, "manipulation": 1},
+                      "scholar": {"restoration": 3, "occult": 2, "agriculture": 1, "economics": 1,
                                   "teaching": 3, "theology": 1, "law": 1, "etiquette": 1},
                       "steward": {"stewardship": 4, "economics": 1, "etiquette": 2, "law": 2,
                                   "agriculture": 2},
                       "commoner": {"streetwise": 2, "stealth": 1, "brawl": 1, "athletics": 1, "survival": 2,
-                                   "investigation": 1, "dodge": 1, "occult": 1, "haggling": 1}}
+                                   "investigation": 1, "dodge": 1, "occult": 1}}
 
 
 def setup_voc(char, args):
@@ -181,64 +161,65 @@ def award_bonus_by_age(age):
 
 STAGE0 = \
        """
-Welcome to {cArx{n, a text based fantasy roleplaying game, similar in design
-to many other MUSH based games. Arx is a game of intrigue and adventure,
-politics and deeply woven stories, allowing players to enter the ongoing
-stories with either a character from a roster of pre-generated characters
-that have been a part of the story so far, or to create your own with help
-and guidance to best fit into the stories we are creating here.
+Welcome to {gIthir MUSH{n, a text based fantasy roleplaying game set in the
+Immortal lands of Aarandor. Ithir is an original game with a rich, but easy
+To learn setting. You can learn more about the world of Ithir by reading the
+World page of our website. http://ithirmush.org/topics/
 
-If you'd like to read about the current stories, or background lore and
-completed roleplay, please access our help files with '{whelp{n' to browse
-the different subjects. To see a list of commands available to you, use the
-'{whelp{n' command. To look at the roster of available characters, use
-'{w@roster{n' and '{w@sheet{n'.
+You can enter the world of Ithir by selecting a character from our roster of
+Pre-generated characters that have been part of the story so far. Or you can
+Create your own character with help and guidance from the community and 
+Staff of Ithir.  To see a list of commands available to you, use the '{whelp{n' 
+command. To look at the roster of available characters, use '{w@roster{n' and 
+'{w@sheet{n'.
 
+{gRoster Application{n
 To submit an application for a character on the roster that you would like
-to play, you will need to supply an email address with {w@add/email <email>{n.
-Then enter '{w@roster/apply{n {c<character name>{n {w={n {c<application>{n'.
-Your application should contain the reason you'd like to play the character
-and what you perceive as their goals and motivations and what direction you
-will take their roleplay. Tell us your take on the character. How would you RP
-them in a way that contributes to a positive environment and creates
-collaborative, fun RP for other people?
+to play, you will need to supply an email address with {w@add/email {g<email>{n.
+Then enter '{w@roster/apply {g<character name> {w= {g<application>{n'. Your application
+should contain the reason you'd like to play the character and what you 
+perceive as their goals and motivations and what direction you will take 
+their story. Tell us your take on the character. How would you RP them in a 
+way that contributes to a positive environment and creates collaborative, fun 
+RP for other people?
 
+{gOriginal Character{n
 To create a new, original character, or to resume a previous session you
-were disconnected from, use '{w@charcreate {c<email>{n'. To view a board
-of wanted character concepts, use '{w@bb wanted concepts{n'.
+were disconnected from, use '{w@charcreate {g<email>{n'. To view a board
+of wanted character concepts, use '@bb wanted concepts'.
 
-The guest channel exists to help new players with
-the process of requesting or generating their characters - to speak in it,
-please type '{wguest {c<message>{n'.
+The guest channel exists to help new players with the process of requesting or 
+generating their characters - to speak in it, please type '{wguest {g<message>{n'.
+
        """
 STAGE1 = \
        """
+{gStage One{n
 To start with, choose a unique name for your character that consists of a
 single word of only letters - no spaces, numbers, or special characters.
-
-Although characters will typically have both family names, and some may have
-titles, every character has a unique first name as an identifier for game
-commands. For example, Prince Donrai Thrax would be known by his full name,
-but commands such as 'look' would be executed by 'look donrai'.
+There is no need to add a title or surname at this point, this is only the
+character's first name.
 
 To choose a name, please use {w'@add/name {c<name>'{n. Names may only consist
 of letters, and should generally be between 4-12 characters in length.
        """
 STAGE2 = \
        """
+{gStage Two{n
 A vocation describes your character's occupation. A number of sample
 vocations have been prepared, but you are not limited to them. You may
-choose either one of the sample vocations, or create your own with
-{w'@add/newvocation {c<name>'{n. To select any of the given vocations, use
-{w'@add/vocation {c<name>'{n
+either choose one of the sample vocations, or create your own with
+{w'@add/newvocation {g<name>'{n. To select any of the given vocations, use
+{w'@add/vocation {g<name>'{n
 
-To get more information about the listed vocations, type {w'help {c<name>'{n for
+To get more information about the listed vocations, type {w'help {g<name>'{n for
 any. Each sample vocation has a pre-generated list of stats and skills,
 which can be modified in a following step. Creating a new vocation will
 require you to set them manually.
        """
 STAGE3 = \
        """
+{gStage Three{n
 In this step, you'll create all the details of your character's starting
 story. This will let you define who they are now, what their previous
 history was, and the overall character concept by defining fields on your
@@ -257,8 +238,8 @@ the character tick by completing the other fields below.
 Characters who start at a lower social rank will receive bonus xp after
 character creation which they can use in any manner they choose.
 
-To add a field '{w@add/{c<field> <value>{n' For example, '{w@add/age{n 21'
-would set the character's age to 21.
+To add a field '{w@add/{c<field> <value>{n' For example, '{w@add/age{n 250'
+would set the character's age to 250.
 
 If you would prefer to fill in character stats first, you may temporarily
 skip this stage with '{w@add/skip{n', though the mandatory fields must be
@@ -267,6 +248,7 @@ submit your character.
        """
 STAGE4 = \
        """
+{gStage Four{n
 You may now adjust the starting skills and stats of your character if you
 wish, or submit your character for approval if you're satisfied with how
 everything looks. To add or remove skills or stats, use '{wadd/stat{n' or
@@ -299,7 +281,7 @@ you should receive an email response after GMs review your application.
 If you didn't submit an email, GMs will send you a page/tell after they've
 finished reviewing your application, providing you with the character's
 password if you are approved. To log in to an approved character,
-reconnect to ArxMUSH and enter '{wconnect {c<name> <password>{n' with the
+reconnect to IthirMUSH and enter '{wconnect {c<name> <password>{n' with the
 name you chose for the character and the password you will be provided.
        """
 
@@ -993,7 +975,7 @@ class CmdGuestAddInput(ArxPlayerCommand):
                 message += "Player added the following to their application: %s" % args
             caller.msg("Thank you for submitting your character for approval.")
             caller.msg("The GMs will review your character and page you the password if it is approved.")
-            caller.msg("When the character is approved, log back in to ArxMUSH and use" +
+            caller.msg("When the character is approved, log back in to IthirMUSH and use" +
                        " 'connect <name> <password>' to play.")
         else:
             if not args:

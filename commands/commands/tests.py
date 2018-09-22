@@ -140,7 +140,6 @@ class StoryActionTests(ArxCommandTest):
         self.call_cmd("/tldr 1", "Summary of action 1\nAction by Testaccount2: Summary: test summary")
         self.call_cmd("/secretstory 1=sekritfoo", "secret_story set to sekritfoo.")
         self.call_cmd("/stat 1=charm", "stat set to charm.")
-        self.call_cmd("/skill 1=seduction", "skill set to seduction.")
         self.call_cmd("/diff 1=25", "difficulty set to 25.")
         self.call_cmd("/diff 1=hard", "difficulty set to %s." % CrisisAction.HARD_DIFFICULTY)
         self.call_cmd("/assign 1=Testaccount", "gm set to Testaccount.|GM for the action set to Testaccount")

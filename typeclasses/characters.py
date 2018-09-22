@@ -575,8 +575,8 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
         """Another representation of social value of a character"""
         total = 0
         my_skills = self.db.skills or {}
-        skills_used = {"diplomacy": 2, "empathy": 2, "seduction": 2, "etiquette": 2, "manipulation": 2, "propaganda": 2,
-                       "intimidation": 1, "leadership": 1, "streetwise": 1, "performance": 1, "haggling": 1}
+        skills_used = {"diplomacy": 2, "empathy": 2, "etiquette": 2, "manipulation": 2, "propaganda": 2,
+                       "intimidation": 1, "leadership": 1, "streetwise": 1, "performance": 1}
         stats_used = {"charm": 2, "composure": 1, "command": 1}
         for skill, exponent in skills_used.items():
             total += pow(my_skills.get(skill, 0), exponent)
