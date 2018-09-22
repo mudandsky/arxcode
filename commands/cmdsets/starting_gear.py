@@ -65,7 +65,7 @@ class CmdStartingGear(ArxCommand):
     you can cash in the remainder of your starting funds with
     /refundremainder, which removes this command permanently.
     For a list of valid recipes, please look at:
-    http://play.arxmush.org/topics/recipes/
+    http://itherMUSH.org/topics/recipes/
     
     Note that the silver cost is an additional cost on top of the
     cost of materials, so the actual cost of an item is far higher

@@ -104,7 +104,7 @@ class AppsManager(Object):
                 player.save()
             message += "A new password has been automatically generated for you: %s\n\n" % newpass
             message += "After logging in for your first time, you may change the password to whatever you like "
-            message += "with the @password command. Enjoy ArxMUSH!"
+            message += "with the @password command. Enjoy IthirMUSH!"
             try:
                 msg_success = send_mail('IthirMUSH Character Application', message, 'admin@ithirmush.org',
                                         [email], fail_silently=False)
@@ -119,7 +119,7 @@ class AppsManager(Object):
                 caller.msg("Email failed for unknown reason.")
                 return False
         if not approve:
-            message = "Thank you for applying to play a character on ArxMUSH. This email is to "
+            message = "Thank you for applying to play a character on IthirArxMUSH. This email is to "
             message += "inform you that unfortunately your application to play %s has been declined.\n\n" % found_app[1].key.capitalize()
             message += "Please refer to the following message for context - it may be just that the GMs "
             message += "feel more information is needed in an application, or that they feel your take on "

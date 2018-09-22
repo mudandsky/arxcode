@@ -23,17 +23,17 @@ MSSPTable =  {
 
     "CRAWL DELAY":        "-1",     # limit how often crawler updates the listing. -1 for no limit
 
-    "HOSTNAME":           "play.arxgame.org",       # current or new hostname
-    "PORT":               ["3000"], # most important port should be last in list
+    "HOSTNAME":           "ithirMUSH.org",       # current or new hostname
+    "PORT":               ["4000"], # most important port should be last in list
     "CODEBASE":           "Evennia",
     "CONTACT":            "IthirMUSH@gmail.com",       # email for contacting the mud
     "CREATED":            "2016",       # year MUD was created
-    "ICON":               "http://play.arxgame.org/static/images/arx_badge_small.png",       # url to icon 32x32 or larger; <32kb.
+    # "ICON":               "http://play.arxgame.org/static/images/arx_badge_small.png",       # url to icon 32x32 or larger; <32kb.
     "IP":                 "",       # current or new IP address
     "LANGUAGE":           "English",       # name of language used, e.g. English
     "LOCATION":           "United States",       # full English name of server country
     "MINIMUM AGE":        "18",      # set to 0 if not applicable
-    "WEBSITE":            "play.arxgame.org",
+    "WEBSITE":            "ithirMUSH.org",
 
     # Categorisation
 

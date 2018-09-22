@@ -4,7 +4,7 @@ Settings we use for production. Some of these could eventually be moved into a s
 from .base_settings import *
 TELNET_INTERFACES = ['45.33.87.194']
 WEBSOCKET_CLIENT_INTERFACE = '45.33.87.194'
-ALLOWED_HOSTS = ['.arxmush.org', '.arxgame.org']
+ALLOWED_HOSTS = ['.ithirMUSH.org']
 WEBSERVER_PORTS = [(8000, 5001)]
 WEBSOCKET_CLIENT_PORT = 8001
 SSH_PORTS = [8022]

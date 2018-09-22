@@ -566,7 +566,7 @@ class CmdApp(ArxPlayerCommand):
                 try:
                     bb = BBoard.objects.get(db_key__iexact="Roster Changes")
                     msg = "%s now has a new player and is on the active roster." % app[1]
-                    url = "http://play.arxmush.org" + app[1].get_absolute_url()
+                    url = "http://ithirMUSH.org" + app[1].get_absolute_url()
                     msg += "\nCharacter page: %s" % url
                     subject = "%s now active" % app[1]
                     bb.bb_post(self.caller, msg, subject=subject, poster_name="Roster")
