@@ -1903,7 +1903,7 @@ class CmdOrganization(ArxPlayerCommand):
                 return
             entry = tarmember.player.player.roster
             entry.refresh_from_db()
-            if tarmember.player.player.db.char_ob.location != self.caller.db.char_ob.location:
+            if tarmember.player.player.char_ob.location != self.caller.db.char_ob.location:
                 self.msg("You must be in the same room to brief them.")
                 self.msg("Please actually have roleplay about briefing things - "
                          "a 'clue dump' without context is against the rules.")
@@ -2276,7 +2276,7 @@ class CmdOrganization(ArxPlayerCommand):
                                      & Q(player__player=player)).exists():
                 caller.msg("They are already a member of your organization.")
                 return
-            char = player.db.char_ob
+            char = player.char_ob
             if not hasattr(player, 'Dominion'):
                 setup_utils.setup_dom_for_char(char)
             if not player.is_connected:
@@ -2407,7 +2407,7 @@ class CmdFamily(ArxPlayerCommand):
             caller.msg(famtree)
             if player:
                 try:
-                    family = player.db.char_ob.db.family
+                    family = player.char_ob.db.family
                     fam_org = Organization.objects.get(name__iexact=family)
                     details = fam_org.display_public()
                     caller.msg("%s family information:\n%s" % (family, details))
@@ -2488,7 +2488,7 @@ class CmdPatronage(ArxPlayerCommand):
             player = caller.search(self.args)
             if not player:
                 return
-            char = player.db.char_ob
+            char = player.char_ob
             if not char:
                 caller.msg("No character found for %s." % player)
                 return
@@ -3278,7 +3278,7 @@ class CmdSupport(ArxCommand):
                 # create the supused for them
                 supused = SupportUsed(week=week, sphere=sphere, rating=0, supporter=supporter)
             # target character we're supporting
-            char = targmember.player.player.db.char_ob
+            char = targmember.player.player.char_ob
             char.refresh_from_db()
             diff = val - supused.rating
             if diff > remaining:

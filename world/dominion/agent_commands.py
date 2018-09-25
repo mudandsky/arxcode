@@ -285,7 +285,7 @@ class CmdAgents(ArxPlayerCommand):
                         if agent.unique:
                             agent.dbobj.unassign()
                             try:
-                                char = agent.owner.player.player.db.char_ob
+                                char = agent.owner.player.player.char_ob
                                 agent.assign(char, 1)
                             except AttributeError:
                                 pass
