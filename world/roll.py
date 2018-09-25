@@ -1,5 +1,5 @@
 """
-A Roll class is all the information about a roll that is made. Crits,
+A Roll class is all the informations about a roll that is made. Crits,
 karma spent, or any number of other modifiers is saved to decide what
 message will be sent, if any. While it could be a simulated roll made
 by a GM, a character's roll will be stored in character.ndb.last_roll 
