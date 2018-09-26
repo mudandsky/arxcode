@@ -103,7 +103,7 @@ LIFESTYLES = {
     }
 PRESTIGE_DECAY_AMOUNT = 0.2
 
-PAGEROOT = "http://play.arxgame.org"
+PAGEROOT = "http://ithirmush.org"
 
 
 # Create your models here.
@@ -367,7 +367,7 @@ class PlayerOrNpc(SharedMemoryModel):
             traceback.print_exc()
             return cdowns
         try:
-            max_support = self.player.db.char_ob.max_support
+            max_support = self.player.char_ob.max_support
         except AttributeError:
             import traceback
             traceback.print_exc()
@@ -380,7 +380,7 @@ class PlayerOrNpc(SharedMemoryModel):
             qset = qset.filter(week=week + week_offset)
             for used in qset:
                 member = used.supporter.task.member
-                pc = member.player.player.db.char_ob
+                pc = member.player.player.char_ob
                 points = cdowns.get(pc.id, max_support)
                 points -= used.rating
                 cdowns[pc.id] = points
@@ -403,7 +403,7 @@ class PlayerOrNpc(SharedMemoryModel):
         """
         week = get_week()
         try:
-            max_support = self.player.db.char_ob.max_support
+            max_support = self.player.char_ob.max_support
             points_spent = sum(SupportUsed.objects.filter(Q(week=week) & Q(supporter__player=self) &
                                                           Q(supporter__fake=False)).values_list('rating', flat=True))
 
@@ -3211,26 +3211,26 @@ class Organization(InformMixin, SharedMemoryModel):
     category = models.CharField(blank=True, null=True, default="noble", max_length=255)
     fealty = models.ForeignKey("Fealty", blank=True, null=True, related_name="orgs")
     # In a RP game, titles are IMPORTANT. And we need to divide them by gender.
-    rank_1_male = models.CharField(default="Prince", blank=True, null=True, max_length=255)
-    rank_1_female = models.CharField(default="Princess", blank=True, null=True, max_length=255)
-    rank_2_male = models.CharField(default="Voice", blank=True, null=True, max_length=255)
-    rank_2_female = models.CharField(default="Voice", blank=True, null=True, max_length=255)
-    rank_3_male = models.CharField(default="Noble Family", blank=True, null=True, max_length=255)
-    rank_3_female = models.CharField(default="Noble Family", blank=True, null=True, max_length=255)
-    rank_4_male = models.CharField(default="Trusted House Servants", blank=True, null=True, max_length=255)
-    rank_4_female = models.CharField(default="Trusted House Servants", blank=True, null=True, max_length=255)
-    rank_5_male = models.CharField(default="Noble Vassals", blank=True, null=True, max_length=255)
-    rank_5_female = models.CharField(default="Noble Vassals", blank=True, null=True, max_length=255)
+    rank_1_male = models.CharField(default="Lord", blank=True, null=True, max_length=255)
+    rank_1_female = models.CharField(default="Lady", blank=True, null=True, max_length=255)
+    rank_2_male = models.CharField(default="Right Hand", blank=True, null=True, max_length=255)
+    rank_2_female = models.CharField(default="Right Hand", blank=True, null=True, max_length=255)
+    rank_3_male = models.CharField(default="Highborn Family", blank=True, null=True, max_length=255)
+    rank_3_female = models.CharField(default="Highborn Family", blank=True, null=True, max_length=255)
+    rank_4_male = models.CharField(default="Family", blank=True, null=True, max_length=255)
+    rank_4_female = models.CharField(default="Family", blank=True, null=True, max_length=255)
+    rank_5_male = models.CharField(default="Highborn Vassals", blank=True, null=True, max_length=255)
+    rank_5_female = models.CharField(default="Highborn Vassals", blank=True, null=True, max_length=255)
     rank_6_male = models.CharField(default="Vassals of Esteem", blank=True, null=True, max_length=255)
     rank_6_female = models.CharField(default="Vassals of Esteem", blank=True, null=True, max_length=255)
-    rank_7_male = models.CharField(default="Known Commoners", blank=True, null=True, max_length=255)
-    rank_7_female = models.CharField(default="Known Commoners", blank=True, null=True, max_length=255)
-    rank_8_male = models.CharField(default="Sworn Commoners", blank=True, null=True, max_length=255)
-    rank_8_female = models.CharField(default="Sworn Commoners", blank=True, null=True, max_length=255)
-    rank_9_male = models.CharField(default="Forgotten Commoners", blank=True, null=True, max_length=255)
-    rank_9_female = models.CharField(default="Forgotten Commoners", blank=True, null=True, max_length=255)
-    rank_10_male = models.CharField(default="Serf", blank=True, null=True, max_length=255)
-    rank_10_female = models.CharField(default="Serf", blank=True, null=True, max_length=255)
+    rank_7_male = models.CharField(default="Denizen", blank=True, null=True, max_length=255)
+    rank_7_female = models.CharField(default="Denizen", blank=True, null=True, max_length=255)
+    rank_8_male = models.CharField(default="Wanderer", blank=True, null=True, max_length=255)
+    rank_8_female = models.CharField(default="Wanderer", blank=True, null=True, max_length=255)
+    rank_9_male = models.CharField(default="Outcast", blank=True, null=True, max_length=255)
+    rank_9_female = models.CharField(default="Outcast", blank=True, null=True, max_length=255)
+    rank_10_male = models.CharField(default="Banished", blank=True, null=True, max_length=255)
+    rank_10_female = models.CharField(default="Banished", blank=True, null=True, max_length=255)
     npc_members = models.PositiveIntegerField(default=0, blank=0)
     income_per_npc = models.PositiveSmallIntegerField(default=0, blank=0)
     cost_per_npc = models.PositiveSmallIntegerField(default=0, blank=0)
@@ -3348,7 +3348,7 @@ class Organization(InformMixin, SharedMemoryModel):
             elif len(chars) > 0:
                 char = chars[0]
                 name = char_name(char)
-                char = char.player.player.db.char_ob
+                char = char.player.player.char_ob
                 gender = char.db.gender or "Male"
                 if gender.lower() == "male":
                     title = male_title
@@ -3746,7 +3746,7 @@ class Agent(SharedMemoryModel):
         to guard the given character. Returns the first match, returns None
         if not found.
         """
-        return self.npcs.find_agentob_by_character(player.db.char_ob)
+        return self.npcs.find_agentob_by_character(player.char_ob)
 
     @property
     def dbobj(self):
@@ -5047,7 +5047,7 @@ class Member(SharedMemoryModel):
     def rank_title(self):
         """Returns title for this member"""
         try:
-            male = self.player.player.db.char_ob.db.gender.lower().startswith('m')
+            male = self.player.player.char_ob.db.gender.lower().startswith('m')
         except (AttributeError, ValueError, TypeError):
             male = False
         if male:
@@ -5149,7 +5149,7 @@ class AssignedTask(SharedMemoryModel):
 
     def cleanup_request_list(self):
         """Cleans the Attribute that lists who we requested support from"""
-        char = self.player.db.char_ob
+        char = self.player.char_ob
         try:
             del char.db.asked_supporters[self.id]
         except (AttributeError, KeyError, TypeError, ValueError):

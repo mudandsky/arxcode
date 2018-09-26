@@ -181,7 +181,7 @@
 #changelist-filter a:focus, #changelist-filter a:hover,
 #changelist-filter li.selected a:focus,
 #changelist-filter li.selected a:hover {
-    color: #036;
+    color: #cb4bcc;
 }
 
 /* DATE DRILLDOWN */

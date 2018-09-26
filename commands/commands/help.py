@@ -125,7 +125,7 @@ class CmdHelp(Command):
 
         if not player.character:
             try:
-                char_cmds = [cmd for cmd in player.db.char_ob.cmdset.all()[0] if cmd.auto_help and cmd.access(caller)]
+                char_cmds = [cmd for cmd in player.char_ob.cmdset.all()[0] if cmd.auto_help and cmd.access(caller)]
                 all_cmds += char_cmds
             except Exception:
                 pass

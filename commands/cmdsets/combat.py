@@ -1613,15 +1613,15 @@ class CmdHeal(ArxCommand):
                 blessed = 0
             blessed -= antimagic_aura
             if blessed > 0:
-                caller.msg("{cYou feel Lagoma's favor upon you.{n")
+                caller.msg("{cYou feel Gala's favor upon you.{n")
             else:
                 blessed = 0
-            keep = blessed + caller.db.skills.get("medicine", 0) + 2
+            keep = blessed + caller.db.skills.get("restoration", 0) + 2
             modifier += 5 * blessed
-            heal_roll = do_dice_check(caller, stat_list=["mana", "intellect"], skill="medicine",
+            heal_roll = do_dice_check(caller, stat_list=["mana", "intellect"], skill="restoration",
                                       difficulty=15-modifier, keep_override=keep)
         else:
-            heal_roll = do_dice_check(caller, stat="intellect", skill="medicine", difficulty=15-modifier)
+            heal_roll = do_dice_check(caller, stat="intellect", skill="restoration", difficulty=15-modifier)
         caller.msg("You rolled a %s on your heal roll." % heal_roll)
         targ.msg("%s tends to your wounds, rolling %s on their heal roll." % (caller, heal_roll))
         script = targ.scripts.get("Recovery")

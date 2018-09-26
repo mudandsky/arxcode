@@ -140,7 +140,6 @@ class StoryActionTests(ArxCommandTest):
         self.call_cmd("/tldr 1", "Summary of action 1\nAction by Testaccount2: Summary: test summary")
         self.call_cmd("/secretstory 1=sekritfoo", "secret_story set to sekritfoo.")
         self.call_cmd("/stat 1=charm", "stat set to charm.")
-        self.call_cmd("/skill 1=seduction", "skill set to seduction.")
         self.call_cmd("/diff 1=25", "difficulty set to 25.")
         self.call_cmd("/diff 1=hard", "difficulty set to %s." % CrisisAction.HARD_DIFFICULTY)
         self.call_cmd("/assign 1=Testaccount", "gm set to Testaccount.|GM for the action set to Testaccount")
@@ -290,7 +289,7 @@ class RosterTests(ArxCommandTest):
         self.assertEqual(self.roster_entry2.roster, self.available_roster)
         entry = self.roster_entry2
         post = "%s no longer has an active player and is now available for applications." % entry.character
-        url = "http://play.arxmush.org" + entry.character.get_absolute_url()
+        url = "http://ithirmush.org" + entry.character.get_absolute_url()
         post += "\nCharacter page: %s" % url
         subject = "%s now available" % entry.character
         self.bboard.bb_post.assert_called_with(self.caller, post, subject=subject, poster_name="Roster")
@@ -445,7 +444,7 @@ class SocialTests(ArxCommandTest):
         self.call_cmd("/invite test org=1", 'That organization is already invited.')
         self.call_cmd("1", 'Name: test_event\nHosts: Testaccount\nGMs: Testaccount\nOrgs: test org\nLocation: Room\n'
                            'Event Scale: Grand\nDate: 12/12/30 12:00\nDesc:\ntest description\n'
-                           'Event Page: http://play.arxgame.org/dom/cal/detail/1/')
+                           'Event Page: http://ithirMUSH.org/dom/cal/detail/1/')
 
     @patch("world.dominion.models.get_week")
     @patch("server.utils.arx_utils.get_week")

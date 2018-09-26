@@ -730,8 +730,8 @@ class CmdInvestigate(InvestigationFormCommand):
     # noinspection PyAttributeOutsideInit
     def get_help(self, caller, cmdset):
         doc = self.__doc__
-        if caller.db.char_ob:
-            caller = caller.db.char_ob
+        if caller.char_ob:
+            caller = caller.char_ob
         self.caller = caller
         doc += "\n\nThe cost to make an investigation active is %s action points and %s resources." % (
             self.ap_cost, self.start_cost)
@@ -1510,7 +1510,7 @@ class CmdTheories(ArxPlayerCommand):
                         self.msg("That would cost %s action points." % cost)
                         return
                     try:
-                        if targ.db.char_ob.location != self.caller.db.char_ob.location:
+                        if targ.char_ob.location != self.caller.char_ob.location:
                             self.msg("You must be in the same room.")
                             continue
                     except AttributeError:

@@ -10,25 +10,26 @@
 /* ##### Common Styles ##### */
 
 body {
-  font-family: verdana, helvetica, arial, sans-serif;
+  font-family: "Palatino Linotype"
   font-size: 73%;  /* Enables font size scaling in MSIE */
   margin: 0;
   padding: 0;
+  background-color: #1c1c1c;
 }
 
 html > body {
-  font-size: 9pt;
+  font-size: 10pt;
 }
 
 acronym, .titleTip {
-  border-bottom: 1px dotted rgb(61,92,122);
+  border-bottom: 1px dotted rgb(140, 140, 140);
   cursor: help;
   margin: 0;
   padding: 0 0 0.4px 0;
 }
 
 a {
-  color: rgb(61,92,122);
+  color: rgb(255, 255, 255);
   background-color: transparent;
   text-decoration: underline;
   margin: 0;
@@ -36,7 +37,7 @@ a {
 }
 
 a:hover {
-  color: rgb(117,144,174);
+  color: rgb(183, 183, 183);
   text-decoration: none;
 }
 
@@ -49,6 +50,7 @@ ul {
   list-style-type: square;
   margin: 1em 0 1.5em 0;
   padding: 0;
+  text-align: center;
 }
 
 dl {
@@ -60,12 +62,14 @@ ul li {
   line-height: 1.5em;
   margin: 1.25ex 0 0 1.5em;
   padding: 0;
+  text-align: center;
 }
 
 ol li {
   line-height: 1.5em;
   margin: 1.25ex 0 0 2em;
   padding: 0;
+  text-align: center;
 }
 
 dt {
@@ -124,9 +128,10 @@ dd {
 
 .midHeader {
   color: white;
-  background-color: rgb(61,92,122);
+  background-color: transparent;
   margin: 0;
   padding: 0.26ex 10px;
+  text-align: center;
 }
 
 .headerTitle {
@@ -169,9 +174,11 @@ dd {
 
 .subHeader {
   color: white;
-  background-color: rgb(117,144,174);
+  background-color: transparent;
   margin: 0;
   padding: 0.5ex 10px;
+  text-align: center;
+  padding-top: 300px;
 }
 
 .subHeader a, .subHeader .highlight {
@@ -185,7 +192,7 @@ dd {
 }
 
 .subHeader a:hover, .subHeader .highlight {
-  color: rgb(255,204,0);
+  color: rgb(32, 127, 70);
   background-color: transparent;
   text-decoration: none;
 }
@@ -200,43 +207,48 @@ dd {
 }
 
 #main-copy h1 {
-  color: rgb(117,144,174);
+  color: rgb(255, 255, 255);
   background-color: transparent;
-  font-family: "trebuchet ms", verdana, helvetica, arial, sans-serif;
+  font-family: "Palatino Linotype";
   font-size: 200%;
-  margin: 0;
-  padding: 0;
+  margin: 5px;
+  padding: 0px;
+  text-align: center;
 }
 
 #main-copy h2 {
-  color: rgb(61,92,122);
+  color: rgb(255, 255, 255);
   background-color: transparent;
-  font-family: "trebuchet ms", verdana, helvetica, arial, sans-serif;
+  font-family: "Palatino Linotype";
   font-weight: normal;
-  font-size: 151%;
+  font-size: 125%;
   margin: 0;
-  padding: 1ex 0 0 0;
+  padding: 20px;
+  text-align: center;
 }
 
 #main-copy p {
+    color: #8c8c8c;
   line-height: 1.75em;
   margin: 1em 0 1.5em 0;
   padding: 0;
+    text-align: center;
 }
 
 .newsHeading {
-  color: rgb(61,92,122);
+  color: rgb(140, 140, 140);
   background-color: transparent;
-  font-family: "trebuchet ms", verdana, helvetica, arial, sans-serif;
+  font-family: "Palatino Linotype";
   font-size: 145%;
   text-decoration: none;
   margin: 0;
   padding: 1ex 0 0 0;
   display: block;
+    text-align: center;
 }
 
 .newsHeading:hover {
-  color: rgb(117,144,174);
+  color: rgb(183, 183, 183);
   background-color: transparent;
   text-decoration: underline;
 }
@@ -259,7 +271,7 @@ dd {
 }
 
 .more a {
-  color: rgb(61,92,122);
+  color: rgb(140, 140, 140);
   background-color: transparent;
   font-size: 92%;
   text-decoration: underline;
@@ -268,10 +280,14 @@ dd {
 }
 
 .more a:hover {
-  color: rgb(117,144,174);
+  color: rgb(183, 183, 183);
   text-decoration: none;
 }
 
+.container-fluid {
+    text-align: center;
+      padding: 0 1.9%;
+}
 .rowOfBoxes {
   clear: both;
 }
@@ -279,22 +295,22 @@ dd {
 .quarter, .oneThird, .half, .twoThirds, .fullWidth {
   margin: 1em 0;
   float: left;
-  border-left: 1px solid rgb(204,204,204);
+  border-left: 1px solid rgb(45, 45, 45);
 }
 
 .quarter {
-  width: 21%;
+  width: 25%;
   padding: 0 1.9%;
 }
 
 .oneThird {
-  width: 28%;
+  width: 33%;
   padding: 0 1.9%;
 }
 
 .half {
   text-align: justify;
-  width: 46%;
+  width: 50%;
   padding: 0 1.9%;
 }
 
@@ -305,14 +321,25 @@ dd {
 }
 
 .fullWidth {
-  text-align: justify;
-  width: 96%;
-  padding: 0 1.2em;
+  position: absolute;
+  left: 50%;
+  top: 0%;
+  -webkit-transform: translateY(-50%) translateX(-50%);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 280px;
+  /*text-align: center;
+  padding-top: 0px;
+ padding-right: auto;
+  padding-left: auto;
   border-left: none;
+  margin: auto;
+  flex-wrap: wrap; */
 }
 
 .filler {  /* use with an empty <p> element to add padding to the end of a text box */
-  border: 1px solid white;
+  border: 1px solid #2d2d2d;
 }
 
 .noBorderOnLeft {
@@ -320,7 +347,7 @@ dd {
 }
 
 .dividingBorderAbove {
-  border-top: 1px solid rgb(204,204,204);
+  border-top: 2px solid rgb(45, 45, 45);
 }
 
 /* More elegant alternatives to .noBorderOnLeft & .dividingBorderAbove
@@ -340,8 +367,8 @@ dd {
 /* ##### Footer ##### */
 
 #footer {
-  color: rgb(51,51,102);
-  background-color: rgb(239,239,239);
+  color: rgb(74, 74, 74);
+  background-color: #1c1c1c;
   font-size: 87%;
   text-align: center;
   line-height: 1.25em;
@@ -351,7 +378,7 @@ dd {
 }
 
 #footer a {
-  color: rgb(0,68,204);
+  color: rgb(74, 74, 74);
   background-color: transparent;
   text-decoration: underline;
 }

@@ -473,7 +473,7 @@ a.button {
     float: right;
     border: none;
     font-weight: 400;
-    background: #417690;
+    background: #24511F;
 }
 
 .button.default:active, input[type=submit].default:active,
@@ -729,7 +729,7 @@ a.deletelink:focus, a.deletelink:hover {
 }
 
 .object-tools a:focus, .object-tools a:hover {
-    background-color: #417690;
+    background-color: #24511F;
 }
 
 .object-tools a:focus{
@@ -824,7 +824,7 @@ table#change-history tbody th {
     width: auto;
     height: 40px;
     padding: 10px 40px;
-    background: #417690;
+    background: #24511F;
     line-height: 40px;
     color: #ffc;
     overflow: hidden;
