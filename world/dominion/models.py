@@ -490,7 +490,7 @@ class PlayerOrNpc(SharedMemoryModel):
 
 class AssetOwner(SharedMemoryModel):
     """
-    This model describes the owner of an asset, such as money
+    This model describe the owner of an asset, such as money
     or a land resource. The owner can either be an in-game object
     and use the object_owner field, or an organization and use
     the organization_owner field. The 'owner' property will check

@@ -77,8 +77,21 @@ _voc_start_skills_ = {"noble": {"diplomacy": 3, "leadership": 3, "etiquette": 2,
                                   "teaching": 3, "theology": 1, "law": 1, "etiquette": 1},
                       "steward": {"stewardship": 4, "economics": 1, "etiquette": 2, "law": 2,
                                   "agriculture": 2},
-                      "commoner": {"streetwise": 2, "stealth": 1, "brawl": 1, "athletics": 1, "survival": 2,
-                                   "investigation": 1, "dodge": 1, "occult": 1}}
+                      "scoundrel": {"streetwise": 2, "stealth": 1, "brawl": 1, "athletics": 1, "survival": 2,
+                                   "investigation": 1, "dodge": 1, "occult": 1},
+                      "hunter": {"ride": 1, "athletics": 1, "stealth": 2,
+                                "survival": 2, "archery": 1, "empathy": 1, "war": 1},
+                      "archer": {"archery": 3, "stealth": 3, "survival": 2,
+                                "ride": 1, "investigation": 1, "empathy": 1, "war": 1},
+                      "mage": {"abjuration": 3, "evocation": 1, "survival": 2,
+                                 "riddles": 1, "investigation": 1, "performance": 1, "prestedigitation": 1},
+                      "explorer": {"ride": 1, "athletics": 1, "stealth": 2,
+                                 "survival": 2, "archery": 1, "empathy": 1, "investigation": 3},
+                      "sailor": {"medium wpn": 3, "dodge": 1,
+                                  "sailing": 3, "survival": 1},
+                      "scout": {"ride": 1, "athletics": 1, "stealth": 2,
+                                 "survival": 2, "archery": 1, "investigation": 2},
+                      }
 
 
 def setup_voc(char, args):
@@ -550,7 +563,7 @@ class CmdGuestCharCreate(ArxPlayerCommand):
                 # noinspection PyProtectedMember
                 new_player.db._playable_characters.append(new_character)
                 new_player.db._last_puppet = new_character
-                new_player.char_ob = new_character
+                new_player.db.char_ob = new_character
                 # this is redundant, but shows up a few times in code, so just setting both
                 new_player.email = email
                 new_player.save()
@@ -572,6 +585,8 @@ class CmdGuestCharCreate(ArxPlayerCommand):
                 print("Error in creating a character/player combination for guest: %s" % err)
                 player.msg("Something went wrong during the character/player startup process." +
                            " Please tell an admin to look into it.")
+                import traceback
+                traceback.print_exc()
                 return
             player.db.char = new_character
             player.db.tutorial_stage = 1
@@ -639,8 +654,8 @@ class CmdGuestAddInput(ArxPlayerCommand):
             caller.db.tutorial_stage += 1
             char.player_ob.db.tutorial_stage = caller.db.tutorial_stage
         caller.msg("{cName{n set to {w%s{n." % char.key)
-        char.save()       
-        char.player_ob.char_ob = char
+        char.save()
+        char.player_ob.db.char_ob = char
         char.player_ob.save()
         caller.execute_cmd("look")
 
