@@ -311,6 +311,7 @@ class StaffCmdSet(CmdSet):
         self.add(staff_commands.CmdRelocateExit())
         self.add(staff_commands.CmdAdminKey())
         self.add(staff_commands.CmdAdminPropriety())
+        self.add(staff_commands.CmdSendEmail())
         self.add(extended_room.CmdExtendedDesc())
         self.add(xp.CmdAdjustSkill())
         self.add(xp.CmdAwardXP())

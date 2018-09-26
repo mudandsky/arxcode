@@ -5,6 +5,7 @@ Admin commands
 """
 from django.conf import settings
 from django.db.models import Q
+from django.core.mail import send_mail
 
 from evennia.server.sessionhandler import SESSIONS
 from evennia.utils import evtable
@@ -1695,3 +1696,62 @@ class CmdAdminPropriety(ArxPlayerCommand):
         else:
             tag.owners.remove(*owners)
             self.msg("Removed from %s: %s" % (tag, ", ".join(str(ob) for ob in owners)))
+            
+class CmdSendEmail(ArxCommand):
+    """
+    @sendemail
+
+    Usage:
+      @sendemail <character>=<subject>/<msg>
+      @sendemail/address <address>=<subject>/<msg>
+
+    Sends an e-mail either to the address associated with the character or to the address specified.  Sender will be the admin mail address.
+    """
+    key = "@sendemail"
+    locks = "cmd:perm(sendemail) or perm(Wizards)"
+    help_category = "Admin"
+
+    def func(self):
+        """Implements command"""
+        caller = self.caller
+        if not self.lhs or not self.rhs:
+            caller.msg("Usage: @sendemail <character>=<subject>/<msg>")
+            return
+       
+        if "address" in self.switches:
+            address = self.lhs
+            if not address:
+                return
+        else:
+            char = caller.search(self.lhs)
+            if not char:
+                caller.msg("No character found.")
+                return
+            player = self.caller.player.search(self.lhs)
+            if not player:
+                caller.msg("No player account found for that character.  Uh oh.")
+                return
+            address = player.email
+            if not address:
+                caller.msg("No e-mail address found for that character.  Whoops!")
+                return
+            
+        arglist = self.rhs.split("/")
+        if len(arglist) < 2:
+            caller.msg("Usage: @sendemail <character>=<subject>/<msg>")
+        else:
+            subject = arglist[1] 
+            message = arglist[2]
+        
+        msg_success = send_mail(subject, message, 'admin@ithirmush.org',
+                                        address, fail_silently=False)
+            except Exception as err:
+                caller.msg("Exception encountered while trying to mail: %s" % err)
+                return False
+            if msg_success:
+                caller.msg("Sent e-mail with subject '%s' to '%s'." % (subject, address))
+                return True
+            else:
+                caller.msg("Email failed for unknown reason.")
+                return False          
+        
