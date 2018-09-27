@@ -122,11 +122,14 @@ LOG_FORMAT = "%(asctime)s: %(message)s"
 DATE_FORMAT = "%m/%d/%Y %I:%M:%S"
 GLOBAL_DOMAIN_INCOME_MOD = 0.75
 
-# SECRET_KEY = config('gjhdsgvucyvb23iybwei3kj3hbiewub')
+# SECRET_KEY = config('sefsefiwwj3 jnwidufhjwsdgasdfasdfa4545_oifej whewasdgasdgasdgiu hwejfpoiwjrpw09&4er43233fwefwfw')
 # HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
-# import cloudinary
-# cloudinary.config(cloud_name=config('ithirmush'),
-#                 api_key=config('951554588875841'), api_secret=config('ZlnkSDzTw12Ms39M22Gwjj8anLE'))
+import cloudinary
+cloudinary.config(
+     cloud_name='ithirmush-org',
+     api_key='951554588875841',
+     api_secret='ZlnkSDzTw12Ms39M22Gwjj8anLE')
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.gmail.com'
