@@ -24,7 +24,7 @@
         <div class="row"><div class="text-center"><q><em>{{ character.db.quote }}</em></q></div></div>
     {% endif %}
 	<div class="row">
-	
+	  <br></br>
     {% if character.portrait %}
 	<div class="col-md-7 text-center">
       {% if character.portrait.alt_text %}
@@ -34,7 +34,7 @@
       {% endif %}
 	</div>
     {% endif %}
-    <div class="col-md-5 text-left">
+    <div class="col-md-3 text-left">
     <p><b>Social Rank:</b> {{ character.db.social_rank }}<br><b>Concept:</b> {{ character.db.concept }}<br>
 	{% if character.db.real_concept and show_hidden %}<b>Real Concept:</b> {{ character.db.real_concept}}<br>{% endif %}
     <b>Fealty:</b> 
@@ -97,47 +97,47 @@
     <table class="table table-bordered">
     <caption><h2 class="text-center">Stats</h2></caption>
       <thead>
-        <tr bgcolor="#333333">
-          <th width="20%" class="success">Physical</th>
-          <th width="10%" class="success">Value</th>
-          <th width="20%" class="success">Social</th>
-          <th width="10%" class="success">Value</th>
-          <th width="20%" class="success">Mental</th>
-          <th width="10%" class="success">Value</th>
-          <th width="20%" class="success">Special</th>
-          <th width="10%" class="success">Value</th>
+        <tr bgcolor="#336666">
+          <th width="20%">Physical</th>
+          <th width="10%">Value</th>
+          <th width="20%">Social</th>
+          <th width="10%">Value</th>
+          <th width="20%">Mental</th>
+          <th width="10%">Value</th>
+          <th width="20%">Special</th>
+          <th width="10%">Value</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="info">Strength</td>
-          <td class="info">{{ character.db.strength }}</td>
-          <td class="info">Charm</td>
-          <td class="info">{{ character.db.charm }}</td>
-          <td class="info">Intellect</td>
-          <td class="info">{{ character.db.intellect }}</td>
-          <td class="info">Mana</td>
-          <td class="info">{{ character.db.mana }}</td>
+        <tr bgcolor="#336633">
+          <td>Strength</td>
+          <td>{{ character.db.strength }}</td>
+          <td>Charm</td>
+          <td>{{ character.db.charm }}</td>
+          <td>Intellect</td>
+          <td>{{ character.db.intellect }}</td>
+          <td>Mana</td>
+          <td>{{ character.db.mana }}</td>
         </tr>
-        <tr>
-          <td class="info">Dexterity</td>
-          <td class="info">{{ character.db.dexterity }}</td>
-          <td class="info">Command</td>
-          <td class="info">{{ character.db.command }}</td>
-          <td class="info">Perception</td>
-          <td class="info">{{ character.db.perception }}</td>
-          <td class="info">Luck</td>
-          <td class="info">{{ character.db.luck }}</td>
+        <tr bgcolor="#336633">
+          <td>Dexterity</td>
+          <td>{{ character.db.dexterity }}</td>
+          <td>Command</td>
+          <td>{{ character.db.command }}</td>
+          <td>Perception</td>
+          <td>{{ character.db.perception }}</td>
+          <td>Luck</td>
+          <td>{{ character.db.luck }}</td>
         </tr>
-        <tr>
-          <td class="info">Stamina</td>
-          <td class="info">{{ character.db.stamina }}</td>
-          <td class="info">Composure</td>
-          <td class="info">{{ character.db.composure }}</td>
-          <td class="info">Wits</td>
-          <td class="info">{{ character.db.wits }}</td>
-          <td class="info">Willpower</td>
-          <td class="info">{{ character.db.willpower }}</td>
+        <tr bgcolor="#336633">
+          <td>Stamina</td>
+          <td>{{ character.db.stamina }}</td>
+          <td>Composure</td>
+          <td>{{ character.db.composure }}</td>
+          <td>Wits</td>
+          <td>{{ character.db.wits }}</td>
+          <td>Willpower</td>
+          <td>{{ character.db.willpower }}</td>
         </tr>
       </tbody>
     </table>
@@ -174,28 +174,29 @@
     {% endif %}
 	-->
     <div class="row">
-        <div class="col-md-4 text-center">
-            <h1 class="text-center"><a href="{% url 'character:gallery' character.id %}"><span class="label label-primary">Gallery</span></a></h1>
+        <div class="col-sm-3 text-center">
+            <h1 class="text-center"><a href="{% url 'character:gallery' character.id %}"><span class="label label-success">Gallery</span></a></h1>
             </div>
-        <div class="col-md-4 text-center">
-            <h1 class="text-center"><a href="{% url 'character:character_story' character.id %}"><span class="label label-primary">Past Actions</span></a></h1>
+        <div class="col-sm-3 text-center">
+            <h1 class="text-center"><a href="{% url 'character:character_story' character.id %}"><span class="label label-success">Past Actions</span></a></h1>
             </div>
         {% if show_hidden %}
-            <div class="col-md-4 text-center">
+            <div class="col-sm-3 text-center">
                 <h1 class="text-center"><a href="{% url 'character:list_flashbacks' character.id %}">
-                    <span class="label label-primary">Flashbacks</span></a></h1></div>
-            <div class="col-md-4 text-center">
+                    <span class="label label-success">Flashbacks</span></a></h1></div>
+            <div class="col-sm-3 text-center">
                 <h1 class="text-center"><a href="{% url 'character:list_clues' character.id %}">
-                    <span class="label label-primary">Clues</span></a></h1></div>
+                    <span class="label label-success">Clues</span></a></h1></div>
         {% endif %}
     </div>
+      <br></br>
     <div class="row">
-        <div class="col-md-12 text-center">
-            <button data-toggle="collapse" data-target="#Impressions">
-            <h2>First Impressions</h2></button>
+        <div>
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#Impressions">
+            <h1>First Impressions</h1></button>
             <div id="Impressions" class="collapse">
                 <table class="table table-hover">
-                <tr class="danger">
+                <tr bgcolor="#336666">
                     <td>Name</td>
                     <td>Summary</td>
                 </tr>

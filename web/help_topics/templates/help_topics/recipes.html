@@ -23,7 +23,7 @@
     </form>
 	<div id="Recipes" class="collapse in">
 	<table class="table table-hover">
-	<tr class="danger">
+	<tr bgcolor="#336666">
 		<td>Name</td>
 		<td>Ability</td>
 		<td>Difficulty</td>
@@ -33,7 +33,7 @@
 	</tr>
 	{% for recipe in all_recipes %}
 		{% if recipe in known_recipes %}
-		<tr class="success">
+		<tr bgcolor="#336666">
 		{% else %}
 		<tr>
 		{% endif %}
@@ -51,7 +51,7 @@
     <h2>Crafting Materials</h2></button><hr />
 	<div id="Materials" class="collapse in">
 	<table class="table table-hover">
-	<tr class="danger">
+	<tr bgcolor="#336666">
 		<td>Name</td>
 		<td>Value</td>
 		<td>Category</td>
