@@ -1724,10 +1724,10 @@ class CmdSendEmail(ArxCommand):
             if not address:
                 return
         else:
-            char = caller.search(self.lhs)
-            if not char:
-                caller.msg("No character found.")
-                return
+  #          char = caller.search(self.lhs)
+  #          if not char:
+  #              caller.msg("No character found.")
+  #              return
             player = self.caller.player.search(self.lhs)
             if not player:
                 caller.msg("No player account found for that character.  Uh oh.")
