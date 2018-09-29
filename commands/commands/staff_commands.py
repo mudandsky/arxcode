@@ -1697,6 +1697,7 @@ class CmdAdminPropriety(ArxPlayerCommand):
             tag.owners.remove(*owners)
             self.msg("Removed from %s: %s" % (tag, ", ".join(str(ob) for ob in owners)))
 
+
 class CmdSendEmail(ArxCommand):
     """
     @sendemail
@@ -1740,17 +1741,18 @@ class CmdSendEmail(ArxCommand):
         if len(arglist) < 2:
             caller.msg("Usage: @sendemail <character>=<subject>/<msg>")
         else:
-            subject = arglist[1]
-            message = arglist[2]
+            subject = arglist[0]
+            message = arglist[1]
 
-        msg_success = send_mail(subject, message, 'admin@ithirmush.org',
-                                        address, fail_silently=False)
-            except Exception as err:
-                caller.msg("Exception encountered while trying to mail: %s" % err)
-                return False
-            if msg_success:
-                caller.msg("Sent e-mail with subject '%s' to '%s'." % (subject, address))
-                return True
-            else:
-                caller.msg("Email failed for unknown reason.")
-                return False
+        try:
+            msg_success = send_mail(subject, message, 'admin@ithirmush.org',[address], fail_silently=False)
+        except Exception as err:
+            caller.msg("Exception encountered while trying to mail: %s" % err)
+            return False
+        if msg_success:
+            caller.msg("Sent e-mail with subject '%s' to '%s'." % (subject, address))
+            return True
+        else:
+            caller.msg("Email failed for unknown reason.")
+            return False
+
