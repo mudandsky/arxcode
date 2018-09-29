@@ -58,41 +58,41 @@ class EventManager(Script):
         then another announcement if it's starting under 10 minutes. If under 5
         minutes, we schedule it to start.
         """
-        idles = self.db.idle_events
-        actives = self.db.active_events
-        for eventid in idles:
+        for eventid in self.db.idle_events:
             # if the event has been idle for an hour, close it down
-            if idles[eventid] >= 12:
+            if self.db.idle_events[eventid] >= 12:
                 # noinspection PyBroadException
                 try:
                     event = RPEvent.objects.get(id=eventid)
                     self.finish_event(event)
                 except Exception:
                     traceback.print_exc()
-                    del idles[eventid]
+                    del self.db.idle_events[eventid]
         # copy all active events to idle events for next check
-        for eventid in actives:
-            idles[eventid] = idles.get(eventid, 0) + 1
+        for eventid in self.db.active_events:
+            self.db.idle_events[eventid] = self.db.idle_events.get(eventid, 0) + 1
         # check for new events to announce
-        upcoming = RPEvent.objects.filter(finished=False).exclude(id__in=actives)
+
+        upcoming = RPEvent.objects.filter(finished=False)
         for event in upcoming:
+            if event.id in self.db.active_events:
+                continue
             diff = time_from_now(event.date).total_seconds()
             if diff < 0:
-                self.confirm_event_location(event)
                 self.start_event(event)
-            elif diff < 300:
-                self.confirm_event_location(event)
+                continue
+            if diff < 300:
                 if event.id not in self.db.pending_start:
                     reactor.callLater(diff, delayed_start, event.id)
                     self.db.pending_start[event.id] = diff
-            elif diff < 600:
-                self.confirm_event_location(event)
+                continue
+            if diff < 600:
                 self.announce_upcoming_event(event, diff)
-            elif 1500 < diff <= 1800:
-                self.confirm_event_location(event)
+                continue
+            if 1500 < diff <= 1800:
                 self.announce_upcoming_event(event, diff)
-            elif 3300 < diff <= 3600:
-                self.confirm_event_location(event)
+                continue
+            if 3300 < diff <= 3600:
                 self.announce_upcoming_event(event, diff)
 
     @staticmethod
@@ -104,10 +104,13 @@ class EventManager(Script):
         if event.public_event:
             SESSIONS.announce_all(announce_msg)
         else:
-            event.make_announcement(announce_msg)
+            announce_msg = "{y(Private Message) " + announce_msg
+            for ob in event.dompcs.all():
+                try:
+                    ob.player.msg(announce_msg)
+                except AttributeError:
+                    continue
 
-    @staticmethod
-    def confirm_event_location(event):
         if event.location is None:
             if event.plotroom is not None:
                 event.create_room()
@@ -134,7 +137,7 @@ class EventManager(Script):
 
     # noinspection PyBroadException
     def start_event(self, event, location=None):
-        # see if this was called from callLater, and if so, remove reference to it
+        # see if this was called from callLater, and if so, remove reference to it      
         if event.id in self.db.pending_start:
             del self.db.pending_start[event.id]
 
@@ -154,10 +157,11 @@ class EventManager(Script):
                 event.save()
         else:
             start_str = "%s has started." % event.name
+        border = "{w***********************************************************{n\n"
         if event.public_event:
-            border = "{w***********************************************************{n\n"
-            start_str = border + start_str + "\n" + border
+            SESSIONS.announce_all(border)
             SESSIONS.announce_all(start_str)
+            SESSIONS.announce_all(border)
         elif event.location:
             try:
                 event.location.msg_contents(start_str, options={'box': True})
@@ -171,15 +175,18 @@ class EventManager(Script):
             event.date = now
             event.save()
         # set up log for event
-        open_logs = self.ndb.open_logs or []
-        open_gm_logs = self.ndb.open_gm_logs or []
         # noinspection PyBroadException
-        with open(self.get_log_path(event.id), 'a+') as log:
+        try:
+            log = open(self.get_log_path(event.id), 'a+')
+            gmlog = open(self.get_gmlog_path(event.id), 'a+')
+            open_logs = self.ndb.open_logs or []
             open_logs.append(log)
-        with open(self.get_gmlog_path(event.id), 'a+') as gmlog:
+            self.ndb.open_logs = open_logs
+            open_gm_logs = self.ndb.open_gm_logs or []
             open_gm_logs.append(gmlog)
-        self.ndb.open_logs = open_logs
-        self.ndb.open_gm_logs = open_gm_logs
+            self.ndb.open_gm_logs = open_gm_logs
+        except Exception:
+            traceback.print_exc()
 
     def finish_event(self, event):
         loc = self.get_event_location(event)
@@ -207,6 +214,13 @@ class EventManager(Script):
             del self.db.idle_events[event.id]
         self.do_awards(event)
         # noinspection PyBroadException
+        try:
+            log = open(self.get_log_path(event.id), 'r')
+            log.close()
+            gmlog = open(self.get_gmlog_path(event.id), 'r')
+            gmlog.close()
+        except Exception:
+            traceback.print_exc()
         self.delete_event_post(event)
 
     def move_event(self, event, new_location):
@@ -219,12 +233,16 @@ class EventManager(Script):
 
     def add_msg(self, eventid, msg, sender=None):
         # reset idle timer for event
+        msg = parse_ansi(msg, strip_ansi=True)
         self.db.idle_events[eventid] = 0
         event = RPEvent.objects.get(id=eventid)
-        msg = parse_ansi(msg, strip_ansi=True)
-        msg = "\n" + msg + "\n"
-        with open(self.get_log_path(eventid), 'a+') as log:
+        # noinspection PyBroadException
+        try:
+            log = open(self.get_log_path(eventid), 'a+')
+            msg = "\n" + msg + "\n"
             log.write(msg)
+        except Exception:
+            traceback.print_exc()
         try:
             dompc = sender.player.Dominion
             if dompc not in event.attended:
@@ -234,10 +252,14 @@ class EventManager(Script):
 
     def add_gmnote(self, eventid, msg):
         msg = parse_ansi(msg, strip_ansi=True)
-        msg = "\n" + msg + "\n"
-        with open(self.get_gmlog_path(eventid), 'a+') as log:
+        # noinspection PyBroadException
+        try:
+            log = open(self.get_gmlog_path(eventid), 'a+')
+            msg = "\n" + msg + "\n"
             log.write(msg)
-
+        except Exception:
+            traceback.print_exc()
+            
     def add_gemit(self, msg):
         msg = parse_ansi(msg, strip_ansi=True)
         for event_id in self.db.active_events:

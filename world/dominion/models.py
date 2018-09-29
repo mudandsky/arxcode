@@ -60,7 +60,7 @@ from evennia.locks.lockhandler import LockHandler
 from evennia.utils.utils import lazy_property
 from evennia.utils import create
 from django.db import models
-from django.db.models import Q, Count, F, Sum
+from django.db.models import Q, Count
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
@@ -530,18 +530,7 @@ class AssetOwner(SharedMemoryModel):
         if hasattr(self, '_cached_propriety'):
             return self._cached_propriety
         percentage = max(sum(ob.percentage for ob in self.proprieties.all()), -100)
-        # if we have negative fame, then have negative propriety make the value more negative
-        if self.fame < 0:
-            percentage *= -1
-        value = int(self.fame * percentage/100.0)
-        if self.player:
-            favor = (self.player.reputations.filter(Q(favor__gt=0) | Q(favor__lt=0))
-                                            .annotate(val=((F('organization__assets__fame')
-                                                           + F('organization__assets__legend'))/20) * F('favor')
-                                                      )
-                                            .aggregate(Sum('val'))).values()[0] or 0
-            value += favor
-        self._cached_propriety = value
+        self._cached_propriety = int(self.fame * percentage/100.0)
         return self._cached_propriety
 
     @property
@@ -3139,49 +3128,9 @@ class Reputation(SharedMemoryModel):
     affection = models.IntegerField(default=0, blank=0)
     # positive respect is respect/fear, negative is contempt/dismissal
     respect = models.IntegerField(default=0, blank=0)
-    favor = models.IntegerField(help_text="A percentage of the org's prestige applied to player's propriety.",
-                                default=0)
-    npc_gossip = models.TextField(blank=True)
-    date_gossip_set = models.DateTimeField(null=True)
-
-    def __str__(self):
-        return "%s for %s (%s)" % (self.player, self.organization, self.favor)
 
     class Meta:
         unique_together = ('player', 'organization')
-
-    def save(self, *args, **kwargs):
-        """Saves changes and wipes cache"""
-        super(Reputation, self).save(*args, **kwargs)
-        try:
-            self.player.assets.clear_cache()
-        except (AttributeError, ValueError, TypeError):
-            pass
-
-    @property
-    def propriety_amount(self):
-        """Amount that we modify propriety by for our player"""
-        if not self.favor:
-            return 0
-        try:
-            return self.favor * (self.organization.assets.fame + self.organization.assets.legend)/20
-        except AttributeError:
-            return 0
-
-    @property
-    def favor_description(self):
-        """String display of our favor"""
-        msg = "%s (%s)" % (self.organization, self.propriety_amount)
-        if self.npc_gossip:
-            msg += ": %s" % self.npc_gossip
-        return msg
-
-    def wipe_favor(self):
-        """Wipes out our favor and npc_gossip string"""
-        self.favor = 0
-        self.npc_gossip = ""
-        self.date_gossip_set = None
-        self.save()
 
 
 class Fealty(SharedMemoryModel):
@@ -3524,7 +3473,7 @@ class Organization(InformMixin, SharedMemoryModel):
     @property
     def online_members(self):
         """Returns members who are currently online"""
-        return self.active_members.filter(player__player__db_is_connected=True).distinct()
+        return self.active_members.filter(player__player__db_is_connected=True)
 
     @property
     def offline_members(self):
@@ -5689,9 +5638,7 @@ class RPEvent(SharedMemoryModel):
         try:
             from typeclasses.scripts.event_manager import LOGPATH
             filename = LOGPATH + "event_log_%s.txt" % self.id
-            with open(filename) as log:
-                msg = log.read()
-            return msg
+            return open(filename).read()
         except IOError:
             return ""
 
@@ -5831,15 +5778,6 @@ class RPEvent(SharedMemoryModel):
             org.assets.social += part.social
             org.assets.save()
         part.delete()
-
-    def make_announcement(self, msg):
-        from typeclasses.accounts import Account
-        msg = "{y(Private Message) %s" % msg
-        guildies = Member.objects.filter(organization__in=self.orgs.all(), deguilded=False)
-        all_dompcs = PlayerOrNpc.objects.filter(Q(id__in=self.dompcs.all()) | Q(memberships__in=guildies))
-        audience = Account.objects.filter(Dominion__in=all_dompcs, db_is_connected=True).distinct()
-        for ob in audience:
-            ob.msg(msg)
 
 
 class PCEventParticipation(SharedMemoryModel):

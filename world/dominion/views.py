@@ -108,7 +108,8 @@ class RPEventDetailView(DetailView):
             else:
                 try:
                     ob = self.get_object()
-                    if ob.can_view(user):
+                    dompc = user.Dominion
+                    if dompc in ob.dompcs.all():
                         can_view = True
                 except AttributeError:
                     pass
