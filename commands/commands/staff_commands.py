@@ -1696,7 +1696,7 @@ class CmdAdminPropriety(ArxPlayerCommand):
         else:
             tag.owners.remove(*owners)
             self.msg("Removed from %s: %s" % (tag, ", ".join(str(ob) for ob in owners)))
-            
+
 class CmdSendEmail(ArxCommand):
     """
     @sendemail
@@ -1717,7 +1717,7 @@ class CmdSendEmail(ArxCommand):
         if not self.lhs or not self.rhs:
             caller.msg("Usage: @sendemail <character>=<subject>/<msg>")
             return
-       
+
         if "address" in self.switches:
             address = self.lhs
             if not address:
@@ -1735,14 +1735,14 @@ class CmdSendEmail(ArxCommand):
             if not address:
                 caller.msg("No e-mail address found for that character.  Whoops!")
                 return
-            
+
         arglist = self.rhs.split("/")
         if len(arglist) < 2:
             caller.msg("Usage: @sendemail <character>=<subject>/<msg>")
         else:
-            subject = arglist[1] 
+            subject = arglist[1]
             message = arglist[2]
-        
+
         msg_success = send_mail(subject, message, 'admin@ithirmush.org',
                                         address, fail_silently=False)
             except Exception as err:
@@ -1753,5 +1753,4 @@ class CmdSendEmail(ArxCommand):
                 return True
             else:
                 caller.msg("Email failed for unknown reason.")
-                return False          
-        
+                return False
