@@ -122,20 +122,36 @@ LOG_FORMAT = "%(asctime)s: %(message)s"
 DATE_FORMAT = "%m/%d/%Y %I:%M:%S"
 GLOBAL_DOMAIN_INCOME_MOD = 0.75
 
-# SECRET_KEY = config('sefsefiwwj3 jnwidufhjwsdgasdfasdfa4545_oifej whewasdgasdgasdgiu hwejfpoiwjrpw09&4er43233fwefwfw')
+SECRET_KEY = config('SECRET_KEY')
 # HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
 import cloudinary
-cloudinary.config(
-     cloud_name='ithirmush-org',
-     api_key='951554588875841',
-     api_secret='ZlnkSDzTw12Ms39M22Gwjj8anLE')
-
+cloudinary.config(cloud_name=config('CLOUDINARY_NAME'),
+                  api_key=config('CLOUDINARY_API_KEY'), api_secret=config('CLOUDINARY_API_SECRET'))
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-relay.gmail.com'
-EMAIL_PORT = 25
-EMAIL_HOST_USER = 'admin@ithirmush.org'
-EMAIL_HOST_PASSWORD = 'XImmort@lElfX10'
-DEFAULT_FROM_EMAIL = 'admin@ithirmush.org'
-ADMINS = (config('Ithir Admin', default=''), config('admin@ithirmush.org', default=''))
+EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=25)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
+ADMINS = (config('ADMIN_NAME', default=''), config('ADMIN_EMAIL', default=''))
 SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
+
+#SECRET_KEY = config('SECRET_KEY')
+# HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
+#import cloudinary
+#cloudinary.config(
+#     cloud_name='CLOUDINARY_NAME',
+#     api_key='CLOUDINARY_API_KEY',
+#     api_secret='CLOUDINARY_API_SECRET')
+
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'EMAIL_HOST'
+# EMAIL_PORT = 25
+# EMAIL_HOST_USER = 'admin@ithirmush.org'
+# EMAIL_HOST_PASSWORD = 'XImmort@lElfX10'
+# DEFAULT_FROM_EMAIL = 'admin@ithirmush.org'
+# ADMINS = (config('Ithir Admin', default=''), config('admin@ithirmush.org', default=''))
+# SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
+
