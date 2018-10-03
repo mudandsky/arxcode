@@ -47,7 +47,7 @@ ol {
 }
 
 ul {
-  list-style-type: square;
+  list-style-type: none;
   margin: 1em 0 1.5em 0;
   padding: 0;
   text-align: center;
@@ -328,7 +328,7 @@ dd {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 280px;
+  padding-top: 260px;
   /*text-align: center;
   padding-top: 0px;
  padding-right: auto;
@@ -385,4 +385,28 @@ dd {
 
 #footer a:hover {
   text-decoration: none;
+}
+
+@media (max-width: 500px) {
+    .oneThird {
+        width: 100%;
+        border-left: none;
+    }
+
+    .quarter {
+        width: 100%;
+        border-left: none;
+    }
+
+    .headerTitle {
+        text-align: center;
+    }
+
+    .headerSubTitle {
+        text-align: right;
+    }
+
+    .headerLinks {
+        position: static;
+    }
 }
