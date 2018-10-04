@@ -1,7 +1,7 @@
 from base_settings import *
     
 TELNET_PORTS = [4000]
-WEBSERVER_PORTS = [(4001, 4002)]
+WEBSERVER_PORTS = [(4001, 4005)]
 SERVERNAME = "Ithir"
 GAME_SLOGAN = "The Return to Glory"
 
