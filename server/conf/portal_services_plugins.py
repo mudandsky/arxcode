@@ -15,10 +15,13 @@ process.
 """
 
 
-def start_plugin_services(portal):
-    """
-    This hook is called by Evennia, last in the Portal startup process.
+from evennia.contrib.egi_client import EvenniaGameIndexService
 
-    portal - a reference to the main portal application.
+def start_plugin_services(server):
     """
-    pass
+    This hook is called by Evennia, last in the Server startup process.
+
+    server - a reference to the main server application.
+    """
+    egi_service = EvenniaGameIndexService()
+    server.services.addService(egi_service)

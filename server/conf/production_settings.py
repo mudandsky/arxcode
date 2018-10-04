@@ -21,14 +21,14 @@ MAX_CHAR_LIMIT = 8000
 ######################################################################
 if SEND_GAME_INDEX:
     GAME_INDEX_LISTING = {
-        'game_status': 'beta',
+        'game_status': 'pre-alpha',
         # Optional, comment out or remove if N/A
         'game_website': 'http://ithirmush.org',
-        'short_description': 'MUX-style game in an original fantasy setting',
+        'short_description': 'High fantasy MUSH in an original setting',
         # Optional but highly recommended. Markdown is supported.
         'long_description': (
             "Ithir is a MUX-style game in an original high-fantasy setting, "
-            "inspired by Tolkien and sent in an Elven society at odds. "
+            "inspired by Tolkien and set in an Elven society at odds. "
         ),
         'listing_contact': 'admin@ithirmush.org',
         # At minimum, specify this or the web_client_url options. Both is fine, too.

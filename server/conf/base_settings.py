@@ -137,21 +137,3 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
 ADMINS = (config('ADMIN_NAME', default=''), config('ADMIN_EMAIL', default=''))
 SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
 
-#SECRET_KEY = config('SECRET_KEY')
-# HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
-#import cloudinary
-#cloudinary.config(
-#     cloud_name='CLOUDINARY_NAME',
-#     api_key='CLOUDINARY_API_KEY',
-#     api_secret='CLOUDINARY_API_SECRET')
-
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'EMAIL_HOST'
-# EMAIL_PORT = 25
-# EMAIL_HOST_USER = 'admin@ithirmush.org'
-# EMAIL_HOST_PASSWORD = 'XImmort@lElfX10'
-# DEFAULT_FROM_EMAIL = 'admin@ithirmush.org'
-# ADMINS = (config('Ithir Admin', default=''), config('admin@ithirmush.org', default=''))
-# SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
-
