@@ -2835,7 +2835,7 @@ class CmdLanguages(ArxCommand):
     def list_languages(self):
         """Lists the languages the caller can speak"""
         known = [ob.capitalize() for ob in self.caller.languages.known_languages]
-        known += ["Arvani"]
+        known += ["Elvish"]
         self.msg("{wYou can currently speak:{n %s" % ", ".join(known))
         self.msg("You can learn %s additional languages." % self.caller.languages.additional_languages)
 
@@ -2860,9 +2860,9 @@ class CmdLanguages(ArxCommand):
             return
         if not self.switches:
             args = self.args.lower()
-            if args == "arvani" or args == "common":
+            if args == "elvish" or args == "common":
                 self.caller.attributes.remove("currently_speaking")
-                self.msg("{wYou are now speaking Arvani.{n")
+                self.msg("{wYou are now speaking Elvish.{n")
                 return
             if args not in self.caller.languages.known_languages:
                 self.msg("You cannot speak %s." % self.args)

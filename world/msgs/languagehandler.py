@@ -21,7 +21,7 @@ class LanguageHandler(object):
 
     @property
     def current_language(self):
-        return self.obj.db.currently_speaking or "arvani"
+        return self.obj.db.currently_speaking or "elvish"
 
     @property
     def max_languages(self):
