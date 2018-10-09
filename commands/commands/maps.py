@@ -83,7 +83,7 @@ class CmdMapCreate(ArxCommand):
         # Create and set the map up
         lockstring = "view:all();delete:perm(Immortals);edit:id(%s)" % caller.id
         new_map = create.create_object(typeclass, name, location=caller,
-                                         home = "#4", permissions=None,
+                                         home = "#448", permissions=None,
                                          locks=lockstring, aliases=None, destination=None,
                                          report_to=None, nohome=False)
         new_map.desc = description

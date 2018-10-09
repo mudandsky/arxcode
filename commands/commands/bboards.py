@@ -569,7 +569,7 @@ class CmdBBCreate(ArxCommand):
 
         typeclass = BOARD_TYPECLASS
         new_board = create.create_object(typeclass, bboardname, location=caller,
-                                         home="#4", permissions=None,
+                                         home="#448", permissions=None,
                                          locks=lockstring, aliases=None, destination=None,
                                          report_to=None, nohome=False)
         new_board.desc = description
