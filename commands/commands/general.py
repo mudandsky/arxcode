@@ -1733,3 +1733,52 @@ class CmdTidyUp(ArxCommand):
             self.msg("No characters were found to be idle.")
         else:
             self.msg("The following characters were removed: %s" % ", ".join(ob.name for ob in found))
+
+
+class CmdTimeZone(ArxCommand):
+    """
+    Sets timezone for character to display calendar entries in
+    the designated timezone instead of server time (GMT -9: US/Pacific)
+
+    Usage:
+        +timezone
+        +timezone/list
+        +timezone/set <timezone choice>
+
+    +timezone will return the current timezone setting for the character.
+    +timezone/list will display the list of available timezones in a numbered list.
+    +timezone/set will set the timezone to the designated number from the list
+
+    """
+    key = "+timezone"
+    locks = "cmd:all()"
+
+    def func(self):
+        """Executes timezone command"""
+        caller = self.caller
+        zoneline = ["US/Pacific",
+                    "US/Mountain",
+                    "US/Central",
+                    "US/Eastern"]
+        if "list" in self.switches:
+            number = 1
+            caller.msg("Available Time Zones:")
+            for zone in zonelist:
+                caller.msg("%n - %z" % (number,zone))
+                number += 1
+            return
+        if "set" in self.switches:
+            if not self.args:
+                caller.msg("Usage: +timezone/set <choice>")
+                return
+            choice = caller.search(self.args)
+            if choice < 0 or choice > len(zonelist):
+                caller.msg("Please select from timezones in list.  See +timezone/list")
+                return
+            choice = choice - 1
+            caller.db.timezone = zonelist(choice)
+            caller.msg("Timezone set to %s" % zonelist(choice))
+            return
+        else:
+            caller.msg("Timezone is set to %s" % caller.db.timezone)
+            return

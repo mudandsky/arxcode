@@ -53,6 +53,7 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
         self.db.dice_string = "Default Dicestring"
         self.db.health_status = "alive"
         self.db.sleep_status = "awake"
+        self.db.timezone="US/Pacific"
         self.db.skills = {}
         self.db.abilities = {}
         self.at_init()

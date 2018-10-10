@@ -6,6 +6,7 @@ import time
 import random
 from datetime import datetime, timedelta
 from functools import reduce
+from pytz import timezone
 
 from django.conf import settings
 from django.db.models import Q
@@ -1366,6 +1367,7 @@ class CmdCalendar(ArxPlayerCommand):
     def do_display_switches(self):
         """Displays our project if we have one"""
         proj = self.caller.ndb.event_creation
+        timezone = self.caller.db.timezone
         if not self.args and not self.switches and proj:
             self.display_project()
             return
@@ -1376,22 +1378,24 @@ class CmdCalendar(ArxPlayerCommand):
         if "old" in self.switches:  # display finished events
             finished = qs.filter(finished=True).distinct().order_by('-date')
             from server.utils import arx_more
-            table = self.display_events(finished)
+            table = self.display_events(finished, timzone)
             arx_more.msg(self.caller, "{wOld events:\n%s" % table, justify_kwargs=False)
         else:  # display upcoming events
             unfinished = qs.filter(finished=False).distinct().order_by('date')
-            table = self.display_events(unfinished)
+            table = self.display_events(unfinished, timezone)
             self.msg("{wUpcoming events:\n%s" % table, options={'box': True})
 
     @staticmethod
-    def display_events(events):
+    def display_events(events, zone):
         """Displays table of events"""
         table = PrettyTable(["{wID{n", "{wName{n", "{wDate{n", "{wHost{n", "{wPublic{n"])
         for event in events:
             host = event.main_host or "No host"
             host = str(host).capitalize()
             public = "Public" if event.public_event else "Not Public"
-            table.add_row([event.id, event.name[:25], event.date.strftime("%x %H:%M"), host, public])
+            displaytime = timezone(zone).localize(event.date)
+            table.add_row([event.id, event.name[:25], displaytime.strftime("%x %H:%M"),
+                            host, public])
         return table
 
     def do_target_event_switches(self):

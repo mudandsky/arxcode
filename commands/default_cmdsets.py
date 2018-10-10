@@ -158,6 +158,7 @@ class AccountCmdSet(cmdset_account.AccountCmdSet):
         self.add(general.CmdGradient())
         self.add(general.CmdInform())
         self.add(general.CmdGameSettings())
+        self.add(general.CmdTimeZone())
 
     @check_errors
     def add_bboard_commands(self):
