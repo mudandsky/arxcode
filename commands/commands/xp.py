@@ -619,43 +619,43 @@ class CmdAdjustSkill(ArxPlayerCommand):
             inform_staff("%s set %s's %s skill to %s." % (caller, char, skill, rhs))
         
 
-class CmdVoteXP(ArxPlayerCommand):
-    """
-    vote
+# class CmdVoteXP(ArxPlayerCommand):
+#    """
+#    vote
 
-    Usage:
-        vote <player>
-        unvote <player>
+#    Usage:
+#        vote <player>
+#        unvote <player>
 
-    Lodges a vote for a character to receive an additional xp point for
-    this week due to excellent RP. Please vote for players who have
-    impressed you in RP, rather than just your friends. Voting for your
-    alts is obviously against the rules.
+#    Lodges a vote for a character to receive an additional xp point for
+#    this week due to excellent RP. Please vote for players who have
+#    impressed you in RP, rather than just your friends. Voting for your
+#    alts is obviously against the rules.
 
-    Using vote with no arguments displays your votes.
-    """
-    key = "vote"
-    aliases = ["+vote", "@vote", "unvote"]
-    locks = "cmd:all()"
-    help_category = "Progression"
+#    Using vote with no arguments displays your votes.
+#    """
+#    key = "vote"
+#    aliases = ["+vote", "@vote", "unvote"]
+#    locks = "cmd:all()"
+#    help_category = "Progression"
     
-    @property
-    def caller_alts(self):
-        return AccountDB.objects.filter(roster__current_account__isnull=False,
-                                        roster__roster__name="Active",
-                                        roster__current_account=self.caller.roster.current_account)
+#    @property
+#    def caller_alts(self):
+#        return AccountDB.objects.filter(roster__current_account__isnull=False,
+#                                        roster__roster__name="Active",
+#                                        roster__current_account=self.caller.roster.current_account)
 
-    def count_votes(self):
-        num_votes = 0
-        for player in self.caller_alts:
-            votes = player.db.votes or []
-            num_votes += len(votes)
-        return num_votes
+#    def count_votes(self):
+#        num_votes = 0
+#        for player in self.caller_alts:
+#            votes = player.db.votes or []
+#            num_votes += len(votes)
+#        return num_votes
 
-    @property
-    def max_votes(self):
+#    @property
+#    def max_votes(self):
         # import datetime
-        base = 13
+#        base = 13
         # # only get events after the previous Sunday
         # diff = 7 - datetime.datetime.now().isoweekday()
         # recent_date = datetime.datetime.now() - datetime.timedelta(days=7-diff)
@@ -664,56 +664,56 @@ class CmdVoteXP(ArxPlayerCommand):
         #         base += alt.Dominion.events_attended.filter(finished=True, date__gte=recent_date).count()
         #     except AttributeError:
         #         continue
-        return base
+#        return base
 
     # noinspection PyUnresolvedReferences
-    def func(self):
-        """
-        Stores a vote for the player in the caller's player object, to allow
-        for easier sorting from the AccountDB manager. Players are allowed 5
-        votes per week, each needing to be a distinct character with a different
-        email address than the caller. Email addresses that are not set (having
-        the 'dummy@dummy.com' default, will be rejected as unsuitable.
-        """
-        caller = self.caller
-        if not caller.roster.current_account:
-            raise ValueError("ERROR: No PlayerAccount set for this player!")
-        if not self.args:
-            votes = caller.db.votes or []
-            voted_for = list_to_string(votes) or "no one"        
-            remaining = self.max_votes - self.count_votes()
-            caller.msg("You have voted for %s, and have %s votes remaining." % (voted_for, remaining))
-            return
-        targ = caller.search(self.args)
-        if not targ:
-            caller.msg("Vote for who?")
-            return
-        if targ in self.caller_alts:
-            caller.msg("You cannot vote for your alts.")
-            return
-        votes = caller.db.votes or []
-        if targ.roster.roster.name != "Active" and targ not in votes:
-            caller.msg("You can only vote for an active character.")
-            return     
-        if not targ.char_ob:
-            caller.msg("%s doesn't have a character object assigned to them." % targ)
-            return  
-        if targ in votes:
-            if self.cmdstring == "unvote":
-                caller.msg("Removing your vote for %s." % targ)
-                votes.remove(targ)
-                caller.db.votes = votes
-            else:
-                caller.msg("You are already voting for %s. To remove them, use 'unvote'." % targ)
-            return
-        else:
-            if self.cmdstring == "unvote":
-                caller.msg("You are not currently voting for %s." % targ)
-                return
-        num_votes = self.count_votes()
-        if num_votes >= self.max_votes:
-            caller.msg("You have voted %s times, which is the maximum." % num_votes)
-            return  
-        votes.append(targ)
-        caller.db.votes = votes
-        caller.msg("Vote recorded for %s." % targ)
+#    def func(self):
+#        """
+#        Stores a vote for the player in the caller's player object, to allow
+#        for easier sorting from the AccountDB manager. Players are allowed 5
+#        votes per week, each needing to be a distinct character with a different
+#        email address than the caller. Email addresses that are not set (having
+#        the 'dummy@dummy.com' default, will be rejected as unsuitable.
+#        """
+#        caller = self.caller
+#        if not caller.roster.current_account:
+#            raise ValueError("ERROR: No PlayerAccount set for this player!")
+#        if not self.args:
+#            votes = caller.db.votes or []
+#            voted_for = list_to_string(votes) or "no one"
+#            remaining = self.max_votes - self.count_votes()
+#            caller.msg("You have voted for %s, and have %s votes remaining." % (voted_for, remaining))
+#            return
+#        targ = caller.search(self.args)
+#        if not targ:
+#            caller.msg("Vote for who?")
+#            return
+#        if targ in self.caller_alts:
+#            caller.msg("You cannot vote for your alts.")
+#            return
+#        votes = caller.db.votes or []
+#        if targ.roster.roster.name != "Active" and targ not in votes:
+#            caller.msg("You can only vote for an active character.")
+#            return
+#        if not targ.char_ob:
+#            caller.msg("%s doesn't have a character object assigned to them." % targ)
+#            return
+#        if targ in votes:
+#            if self.cmdstring == "unvote":
+#                caller.msg("Removing your vote for %s." % targ)
+#                votes.remove(targ)
+#                caller.db.votes = votes
+#            else:
+#                caller.msg("You are already voting for %s. To remove them, use 'unvote'." % targ)
+#            return
+#        else:
+#            if self.cmdstring == "unvote":
+#                caller.msg("You are not currently voting for %s." % targ)
+#                return
+#        num_votes = self.count_votes()
+#        if num_votes >= self.max_votes:
+#            caller.msg("You have voted %s times, which is the maximum." % num_votes)
+#            return
+#        votes.append(targ)
+#        caller.db.votes = votes
+#        caller.msg("Vote recorded for %s." % targ)

@@ -154,7 +154,7 @@ class OOCCmdSet(CmdSet):
         self.add(general.CmdTidyUp())
         self.add(extended_room.CmdGameTime())
         self.add(extended_room.CmdStudyRawAnsi())
-        self.add(xp.CmdVoteXP())
+       # self.add(xp.CmdVoteXP())
         self.add(social.CmdPosebreak())
         self.add(social.CmdSocialScore())
         self.add(overrides.SystemNoMatch())
