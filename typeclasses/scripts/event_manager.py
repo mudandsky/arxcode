@@ -98,9 +98,9 @@ class EventManager(Script):
     @staticmethod
     def announce_upcoming_event(event, diff):
         mins = int(diff/60)
-        secs = diff % 60
-        announce_msg = "{wEvent: '%s'(#%s) will start in %s minutes and %s seconds.{n" % (event.name, event.id,
-                                                                                          mins, secs)
+        # secs = diff % 60
+        announce_msg = "{wEvent: '%s'(#%s) will start in %s minutes.{n" % (event.name, event.id,
+                                                                                          mins)
         if event.public_event:
             SESSIONS.announce_all(announce_msg)
         else:
