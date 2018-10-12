@@ -1756,28 +1756,29 @@ class CmdTimeZone(ArxCommand):
     def func(self):
         """Executes timezone command"""
         caller = self.caller
-        zoneline = ["US/Pacific",
-                    "US/Mountain",
-                    "US/Central",
-                    "US/Eastern"]
+        zonelist = ['US/Pacific',
+                    'US/Mountain',
+                    'US/Central',
+                    'US/Eastern']
         if "list" in self.switches:
             number = 1
             caller.msg("Available Time Zones:")
             for zone in zonelist:
-                caller.msg("%n - %z" % (number,zone))
+                caller.msg("%s - %s" % (number,zone))
                 number += 1
             return
         if "set" in self.switches:
             if not self.args:
                 caller.msg("Usage: +timezone/set <choice>")
                 return
-            choice = caller.search(self.args)
-            if choice < 0 or choice > len(zonelist):
+            choice = int(self.args)
+            if choice < 0 or choice > 4:
+		caller.msg("Choice: %s " % choice)
                 caller.msg("Please select from timezones in list.  See +timezone/list")
                 return
             choice = choice - 1
-            caller.db.timezone = zonelist(choice)
-            caller.msg("Timezone set to %s" % zonelist(choice))
+            caller.db.timezone = zonelist[choice]
+            caller.msg("Timezone set to %s" % zonelist[choice])
             return
         else:
             caller.msg("Timezone is set to %s" % caller.db.timezone)
