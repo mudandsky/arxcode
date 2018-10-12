@@ -1368,6 +1368,9 @@ class CmdCalendar(ArxPlayerCommand):
         """Displays our project if we have one"""
         proj = self.caller.ndb.event_creation
         timezone = self.caller.db.timezone
+	if not timezone:
+	    timezone = 'US/Pacific'
+	#timezone = 'US/Central'
         if not self.args and not self.switches and proj:
             self.display_project()
             return
@@ -1378,12 +1381,13 @@ class CmdCalendar(ArxPlayerCommand):
         if "old" in self.switches:  # display finished events
             finished = qs.filter(finished=True).distinct().order_by('-date')
             from server.utils import arx_more
-            table = self.display_events(finished, timzone)
+            table = self.display_events(finished, timezone)
             arx_more.msg(self.caller, "{wOld events:\n%s" % table, justify_kwargs=False)
         else:  # display upcoming events
-            unfinished = qs.filter(finished=False).distinct().order_by('date')
-            table = self.display_events(unfinished, timezone)
+	    unfinished = qs.filter(finished=False).distinct().order_by('date')
+	    table = self.display_events(unfinished, timezone)
             self.msg("{wUpcoming events:\n%s" % table, options={'box': True})
+	    self.msg("{wEvents displayed in %s" % timezone)
 
     @staticmethod
     def display_events(events, zone):
@@ -1393,7 +1397,8 @@ class CmdCalendar(ArxPlayerCommand):
             host = event.main_host or "No host"
             host = str(host).capitalize()
             public = "Public" if event.public_event else "Not Public"
-            displaytime = timezone(zone).localize(event.date)
+            eventtime = timezone('US/Pacific').localize(event.date)
+	    displaytime = eventtime.astimezone(timezone(zone))
             table.add_row([event.id, event.name[:25], displaytime.strftime("%x %H:%M"),
                             host, public])
         return table
