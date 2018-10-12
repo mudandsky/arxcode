@@ -24,7 +24,7 @@ from web.character.models import Investigation, RosterEntry
 
 
 EVENT_SCRIPT_NAME = "Weekly Update"
-VOTES_BOARD_NAME = 'Votes'
+# VOTES_BOARD_NAME = 'Votes'
 PRESTIGE_BOARD_NAME = 'Prestige Changes'
 TRAINING_CAP_PER_WEEK = 10
 
@@ -121,7 +121,7 @@ class WeeklyEvents(RunDateMixin, Script):
         self.do_events_per_player()
         # awarding votes we counted
         self.award_scene_xp()
-        self.award_vote_xp()
+        # self.award_vote_xp()
         self.post_top_rpers()
         self.post_top_prestige()
         # dominion stuff
@@ -223,7 +223,7 @@ class WeeklyEvents(RunDateMixin, Script):
                                                          Q(roster__frozen=False)) |
                                                        Q(is_staff=True)).distinct() if ob.char_ob]
         for player in players:
-            self.count_votes(player)
+            # self.count_votes(player)
             # journal XP
             self.process_journals(player)
             self.count_scenes(player)
@@ -256,8 +256,8 @@ class WeeklyEvents(RunDateMixin, Script):
     def initialize_temp_dicts(self):
         """Initializes dicts we record weekly values in"""
         # our votes are a dict of player to their number of votes
-        self.ndb.recorded_votes = defaultdict(int)
-        self.ndb.vote_history = {}
+        # self.ndb.recorded_votes = defaultdict(int)
+        # self.ndb.vote_history = {}
         # storing how much xp each player gets to post after
         self.ndb.xp = defaultdict(int)
         self.ndb.xptypes = {}
@@ -352,18 +352,18 @@ class WeeklyEvents(RunDateMixin, Script):
 
     # -----------------------------------------------------------------
 
-    def count_votes(self, player):
-        """
-        Counts the votes for each player. We may log voting patterns later if
-        we need to track against abuse, but since voting is stored in each
-        player it's fairly trivial to check each week on an individual basis
-        anyway.
-        """       
-        votes = player.db.votes or []
-        for ob in votes:
-            self.ndb.recorded_votes[ob] += 1
-        if votes:
-            self.ndb.vote_history[player] = votes
+    # def count_votes(self, player):
+    #    """
+    #    Counts the votes for each player. We may log voting patterns later if
+    #    we need to track against abuse, but since voting is stored in each
+    #    player it's fairly trivial to check each week on an individual basis
+    #    anyway.
+    #   """
+    #   votes = player.db.votes or []
+    #   for ob in votes:
+    #       self.ndb.recorded_votes[ob] += 1
+    #   if votes:
+    #       self.ndb.vote_history[player] = votes
 
     def count_scenes(self, player):
         """
@@ -394,63 +394,63 @@ class WeeklyEvents(RunDateMixin, Script):
                     msg = "You were in %s random scenes this week, earning %s xp." % (scenes, xp)
                     self.award_xp(char, xp, player, msg, xptype="scenes")
 
-    @staticmethod
-    def scale_xp(votes):
-        """Helper method for diminishing returns of xp"""
-        xp = 0
+#    @staticmethod
+#    def scale_xp(votes):
+#        """Helper method for diminishing returns of xp"""
+#        xp = 0
         # 1 vote is 3 xp
-        if votes > 0:
-            xp = 3
+#        if votes > 0:
+#            xp = 3
         # 2 votes is 5 xp
-        if votes > 1:
-            xp += 2
+#        if votes > 1:
+#            xp += 2
         # 3 to 5 votes is 6 to 8 xp
-        max_range = votes if votes <= 5 else 5
-        for n in range(2, max_range):
-            xp += 1
+#        max_range = votes if votes <= 5 else 5
+#        for n in range(2, max_range):
+#            xp += 1
 
-        def calc_xp(num_votes, start, stop, div):
-            """Helper function for calculating bonus xp"""
-            bonus_votes = num_votes
-            if stop and (bonus_votes > stop):
-                bonus_votes = stop
-            bonus_xp = bonus_votes - start
-            bonus_xp /= div
-            if (bonus_votes - start) % div:
-                bonus_xp += 1
-            return bonus_xp
+#        def calc_xp(num_votes, start, stop, div):
+#            """Helper function for calculating bonus xp"""
+#            bonus_votes = num_votes
+#            if stop and (bonus_votes > stop):
+#                bonus_votes = stop
+#            bonus_xp = bonus_votes - start
+#            bonus_xp /= div
+#            if (bonus_votes - start) % div:
+#                bonus_xp += 1
+#            return bonus_xp
 
         # 1 more xp for each 3 between 6 to 14
-        if votes > 5:
-            xp += calc_xp(votes, 5, 14, 3)
+#        if votes > 5:
+#            xp += calc_xp(votes, 5, 14, 3)
         # 1 more xp for each 4 votes after 14
-        if votes > 14:
-            xp += calc_xp(votes, 14, 26, 4)
+#        if votes > 14:
+#            xp += calc_xp(votes, 14, 26, 4)
         # 1 more xp for each 5 votes after 26
-        if votes > 26:
-            xp += calc_xp(votes, 26, 41, 5)
+#        if votes > 26:
+#            xp += calc_xp(votes, 26, 41, 5)
         # 1 more xp for each 10 votes after 36
-        if votes > 41:
-            xp += calc_xp(votes, 41, None, 10)
-        return xp
+#        if votes > 41:
+#            xp += calc_xp(votes, 41, None, 10)
+#        return xp
 
-    def award_vote_xp(self):
-        """
-        Go through all of our votes and award xp to the corresponding character
-        object of each player we've recorded votes for.
-        """
+#    def award_vote_xp(self):
+#        """
+#        Go through all of our votes and award xp to the corresponding character
+#        object of each player we've recorded votes for.
+#        """
         # go through each key in our votes dict, get player, award xp to their character
-        for player, votes in self.ndb.recorded_votes.items():
+#        for player, votes in self.ndb.recorded_votes.items():
             # important - get their character, not the player object
-            try:
-                char = player.char_ob
-                if char:
-                    xp = self.scale_xp(votes)
-                    if votes and xp:
-                        msg = "You received %s votes this week, earning %s xp." % (votes, xp)
-                        self.award_xp(char, xp, player, msg, xptype="votes")
-            except (AttributeError, ValueError, TypeError):
-                print("Error for in award_vote_xp for key %s" % player)
+#            try:
+#                char = player.char_ob
+#                if char:
+#                   xp = self.scale_xp(votes)
+#                    if votes and xp:
+#                        msg = "You received %s votes this week, earning %s xp." % (votes, xp)
+#                        self.award_xp(char, xp, player, msg, xptype="votes")
+#            except (AttributeError, ValueError, TypeError):
+#                print("Error for in award_vote_xp for key %s" % player)
 
     def award_xp(self, char, xp, player=None, msg=None, xptype="all"):
         """Awards xp for a given character"""
@@ -488,31 +488,31 @@ class WeeklyEvents(RunDateMixin, Script):
         if resource_msg:
             self.inform_creator.add_player_inform(player, resource_msg, "Resources", week=self.db.week)
 
-    def post_top_rpers(self):
-        """
-        Post ourselves to a bulletin board to celebrate the highest voted RPers
-        this week. We post how much xp each player earned, not how many votes
-        they received.
-        """
-        import operator
+#    def post_top_rpers(self):
+#        """
+#        Post ourselves to a bulletin board to celebrate the highest voted RPers
+#        this week. We post how much xp each player earned, not how many votes
+#        they received.
+#        """
+#        import operator
         # this will create a sorted list of tuples of (id, votes), sorted by xp, highest to lowest
-        sorted_xp = sorted(self.ndb.xp.items(), key=operator.itemgetter(1), reverse=True)
-        string = "{wTop RPers this week by XP earned{n".center(60)
-        string += "\n{w" + "-"*60 + "{n\n"
-        sorted_xp = sorted_xp[:20]
-        num = 0
-        for tup in sorted_xp:
-            num += 1
-            try:
-                char = tup[0]
-                votes = tup[1]
-                name = char.db.longname or char.key
-                string += "{w%s){n %-35s {wXP{n: %s\n" % (num, name, votes)
-            except AttributeError:
-                print("Could not find character of id %s during posting." % str(tup[0]))
-        board = BBoard.objects.get(db_key__iexact=VOTES_BOARD_NAME)
-        board.bb_post(poster_obj=self, msg=string, subject="Weekly Votes", poster_name="Vote Results")
-        inform_staff("Vote process awards complete. Posted on %s." % board)
+#        sorted_xp = sorted(self.ndb.xp.items(), key=operator.itemgetter(1), reverse=True)
+#        string = "{wTop RPers this week by XP earned{n".center(60)
+#        string += "\n{w" + "-"*60 + "{n\n"
+#        sorted_xp = sorted_xp[:20]
+#        num = 0
+#        for tup in sorted_xp:
+#            num += 1
+#            try:
+#                char = tup[0]
+#                votes = tup[1]
+#                name = char.db.longname or char.key
+#                string += "{w%s){n %-35s {wXP{n: %s\n" % (num, name, votes)
+#            except AttributeError:
+#                print("Could not find character of id %s during posting." % str(tup[0]))
+#        board = BBoard.objects.get(db_key__iexact=VOTES_BOARD_NAME)
+#        board.bb_post(poster_obj=self, msg=string, subject="Weekly Votes", poster_name="Vote Results")
+#        inform_staff("Vote process awards complete. Posted on %s." % board)
 
     def post_top_prestige(self):
         """Makes a board post of the top prestige earners this past week"""
@@ -583,8 +583,8 @@ class WeeklyEvents(RunDateMixin, Script):
 
     def record_awarded_values(self):
         """Makes a record of all values for this week for review, if necessary"""
-        self.db.recorded_votes = dict(self.ndb.recorded_votes)
-        self.db.vote_history = self.ndb.vote_history
+#        self.db.recorded_votes = dict(self.ndb.recorded_votes)
+#        self.db.vote_history = self.ndb.vote_history
         # storing how much xp each player gets to post after
         self.db.xp = dict(self.ndb.xp)
         self.db.xptypes = self.ndb.xptypes
