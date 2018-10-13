@@ -1772,7 +1772,7 @@ class CmdTimeZone(ArxCommand):
                 caller.msg("Usage: +timezone/set <choice>")
                 return
             choice = int(self.args)
-            if choice < 0 or choice > 4:
+            if choice < 0 or choice > len(zonelist):
 		caller.msg("Choice: %s " % choice)
                 caller.msg("Please select from timezones in list.  See +timezone/list")
                 return

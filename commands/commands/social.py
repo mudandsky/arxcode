@@ -1349,7 +1349,7 @@ class CmdCalendar(ArxPlayerCommand):
         """Execute command."""
         try:
             if not self.args and (not self.switches or self.check_switches(self.display_switches)):
-                return self.do_display_switches()
+                return self.do_display_switches(self.caller)
             if not self.switches or self.check_switches(self.target_event_switches):
                 return self.do_target_event_switches()
             if self.check_switches(self.form_switches):
@@ -1364,10 +1364,10 @@ class CmdCalendar(ArxPlayerCommand):
         except (self.CalCmdError, PayError) as err:
             self.msg(err)
 
-    def do_display_switches(self):
+    def do_display_switches(self,char):
         """Displays our project if we have one"""
         proj = self.caller.ndb.event_creation
-        timezone = self.caller.db.timezone
+	timezone = char.character.db.timezone
 	if not timezone:
 	    timezone = 'US/Pacific'
 	#timezone = 'US/Central'
