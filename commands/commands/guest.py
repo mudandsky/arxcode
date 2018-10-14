@@ -551,7 +551,7 @@ class CmdGuestCharCreate(ArxPlayerCommand):
                 while search.search_account(playername):
                     num_tries += 1
                     playername += str(num_tries)
-                password = email+'_default_password'
+                password = '_default_password'
                 new_player = create.create_account(playername, email, password, permissions=permissions)
                 new_character = create.create_object(typeclass, key=email,
                                                      location=default_home,
@@ -598,8 +598,8 @@ a series of prompts asking you to enter values, for which you will use
 the 'add' command. The '{w@add{n' command is executed by adding a '/' after
 it with the name of the field you wish to modify, followed by an argument.
 For example, to set your character's {cname{n, you might enter
-        {w@add/name Alarice{n
-for a character named Alarice.
+        {w@add/name Elexia{n
+for a character named Elexia.
         """
             player.msg(intro)
             player.execute_cmd("look")
@@ -768,7 +768,7 @@ class CmdGuestAddInput(ArxPlayerCommand):
                 caller.msg("Social rank must be a number.")
                 return
             args = int(args)
-            if args < 2 or args > 9:
+            if args < 1 or args > 5:
                 caller.msg("Social rank must be between 2 and 9.")
                 return
             bonus = XP_BONUS_BY_SRANK.get(args, 0)
