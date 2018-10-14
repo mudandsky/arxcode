@@ -610,7 +610,7 @@ class CmdAdjustReputation(ArxPlayerCommand):
             character_list.append(player.player.char_ob)
         # post changes
         from typeclasses.bulletin_board.bboard import BBoard
-        board = BBoard.objects.get(db_key__iexact="vox populi")
+        board = BBoard.objects.get(db_key__iexact="Reputation")
         post_list = post_msg.split("/")
         if len(post_list) < 2:
             subject = "Reputation changes"

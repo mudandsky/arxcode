@@ -71,13 +71,13 @@ def setup_log(logfile):
 def get_date():
     """
     Get in-game date as a string
-    format is 'M/D/YEAR IL'
+    format is 'M/D/YEAR PA'
     """
     from typeclasses.scripts import gametime
     time = gametime.gametime(format=True)
     month, day, year = time[1] + 1, time[3] + 1, time[0] + 1050
     day += (time[2] * 7)
-    date = ("%s/%s/%s IL" % (month, day, year))
+    date = ("%s/%s/%s PA" % (month, day, year))
     return date
 
 
