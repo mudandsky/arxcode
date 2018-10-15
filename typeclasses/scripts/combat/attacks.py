@@ -485,7 +485,7 @@ class Attack(object):
             armor = target.armor
         else:
             armor = target.db.armor_class or 0
-        # our soak is sta+willpower+survival
+        # our soak is sta+willpower+fortitude
         armor += randint(0, (target.combat.soak * 2)+1)
         # if the resulting difference of attack/defense rolls is huge, like
         # for unconsciousness, armor is zilched. TODO: Maybe change this?
@@ -565,7 +565,7 @@ class Attack(object):
                 # check is sta + willpower against % dmg past uncon to stay conscious
                 if not glass_jaw:
                     diff = int((float(victim.dmg - max_hp)/max_hp) * 100)
-                    consc_check = do_dice_check(victim, stat_list=["stamina", "willpower"], skill="survival",
+                    consc_check = do_dice_check(victim, stat_list=["stamina", "willpower"], skill="fortitude",
                                                 stat_keep=True, difficulty=diff, quiet=False)
                 else:
                     consc_check = -1
@@ -588,7 +588,7 @@ class Attack(object):
                 if diff < 0:
                     diff = 0
                 # npcs always die. Sucks for them.
-                if not glass_jaw and do_dice_check(victim, stat_list=["stamina", "willpower"], skill="survival",
+                if not glass_jaw and do_dice_check(victim, stat_list=["stamina", "willpower"], skill="fortitude",
                                                    stat_keep=True, difficulty=diff, quiet=False) >= 0:
                     message = "%s remains alive, but close to death." % victim
                     if victim.combat.multiple:

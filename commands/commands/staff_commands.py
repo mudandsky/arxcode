@@ -514,7 +514,7 @@ class CmdListStaff(ArxPlayerCommand):
                 continue
             timestr = CmdWho.get_idlestr(ob.idle_time)
             obname = CmdWho.format_pname(ob)
-            table.add_row(obname, ob.db.staff_role or "", timestr)
+            table.add_row(obname, ob.db.staff_role, timestr)
         caller.msg("{wOnline staff:{n\n%s" % table)
 
 

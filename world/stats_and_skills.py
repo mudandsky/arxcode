@@ -22,12 +22,12 @@ MENTAL_STATS = ("intellect", "perception", "wits")
 MAGIC_STATS = ("mana", "luck", "willpower")
 VALID_STATS = PHYSICAL_STATS + SOCIAL_STATS + MENTAL_STATS + MAGIC_STATS
 COMBAT_SKILLS = ("athletics", "brawl", "dodge", "archery", "small wpn", "medium wpn",
-                 "huge wpn", "stealth", "survival", "evocation", "abjuration")
+                 "huge wpn", "stealth", "fortitude", "evocation", "abjuration")
 SOCIAL_SKILLS = ("intimidation", "leadership", "manipulation", "diplomacy",
                  "propaganda", "empathy", "etiquette", "performance", "streetwise",)
 GENERAL_SKILLS = ("riddles", "legerdemain", "ride", "investigation",
                   "law", "linguistics", "restoration", "lifewell",  "stewardship", "theology",
-                  "agriculture", "economics", "teaching", "war",
+                  "agriculture", "economics", "teaching", "war", "survival",
                   "animal ken", "artwork", "sailing", "prestedigitation")
 CRAFTING_SKILLS = ('sewing', 'smithing', 'tanning', 'alchemy', 'woodworking')
 VALID_SKILLS = COMBAT_SKILLS + SOCIAL_SKILLS + GENERAL_SKILLS + CRAFTING_SKILLS

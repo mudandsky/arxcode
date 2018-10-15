@@ -81,7 +81,7 @@ spy_skills.update({"streetwise": 0, "investigation": 0})
 assistant_skills = dict([(key, 0) for key in GENERAL_SKILLS])
 assistant_skills.update({"etiquette": 0, "diplomacy": 0})
 animal_skills = {"athletics": 1, "brawl": 1, "dodge": 1, "stealth": 0,
-                 "survival": 2, "legerdemain": 0, "performance": 0}
+                 "fortitude": 2, "legerdemain": 0, "performance": 0}
 small_animal_skills = animal_skills.copy()
 small_animal_skills.update({"stealth": 1, "brawl": 0})
 
