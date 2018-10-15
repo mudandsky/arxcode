@@ -1756,6 +1756,10 @@ class CmdTimeZone(ArxCommand):
     def func(self):
         """Executes timezone command"""
         caller = self.caller
+        """
+        To add additional timezone options add timezones to the zonelist array  
+        in the pytz timezone list format
+        """
         zonelist = ['US/Pacific',
                     'US/Mountain',
                     'US/Central',

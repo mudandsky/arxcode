@@ -1353,9 +1353,9 @@ class CmdCalendar(ArxPlayerCommand):
             if not self.switches or self.check_switches(self.target_event_switches):
                 return self.do_target_event_switches()
             if self.check_switches(self.form_switches):
-                return self.do_form_switches()
+                return self.do_form_switches(self.caller)
             if self.check_switches(self.attribute_switches):
-                return self.do_attribute_switches()
+                return self.do_attribute_switches(self.caller)
             if self.check_switches(self.in_progress_switches):
                 return self.do_in_progress_switches()
             if self.check_switches(self.admin_switches):
@@ -1398,7 +1398,7 @@ class CmdCalendar(ArxPlayerCommand):
             host = str(host).capitalize()
             public = "Public" if event.public_event else "Not Public"
             eventtime = timezone('US/Pacific').localize(event.date)
-	    displaytime = eventtime.astimezone(timezone(zone))
+	        displaytime = eventtime.astimezone(timezone(zone))
             table.add_row([event.id, event.name[:25], displaytime.strftime("%x %H:%M"),
                             host, public])
         return table
@@ -1486,7 +1486,7 @@ class CmdCalendar(ArxPlayerCommand):
             raise self.CalCmdError("Only the main host can cancel the event.")
         return event
 
-    def do_form_switches(self):
+    def do_form_switches(self, char):
         """Handles form switches"""
         if "abort" in self.switches:
             self.caller.ndb.event_creation = None
@@ -1510,13 +1510,20 @@ class CmdCalendar(ArxPlayerCommand):
                 raise self.CalCmdError("You must /create a form first.")
             if not form.is_valid():
                 raise self.CalCmdError(form.display_errors() + "\n" + form.display())
+          """ convert form date to US/PST """
             event = form.save()
+            zone = char.character.db.timezone
+            servertime = timezone(zone).localize(event.date)
+            servertime = servertime.astimezone(timezone('US/Pacific'))
             self.caller.ndb.event_creation = None
+            """ Display event date in player timezone to player """
             self.msg("New event created: %s at %s." % (event.name, event.date.strftime("%x %X")))
+            """ Save event time as US/Pacific time """
+            event.date = servertime
             inform_staff("New event created by %s: %s, scheduled for %s." % (self.caller, event.name,
                                                                              event.date.strftime("%x %X")))
 
-    def do_attribute_switches(self):
+    def do_attribute_switches(self,char):
         """Sets a value for the form or changes an existing event's attribute"""
         event = None
         if self.rhs:
@@ -1528,7 +1535,7 @@ class CmdCalendar(ArxPlayerCommand):
         if 'largesse' in self.switches:
             return self.set_largesse(event)
         if "date" in self.switches or "reschedule" in self.switches:
-            return self.set_date(event)
+            return self.set_date(event,char)
         if "location" in self.switches:
             return self.set_location(event)
         if "desc" in self.switches:
@@ -1610,22 +1617,30 @@ class CmdCalendar(ArxPlayerCommand):
             proj[param] = value
             self.caller.ndb.event_creation = proj
 
-    def set_date(self, event=None):
+    def set_date(self, event=None, char):
         """Sets a date for an event"""
         try:
             date = datetime.strptime(self.lhs, "%m/%d/%y %H:%M")
         except ValueError:
             raise self.CalCmdError("Date did not match 'mm/dd/yy hh:mm' format. You entered: %s" % self.lhs)
         now = datetime.now()
+        """ Convert date from player to US/Pacific """
+        zone = char.character.db.timezone
+        displaytime = timezone(zone).localize(date)
+        date = displaytime.astimezone(timezone('US/Pacific'))
         if date < now:
             raise self.CalCmdError("You cannot make an event for the past.")
         if event and event.date < now:
             raise self.CalCmdError("You cannot reschedule an event that's already started.")
         self.set_form_or_event_attribute('date', date, event)
-        self.msg("Date set to %s." % date.strftime("%x %X"))
+        """ Display player timezone """
+        self.msg("Date set to %s." % displaytime.strftime("%x %X"))
         if event:
             self.event_manager.reschedule_event(event)
-        self.msg("Current time is %s for comparison." % (datetime.now().strftime("%x %X")))
+        """ display now time in player timezone """
+        now = timezone('US/Pacific').localize(now)
+        now = now.astimezone(timezone(zone))
+        self.msg("Current time is %s for comparison." % (now.strftime("%x %X")))
         offset = timedelta(hours=2)
         count = RPEvent.objects.filter(date__lte=date + offset, date__gte=date - offset).count()
         self.msg("Number of events within 2 hours of that date: %s" % count)
