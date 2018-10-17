@@ -1397,8 +1397,7 @@ class CmdCalendar(ArxPlayerCommand):
             host = event.main_host or "No host"
             host = str(host).capitalize()
             public = "Public" if event.public_event else "Not Public"
-            eventtime = timezone('US/Pacific').localize(event.date)
-	        displaytime = eventtime.astimezone(timezone(zone))
+	    displaytime = event.date.astimezone(timezone(zone))
             table.add_row([event.id, event.name[:25], displaytime.strftime("%x %H:%M"),
                             host, public])
         return table
@@ -1510,15 +1509,14 @@ class CmdCalendar(ArxPlayerCommand):
                 raise self.CalCmdError("You must /create a form first.")
             if not form.is_valid():
                 raise self.CalCmdError(form.display_errors() + "\n" + form.display())
-          """ convert form date to US/PST """
+            """convert form date to US/PST"""
             event = form.save()
             zone = char.character.db.timezone
-            servertime = timezone(zone).localize(event.date)
-            servertime = servertime.astimezone(timezone('US/Pacific'))
+	    servertime = event.date.astimezone(timezone('US/Pacific'))
             self.caller.ndb.event_creation = None
-            """ Display event date in player timezone to player """
+            """Display event date in player timezone to player"""
             self.msg("New event created: %s at %s." % (event.name, event.date.strftime("%x %X")))
-            """ Save event time as US/Pacific time """
+            """Save event time as US/Pacific time"""
             event.date = servertime
             inform_staff("New event created by %s: %s, scheduled for %s." % (self.caller, event.name,
                                                                              event.date.strftime("%x %X")))
@@ -1535,7 +1533,7 @@ class CmdCalendar(ArxPlayerCommand):
         if 'largesse' in self.switches:
             return self.set_largesse(event)
         if "date" in self.switches or "reschedule" in self.switches:
-            return self.set_date(event,char)
+            return self.set_date(char, event)
         if "location" in self.switches:
             return self.set_location(event)
         if "desc" in self.switches:
@@ -1617,28 +1615,28 @@ class CmdCalendar(ArxPlayerCommand):
             proj[param] = value
             self.caller.ndb.event_creation = proj
 
-    def set_date(self, event=None, char):
+    def set_date(self, char, event=None):
         """Sets a date for an event"""
         try:
             date = datetime.strptime(self.lhs, "%m/%d/%y %H:%M")
         except ValueError:
             raise self.CalCmdError("Date did not match 'mm/dd/yy hh:mm' format. You entered: %s" % self.lhs)
         now = datetime.now()
-        """ Convert date from player to US/Pacific """
+        """Convert date from player to US/Pacific"""
+        now = timezone('US/Pacific').localize(now)
         zone = char.character.db.timezone
         displaytime = timezone(zone).localize(date)
-        date = displaytime.astimezone(timezone('US/Pacific'))
-        if date < now:
+        if displaytime < now:
             raise self.CalCmdError("You cannot make an event for the past.")
         if event and event.date < now:
             raise self.CalCmdError("You cannot reschedule an event that's already started.")
+	date = displaytime.astimezone(timezone('US/Pacific'))
         self.set_form_or_event_attribute('date', date, event)
-        """ Display player timezone """
+        """Display player timezone"""
         self.msg("Date set to %s." % displaytime.strftime("%x %X"))
         if event:
             self.event_manager.reschedule_event(event)
-        """ display now time in player timezone """
-        now = timezone('US/Pacific').localize(now)
+        """display now time in player timezone"""
         now = now.astimezone(timezone(zone))
         self.msg("Current time is %s for comparison." % (now.strftime("%x %X")))
         offset = timedelta(hours=2)

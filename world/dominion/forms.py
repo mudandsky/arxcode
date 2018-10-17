@@ -67,8 +67,10 @@ class RPEventCreateForm(forms.ModelForm):
     def clean_date(self):
         """Validates our date. ValiDATES, get it? Get it?"""
         from datetime import datetime
+	from pytz import timezone
         date = self.cleaned_data['date']
-        if date < datetime.now():
+        now = timezone('US/Pacific').localize(datetime.now())
+	if date < now:
             self.add_error("date", "You cannot add a date for the past.")
         return date
 

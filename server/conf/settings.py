@@ -4,6 +4,7 @@ TELNET_PORTS = [4000]
 WEBSERVER_PORTS = [(4001, 4005)]
 SERVERNAME = "Ithir"
 GAME_SLOGAN = "The Return to Glory"
+USE_TZ = True
 
 # try:
 #    from server.conf.secret_settings import *
