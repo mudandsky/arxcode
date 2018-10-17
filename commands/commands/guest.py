@@ -65,7 +65,7 @@ _voc_start_skills_ = {"noble": {"diplomacy": 3, "leadership": 3, "etiquette": 2,
                       "highborn": {"diplomacy": 1, "etiquette": 3, "manipulation": 2,
                                    "empathy": 2, "propaganda": 1},
                       "soldier": {"medium wpn": 3, "brawl": 1, "dodge": 1,
-                                  "archery": 1, "survival": 1},
+                                  "archery": 1, "fortitude": 1},
                       "knight": {"medium wpn": 3, "dodge": 1, "war": 1, "etiquette": 1,
                                  "ride": 2, "leadership": 1},
                       "lawyer": {"law": 4, "etiquette": 1, "empathy": 2, "manipulation": 2,
@@ -81,16 +81,16 @@ _voc_start_skills_ = {"noble": {"diplomacy": 3, "leadership": 3, "etiquette": 2,
                                    "investigation": 1, "dodge": 1, "occult": 1},
                       "hunter": {"ride": 1, "athletics": 1, "stealth": 2,
                                 "survival": 2, "archery": 1, "empathy": 1, "war": 1},
-                      "archer": {"archery": 3, "stealth": 3, "survival": 2,
+                      "archer": {"archery": 3, "stealth": 3, "fortitude": 2,
                                 "ride": 1, "investigation": 1, "empathy": 1, "war": 1},
-                      "mage": {"abjuration": 3, "evocation": 1, "survival": 2,
+                      "mage": {"abjuration": 3, "evocation": 1, "fortitude": 2,
                                  "riddles": 1, "investigation": 1, "performance": 1, "prestedigitation": 1},
                       "explorer": {"ride": 1, "athletics": 1, "stealth": 2,
                                  "survival": 2, "archery": 1, "empathy": 1, "investigation": 3},
                       "sailor": {"medium wpn": 3, "dodge": 1,
-                                  "sailing": 3, "survival": 1},
+                                  "sailing": 3, "fortitude": 1},
                       "scout": {"ride": 1, "athletics": 1, "stealth": 2,
-                                 "survival": 2, "archery": 1, "investigation": 2},
+                                 "fortitude": 2, "archery": 1, "investigation": 2},
                       }
 
 
@@ -551,7 +551,7 @@ class CmdGuestCharCreate(ArxPlayerCommand):
                 while search.search_account(playername):
                     num_tries += 1
                     playername += str(num_tries)
-                password = email+'_default_password'
+                password = '_default_password'
                 new_player = create.create_account(playername, email, password, permissions=permissions)
                 new_character = create.create_object(typeclass, key=email,
                                                      location=default_home,
@@ -598,8 +598,8 @@ a series of prompts asking you to enter values, for which you will use
 the 'add' command. The '{w@add{n' command is executed by adding a '/' after
 it with the name of the field you wish to modify, followed by an argument.
 For example, to set your character's {cname{n, you might enter
-        {w@add/name Alarice{n
-for a character named Alarice.
+        {w@add/name Elexia{n
+for a character named Elexia.
         """
             player.msg(intro)
             player.execute_cmd("look")
@@ -768,7 +768,7 @@ class CmdGuestAddInput(ArxPlayerCommand):
                 caller.msg("Social rank must be a number.")
                 return
             args = int(args)
-            if args < 2 or args > 9:
+            if args < 1 or args > 5:
                 caller.msg("Social rank must be between 2 and 9.")
                 return
             bonus = XP_BONUS_BY_SRANK.get(args, 0)

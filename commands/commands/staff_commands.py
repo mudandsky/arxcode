@@ -514,7 +514,7 @@ class CmdListStaff(ArxPlayerCommand):
                 continue
             timestr = CmdWho.get_idlestr(ob.idle_time)
             obname = CmdWho.format_pname(ob)
-            table.add_row(obname, ob.db.staff_role or "", timestr)
+            table.add_row(obname, ob.db.staff_role, timestr)
         caller.msg("{wOnline staff:{n\n%s" % table)
 
 
@@ -610,7 +610,7 @@ class CmdAdjustReputation(ArxPlayerCommand):
             character_list.append(player.player.char_ob)
         # post changes
         from typeclasses.bulletin_board.bboard import BBoard
-        board = BBoard.objects.get(db_key__iexact="vox populi")
+        board = BBoard.objects.get(db_key__iexact="Reputation")
         post_list = post_msg.split("/")
         if len(post_list) < 2:
             subject = "Reputation changes"

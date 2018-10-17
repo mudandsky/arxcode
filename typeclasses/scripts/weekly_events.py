@@ -121,8 +121,9 @@ class WeeklyEvents(RunDateMixin, Script):
         self.do_events_per_player()
         # awarding votes we counted
         self.award_scene_xp()
+        # self.award_weekly_xp()
         # self.award_vote_xp()
-        self.post_top_rpers()
+        # self.post_top_rpers()
         self.post_top_prestige()
         # dominion stuff
         self.do_dominion_events()
@@ -393,6 +394,23 @@ class WeeklyEvents(RunDateMixin, Script):
                 if scenes and xp:
                     msg = "You were in %s random scenes this week, earning %s xp." % (scenes, xp)
                     self.award_xp(char, xp, player, msg, xptype="scenes")
+
+# An attempt made at creating a weekly flat amount of XP. Will come back to this.
+#    def award_weekly_xp(self, char):
+#        """Awards xp for a character based on their active status and minimum pose count met"""
+        # Check to see if the character is on the active list
+#        qs = ObjectDB.objects.filter(roster__roster__name="Active")
+        # Check to see if the character has reached the pose count limit
+#        min_poses = 1
+#        for ob in qs:
+#            if (ob.posecount < min_poses and (ob.tags.get("rostercg")and ob.player_ob
+#                                              and not ob.player_ob.tags.get("staff_alt"))):
+#                ob.db.previous_posecount = ob.posecount
+#            ob.posecount = 0
+        # Apply the 10 xp
+#        char.adjust_xp(10)
+        # Inform
+
 
 #    @staticmethod
 #    def scale_xp(votes):

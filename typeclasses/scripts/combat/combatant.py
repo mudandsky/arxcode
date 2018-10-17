@@ -330,7 +330,7 @@ class CombatHandler(object):
         val = self.char.db.stamina or 0
         val += self.char.db.willpower or 0
         if self.char.db.skills:
-            val += self.char.db.skills.get("survival", 0)
+            val += self.char.db.skills.get("fortitude", 0)
         return val
 
     def toggle_cleave(self, caller=None):
