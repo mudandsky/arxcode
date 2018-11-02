@@ -69,12 +69,14 @@ from .reports import WeeklyReport
 from .battle import Battle
 from .agenthandler import AgentHandler
 from .managers import CrisisManager, OrganizationManager
+from server.conf.production_settings import SERVERTZ
 from server.utils.arx_utils import get_week, inform_staff, passthrough_properties
 from server.utils.exceptions import ActionSubmissionError, PayError
 from typeclasses.npcs import npc_types
 from typeclasses.mixins import InformMixin
 from web.character.models import AbstractPlayerAllocations, Clue
 from world.stats_and_skills import do_dice_check
+from pytz import timezone
 
 # Dominion constants
 BASE_WORKER_COST = 0.10
@@ -5585,7 +5587,7 @@ class RPEvent(SharedMemoryModel):
         """GMs for GM Events or PRPs"""
         return self.dompcs.filter(event_participation__gm=True)
 
-    def display(self):
+    def display(self, zone):
         """Returns string display for event"""
         msg = "{wName:{n %s\n" % self.name
         msg += "{wHosts:{n %s\n" % ", ".join(str(ob) for ob in self.hosts.all())
@@ -5604,7 +5606,10 @@ class RPEvent(SharedMemoryModel):
         if not self.public_event:
             msg += "{wPrivate:{n Yes\n"
         msg += "{wEvent Scale:{n %s\n" % self.get_celebration_tier_display()
-        msg += "{wDate:{n %s\n" % self.date.strftime("%x %H:%M")
+        if not zone:
+            zone = SERVERTZ
+        displaydate = self.date.astimezone(timezone(zone))
+        msg += "{wDate:{n %s %s\n" % (displaydate.strftime("%x %H:%M"), zone)
         msg += "{wDesc:{n\n%s\n" % self.desc
         webpage = PAGEROOT + self.get_absolute_url()
         msg += "{wEvent Page:{n %s\n" % webpage
