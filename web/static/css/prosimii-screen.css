@@ -231,8 +231,8 @@ dd {
     color: #8c8c8c;
   line-height: 1.75em;
   margin: 1em 0 1.5em 0;
-  padding: 0;
-    text-align: center;
+  padding-left: 5%;
+    text-align: left;
 }
 
 .newsHeading {
