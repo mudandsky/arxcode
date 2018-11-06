@@ -11,6 +11,7 @@ from pytz import timezone
 from django.conf import settings
 from django.db.models import Q
 
+from server.conf.production_settings import SERVERTZ
 from server.utils.arx_utils import ArxCommand, ArxPlayerCommand, list_to_string
 from evennia.objects.models import ObjectDB
 from evennia.typeclasses.tags import Tag
@@ -1351,7 +1352,7 @@ class CmdCalendar(ArxPlayerCommand):
             if not self.args and (not self.switches or self.check_switches(self.display_switches)):
                 return self.do_display_switches(self.caller)
             if not self.switches or self.check_switches(self.target_event_switches):
-                return self.do_target_event_switches()
+                return self.do_target_event_switches(self.caller)
             if self.check_switches(self.form_switches):
                 return self.do_form_switches(self.caller)
             if self.check_switches(self.attribute_switches):
@@ -1369,10 +1370,9 @@ class CmdCalendar(ArxPlayerCommand):
         proj = self.caller.ndb.event_creation
 	timezone = char.character.db.timezone
 	if not timezone:
-	    timezone = 'US/Pacific'
-	#timezone = 'US/Central'
+	    timezone = SERVERTZ
         if not self.args and not self.switches and proj:
-            self.display_project()
+            self.display_project(timezone)
             return
         if self.caller.check_permstring("builders"):
             qs = RPEvent.objects.all()
@@ -1402,7 +1402,7 @@ class CmdCalendar(ArxPlayerCommand):
                             host, public])
         return table
 
-    def do_target_event_switches(self):
+    def do_target_event_switches(self, char):
         """Interact with events owned by other players"""
         caller = self.caller
         lhslist = self.lhs.split("/")
@@ -1452,7 +1452,7 @@ class CmdCalendar(ArxPlayerCommand):
             caller.char_ob.move_to(event.location, mapping=mapping)
         # display info on a given event
         if not rhs:
-            caller.msg(event.display(), options={'box': True})
+            caller.msg(event.display(char.character.db.timezone), options={'box': True})
             return
         try:
             num = int(rhs)
@@ -1502,22 +1502,21 @@ class CmdCalendar(ArxPlayerCommand):
             self.caller.ndb.event_creation = proj
             self.msg("{wStarting project. It will not be saved until you submit it. " +
                      "Does not persist through logout/server reload.{n")
-            self.msg(self.form.display(), options={'box': True})
+            self.msg(self.form.display(char), options={'box': True})
         elif "submit" in self.switches:
             form = self.form
             if not form:
                 raise self.CalCmdError("You must /create a form first.")
             if not form.is_valid():
-                raise self.CalCmdError(form.display_errors() + "\n" + form.display())
+                raise self.CalCmdError(form.display_errors() + "\n" + form.display(char))
             """convert form date to US/PST"""
             event = form.save()
             zone = char.character.db.timezone
-	    servertime = event.date.astimezone(timezone('US/Pacific'))
+	    displaytime = event.date.astimezone(timezone(zone))
             self.caller.ndb.event_creation = None
             """Display event date in player timezone to player"""
-            self.msg("New event created: %s at %s." % (event.name, event.date.strftime("%x %X")))
-            """Save event time as US/Pacific time"""
-            event.date = servertime
+            self.msg("New event created: %s at %s." % (event.name, displaytime.strftime("%x %X")))
+            """Display event notice to staff in server time"""
             inform_staff("New event created by %s: %s, scheduled for %s." % (self.caller, event.name,
                                                                              event.date.strftime("%x %X")))
 
@@ -1592,7 +1591,7 @@ class CmdCalendar(ArxPlayerCommand):
                 self.event_manager.start_event(event)
             self.msg("You have started the event.")
 
-    def display_project(self):
+    def display_project(self, zone):
         """Sends a string display of a project"""
         form = self.form
         msg = "{wEvent you're creating:{n\n"
@@ -1600,7 +1599,7 @@ class CmdCalendar(ArxPlayerCommand):
             msg += "None currently."
             return
         else:
-            msg += form.display()
+            msg += form.display(zone)
         self.msg(msg, options={'box': True})
 
     def set_form_or_event_attribute(self, param, value, event=None):
@@ -1622,15 +1621,15 @@ class CmdCalendar(ArxPlayerCommand):
         except ValueError:
             raise self.CalCmdError("Date did not match 'mm/dd/yy hh:mm' format. You entered: %s" % self.lhs)
         now = datetime.now()
-        """Convert date from player to US/Pacific"""
-        now = timezone('US/Pacific').localize(now)
+        """Convert date from player to server time"""
+        now = timezone(SERVERTZ).localize(now)
         zone = char.character.db.timezone
         displaytime = timezone(zone).localize(date)
         if displaytime < now:
             raise self.CalCmdError("You cannot make an event for the past.")
         if event and event.date < now:
             raise self.CalCmdError("You cannot reschedule an event that's already started.")
-	date = displaytime.astimezone(timezone('US/Pacific'))
+	date = displaytime.astimezone(timezone(SERVERTZ))
         self.set_form_or_event_attribute('date', date, event)
         """Display player timezone"""
         self.msg("Date set to %s." % displaytime.strftime("%x %X"))

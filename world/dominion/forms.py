@@ -4,9 +4,12 @@ Forms for Dominion
 from django import forms
 from django.db.models import Q
 
+from server.conf.production_settings import SERVERTZ
 from typeclasses.rooms import ArxRoom
 from world.dominion.models import RPEvent, Organization, PlayerOrNpc, PlotRoom
 
+from datetime import datetime
+from pytz import timezone
 
 class RPEventCommentForm(forms.Form):
     """Form for commenting on an existing RPEvent"""
@@ -66,10 +69,10 @@ class RPEventCreateForm(forms.ModelForm):
 
     def clean_date(self):
         """Validates our date. ValiDATES, get it? Get it?"""
-        from datetime import datetime
-	from pytz import timezone
+        #from datetime import datetime
+	#from pytz import timezone
         date = self.cleaned_data['date']
-        now = timezone('US/Pacific').localize(datetime.now())
+        now = timezone(SERVERTZ).localize(datetime.now())
 	if date < now:
             self.add_error("date", "You cannot add a date for the past.")
         return date
@@ -147,10 +150,14 @@ class RPEventCreateForm(forms.ModelForm):
         from evennia.scripts.models import ScriptDB
         if event.public_event:
             event_manager = ScriptDB.objects.get(db_key="Event Manager")
-            event_manager.post_event(event, self.owner.player, self.display())
+            zone = self.owner.player.char_ob.db.timezone
+            event_manager.post_event(event, self.owner.player, self.display(zone))
 
-    def display(self):
-        """Returns a game-friend display string"""
+    def display(self, zone):
+        """Returns a game-friendly display string"""
+        """with date time in proper timezone"""
+        if not zone:
+            zone = SERVERTZ
         msg = "{wName:{n %s\n" % self.data.get('name')
         msg += "{wMain Host:{n %s\n" % self.owner
         hosts = PlayerOrNpc.objects.filter(id__in=self.data.get('hosts', []))
@@ -158,7 +165,12 @@ class RPEventCreateForm(forms.ModelForm):
             msg += "{wOther Hosts:{n %s\n" % ", ".join(str(ob) for ob in hosts)
         msg += "{wPublic:{n %s\n" % "Public" if self.data.get('public_event', True) else "Private"
         msg += "{wDescription:{n %s\n" % self.data.get('desc')
-        msg += "{wDate:{n %s\n" % self.data.get('date')
+        date = self.data.get('date')
+        if date:
+            date = date.astimezone(timezone(zone))
+            msg += "{wDate:{n %s %s\n" % (date.strftime("%x %H:%M"), zone)
+        else:
+            msg += "{wDate:{n %s\n" % date
         location = self.data.get('location')
         if location:
             location = ArxRoom.objects.get(id=location)
