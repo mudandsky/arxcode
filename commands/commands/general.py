@@ -1763,7 +1763,8 @@ class CmdTimeZone(ArxCommand):
         zonelist = ['US/Pacific',
                     'US/Mountain',
                     'US/Central',
-                    'US/Eastern']
+                    'US/Eastern',
+                    'Europe/Paris']
         if "list" in self.switches:
             number = 1
             caller.msg("Available Time Zones:")

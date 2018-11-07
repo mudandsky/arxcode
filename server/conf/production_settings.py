@@ -15,6 +15,7 @@ INDEX_TITLE = "ArxPrime Admin"
 IDMAPPER_CACHE_MAXSIZE = 4000
 CHECK_VPN = True
 MAX_CHAR_LIMIT = 8000
+SERVERTZ = 'US/Pacific'
 
 ######################################################################
 # Contrib config
