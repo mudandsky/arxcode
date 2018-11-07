@@ -179,30 +179,8 @@ Immortal lands of Aarandor. Ithir is an original game with a rich, but easy
 To learn setting. You can learn more about the world of Ithir by reading the
 World page of our website. http://ithirmush.org/topics/
 
-You can enter the world of Ithir by selecting a character from our roster of
-Pre-generated characters that have been part of the story so far. Or you can
-Create your own character with help and guidance from the community and 
-Staff of Ithir.  To see a list of commands available to you, use the '{whelp{n' 
-command. To look at the roster of available characters, use '{w@roster{n' and 
-'{w@sheet{n'.
-
-{gRoster Application{n
-To submit an application for a character on the roster that you would like
-to play, you will need to supply an email address with {w@add/email {g<email>{n.
-Then enter '{w@roster/apply {g<character name> {w= {g<application>{n'. Your application
-should contain the reason you'd like to play the character and what you 
-perceive as their goals and motivations and what direction you will take 
-their story. Tell us your take on the character. How would you RP them in a 
-way that contributes to a positive environment and creates collaborative, fun 
-RP for other people?
-
-{gOriginal Character{n
-To create a new, original character, or to resume a previous session you
-were disconnected from, use '{w@charcreate {g<email>{n'. To view a board
-of wanted character concepts, use '@bb wanted concepts'.
-
-The guest channel exists to help new players with the process of requesting or 
-generating their characters - to speak in it, please type '{wguest {g<message>{n'.
+{rAt this time, IthirMUSH is NOT open for Character Creation as we are still in
+the pre-alpha phase of development. Keep checking back for updates.{n
 
        """
 STAGE1 = \
