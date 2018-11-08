@@ -35,6 +35,11 @@ _vocations_ = ("noble", "highborn", "soldier", "knight", "priest", "merchant",
 _stage3_fields_ = ("concept", "gender", "age", "fealty", "family", "patron", "desc", "personality", "background",
                    "marital_status", "quote", "birthday", "social_rank", "skintone", "eyecolor", "haircolor", "height")
 _valid_fealty_ = ("Aeran", "Duindar", "Faenor", "Lorandi", "Thalerith")
+_valid_patron_ = ("Acharon", "Aereth", "Baridon", "Brundir", "Estril", "Gala", "Garwen", "Glanor", "Loran", "Rithor",
+                  "Torth")
+_valid_family_ = ("Aenorr", "Alcaldia", "Aynarr", "Brixtien", "Devrien", "Egilion", "Filinnar", "Geminiel", "Ingith",
+                  "Keir", "Laenorin", "Marindur", "Monstald", "Morinen", "Naevon", "Nalduine", "Nerea", "Palinnar",
+                  "Reid", "Reymar", "Rylanth", "Sedriel", "Serannar", "Tenlindil")
 _stage3_optional_ = ("secrets", "real_concept", "real_age")
 # Minimum and maximum ages players can set for starting characters
 _min_age_ = 50
@@ -686,9 +691,9 @@ class CmdGuestAddInput(ArxPlayerCommand):
         if not args:
             caller.msg("{w@add/<field>{n must have a value after a space. Examples:\n" +
                        "{w@add/gender{n, ex: {w@add/gender female{n\n" +
-                       "{w@add/age{n, ex: {w@add/age 25{n\n" +
-                       "{w@add/fealty{n, ex: {w@add/fealty Velenosa{n\n" +
-                       "{w@add/family{n, ex: {w@add/family Whisper{n\n" +
+                       "{w@add/age{n, ex: {w@add/age 92{n\n" +
+                       "{w@add/fealty{n, ex: {w@add/fealty Aeran{n\n" +
+                       "{w@add/family{n, ex: {w@add/family Aynarr{n\n" +
                        "{w@add/patron{n, ex: {w@add/patron Estril{n\n" +
                        "{w@add/desc{n, ex: {w@add/desc A severe girl with blue eyes...{n\n" +
                        "{w@add/concept{n, ex: {w@add/concept Humorless Handmaiden{n\n" +
@@ -737,6 +742,20 @@ class CmdGuestAddInput(ArxPlayerCommand):
             msg = "For having the fealty of %s, you will receive %s " % (args, bonus)
             msg += "bonus xp after character creation."
             caller.msg(msg)
+        if 'family' in switches:
+            args = args.capitalize()
+            if args not in _valid_family_:
+                families = ", ".join(_valid_family_)
+                caller.msg("The argument for family must be one of the following: {w%s{n"
+                           % families)
+                return
+        if 'patron' in switches:
+            args = args.capitalize()
+            if args not in _valid_patron_:
+                patrons = ", ".join(_valid_patron_)
+                caller.msg("The argument for patron must be one of the following: {w%s{n"
+                           % patrons)
+                return
         if 'secrets' in switches:
             # secrets is a list
             args = [args]
