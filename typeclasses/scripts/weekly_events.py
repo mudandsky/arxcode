@@ -121,10 +121,9 @@ class WeeklyEvents(RunDateMixin, Script):
         self.do_events_per_player()
         # awarding votes we counted
         self.award_scene_xp()
-        # self.award_weekly_xp()
         # self.award_vote_xp()
-        # self.post_top_rpers()
-        self.post_top_prestige()
+        #self.post_top_rpers()
+        #self.post_top_prestige()
         # dominion stuff
         self.do_dominion_events()
         self.do_investigations()
@@ -226,8 +225,9 @@ class WeeklyEvents(RunDateMixin, Script):
         for player in players:
             # self.count_votes(player)
             # journal XP
-            self.process_journals(player)
+            # self.process_journals(player)
             self.count_scenes(player)
+            self.activityxp(player)
             # niche XP?
             # first-time RP XP?
             # losing gracefully
@@ -307,50 +307,49 @@ class WeeklyEvents(RunDateMixin, Script):
         table = EvTable("{wName{n", "{wNum Poses{n", border="cells", width=78)
         for ob in low_activity:
             table.add_row(ob.key, ob.db.previous_posecount)
-        board.bb_post(poster_obj=self, msg=str(table), subject="Inactive by Poses List")
-        
+        board.bb_post(poster_obj=self, msg=str(table), subject="Inactive by Poses List")    
     # Various 'Beats' -------------------------------------------------
 
-    def process_journals(self, player):
-        """
-        In the journals here, we're processing all the XP gained for
-        making journals, comments, or updating relationships.
-        """
-        char = player.char_ob
-        try:
-            account = player.roster.current_account
-            if account.id in self.ndb.xptypes:
-                total = self.ndb.xptypes[account.id].get("journals", 0)
-            else:
-                self.ndb.xptypes[account.id] = {}
-                total = 0
-            journal_total = char.messages.num_weekly_journals
-            xp = 0
-            if journal_total > 0:
-                xp += 4
-            if journal_total > 1:
-                xp += 2
-            if journal_total > 2:
-                xp += 1
-            # XP capped at 7 for all sources
-            if xp > 7:
-                xp = 7
-            if xp + total > 7:
-                xp = 7 - total
-            if xp <= 0:
-                return
-        except (ValueError, TypeError):
-            return
-        except AttributeError:
-            return
-        except Exception as err:
-            print("ERROR in process journals: %s" % err)
-            traceback.print_exc()
-            return
-        if xp:
-            msg = "You received %s xp this week for journals/comments/relationship updates." % xp
-            self.award_xp(char, xp, player, msg, xptype="journals")
-
+#    def process_journals(self, player):
+#        """
+#        In the journals here, we're processing all the XP gained for
+#        making journals, comments, or updating relationships.
+#       """
+#        char = player.char_ob
+#        try:
+#            account = player.roster.current_account
+#           if account.id in self.ndb.xptypes:
+#               total = self.ndb.xptypes[account.id].get("journals", 0)
+#            else:
+#                self.ndb.xptypes[account.id] = {}
+#                total = 0
+#            journal_total = char.messages.num_weekly_journals
+#            xp = 0
+#            if journal_total > 0:
+#                xp += 4
+#            if journal_total > 1:
+#                xp += 2
+#            if journal_total > 2:
+#                xp += 1
+#            # XP capped at 7 for all sources
+#            if xp > 7:
+#                xp = 7
+#            if xp + total > 7:
+#                xp = 7 - total
+#            if xp <= 0:
+#                return
+#        except (ValueError, TypeError):
+#            return
+#        except AttributeError:
+#            return
+#        except Exception as err:
+#            print("ERROR in process journals: %s" % err)
+#            traceback.print_exc()
+#            return
+#        if xp:
+#            msg = "You received %s xp this week for journals/comments/relationship updates." % xp
+#            self.award_xp(char, xp, player, msg, xptype="journals")
+#
     # -----------------------------------------------------------------
 
     # def count_votes(self, player):
@@ -390,67 +389,60 @@ class WeeklyEvents(RunDateMixin, Script):
             player = char.player_ob
             if char and player:
                 scenes = self.ndb.scenes[char]
-                xp = self.scale_xp(scenes * 2)
+                xp = scale_xp(scenes)
                 if scenes and xp:
                     msg = "You were in %s random scenes this week, earning %s xp." % (scenes, xp)
                     self.award_xp(char, xp, player, msg, xptype="scenes")
 
-# An attempt made at creating a weekly flat amount of XP. Will come back to this.
-#    def award_weekly_xp(self, char):
-#        """Awards xp for a character based on their active status and minimum pose count met"""
-        # Check to see if the character is on the active list
-#        qs = ObjectDB.objects.filter(roster__roster__name="Active")
-        # Check to see if the character has reached the pose count limit
-#        min_poses = 1
-#        for ob in qs:
-#            if (ob.posecount < min_poses and (ob.tags.get("rostercg")and ob.player_ob
-#                                              and not ob.player_ob.tags.get("staff_alt"))):
-#                ob.db.previous_posecount = ob.posecount
-#            ob.posecount = 0
-        # Apply the 10 xp
-#        char.adjust_xp(10)
-        # Inform
+    def activityxp(self,player):
+        """
+        Award weekly XP if minimum activity standard was met.
+        """
+        xp = 10
+        min_poses = 20
+        char = player.char_ob
+        if char.posecount >= min_poses:
+            msg = "You met the minimum activity standard and earned %s xp." % xp
+            self.award_xp(char, xp, player, msg, xptype="activity")
 
-
-#    @staticmethod
-#    def scale_xp(votes):
-#        """Helper method for diminishing returns of xp"""
-#        xp = 0
-        # 1 vote is 3 xp
-#        if votes > 0:
-#            xp = 3
-        # 2 votes is 5 xp
-#        if votes > 1:
-#            xp += 2
-        # 3 to 5 votes is 6 to 8 xp
-#        max_range = votes if votes <= 5 else 5
-#        for n in range(2, max_range):
-#            xp += 1
-
-#        def calc_xp(num_votes, start, stop, div):
-#            """Helper function for calculating bonus xp"""
-#            bonus_votes = num_votes
-#            if stop and (bonus_votes > stop):
-#                bonus_votes = stop
-#            bonus_xp = bonus_votes - start
-#            bonus_xp /= div
-#            if (bonus_votes - start) % div:
-#                bonus_xp += 1
-#            return bonus_xp
+    @staticmethod
+    def scale_xp(votes):
+        """Helper method for diminishing returns of xp"""
+        xp = 0
+        #1 vote is 3 xp
+        if votes > 0:
+            xp = 3
+        #2 votes is 5 xp
+        if votes > 1:
+            xp += 2
+        #3 to 5 votes is 6 to 8 xp
+        max_range = votes if votes <= 5 else 5
+        for n in range(2, max_range):
+            xp += 1
+        def calc_xp(num_votes, start, stop, div):
+            """Helper function for calculating bonus xp"""
+            bonus_votes = num_votes
+            if stop and (bonus_votes > stop):
+                bonus_votes = stop
+            bonus_xp = bonus_votes - start
+            bonus_xp /= div
+            if (bonus_votes - start) % div:
+                bonus_xp += 1
+            return bonus_xp
 
         # 1 more xp for each 3 between 6 to 14
-#        if votes > 5:
-#            xp += calc_xp(votes, 5, 14, 3)
+        if votes > 5:
+            xp += calc_xp(votes, 5, 14, 3)
         # 1 more xp for each 4 votes after 14
-#        if votes > 14:
-#            xp += calc_xp(votes, 14, 26, 4)
+        if votes > 14:
+            xp += calc_xp(votes, 14, 26, 4)
         # 1 more xp for each 5 votes after 26
-#        if votes > 26:
-#            xp += calc_xp(votes, 26, 41, 5)
+        if votes > 26:
+            xp += calc_xp(votes, 26, 41, 5)
         # 1 more xp for each 10 votes after 36
-#        if votes > 41:
-#            xp += calc_xp(votes, 41, None, 10)
-#        return xp
+        if votes > 41:
+            xp += calc_xp(votes, 41, None, 10)
+        return xp
 
 #    def award_vote_xp(self):
 #        """
