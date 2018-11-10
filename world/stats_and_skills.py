@@ -26,7 +26,7 @@ COMBAT_SKILLS = ("athletics", "brawl", "dodge", "archery", "small wpn", "medium 
 SOCIAL_SKILLS = ("intimidation", "leadership", "manipulation", "diplomacy",
                  "propaganda", "empathy", "etiquette", "performance", "streetwise",)
 GENERAL_SKILLS = ("riddles", "legerdemain", "ride", "investigation",
-                  "law", "linguistics", "restoration", "lifewell",  "stewardship", "theology",
+                  "law", "linguistics", "restoration", "mysticism",  "stewardship", "theology",
                   "agriculture", "economics", "teaching", "war", "survival",
                   "animal ken", "artwork", "sailing", "prestidigitation")
 CRAFTING_SKILLS = ('sewing', 'smithing', 'tanning', 'alchemy', 'woodworking')
