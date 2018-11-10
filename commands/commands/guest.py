@@ -162,17 +162,19 @@ def award_bonus_by_fealty(fealty):
 def award_bonus_by_age(age):
     """Awards bonus xp for older characters"""
     try:
-        bonus = (age - 15)/4
-        if age > 20:
-            bonus += (age - 20)
-        if age > 30:
-            bonus += (age - 30)
-        if age > 40:
-            bonus += (age - 40)
-        if age > 50:
-            bonus += (age - 50)
-        if age > 60:
-            bonus += (age - 60)
+        bonus = 10
+        if age < 150:
+            bonus = 0
+        else if age >= 150 and age < 250:
+    	    bonus = 1 * bonus
+        else if age >= 250 and age < 350:
+            bonus = 3 * bonus
+        else if age >= 350 and age < 450:
+            bonus = 6 * bonus
+        else if age >= 450 and age < 550:
+            bonus = 10 * bonus
+        else if age >= 550:
+            bonus = 15 * bonus
     except (TypeError, ValueError):
         bonus = 0
     return bonus

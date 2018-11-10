@@ -3102,8 +3102,8 @@ class CmdFirstImpression(ArxCommand):
 
     This allows you to claim an xp reward for the first time you
     have a scene with another player. You receive 1 xp, while the
-    player you write the summary for receives 4 xp. Should they
-    return the favor, you'll receive 4 and they'll receive 1. The other
+    player you write the summary for receives 1 xp. Should they
+    return the favor, you'll receive 1 and they'll receive 1. The other
     player receives an inform of the summary you write, and a prompt
     to let them know they can use the command in return. This command
     requires you to be in the same room, as a small reminder that this
@@ -3125,8 +3125,7 @@ class CmdFirstImpression(ArxCommand):
     grant their consent for it to be a publicly viewable account by using
     the /publish command, which makes it viewable on their character sheet.
 
-    Using the /publish, /share, or /all switch will grant the user 1 xp.
-    They cannot be reversed once set.
+    Using the /publish, /share, or /all switch cannot be reversed once set.
 
     If you wish to /publish or /share a first impression of a character that
     was played by a previous character, you must specify a negative number.
@@ -3246,8 +3245,8 @@ class CmdFirstImpression(ArxCommand):
                     return
                 impression.receiver_share = True
                 impression.save()
-                self.caller.adjust_xp(1)
-                self.msg("You have marked %s's impression of you public, and received 1 xp." % targ)
+                # self.caller.adjust_xp(1)
+                # self.msg("You have marked %s's impression of you public, and received 1 xp." % targ)
                 return
             try:
                 impression = self.imps_by_me.get(to_account=hist)
@@ -3272,8 +3271,8 @@ class CmdFirstImpression(ArxCommand):
                     return
                 impression.writer_share = True
                 impression.save()
-                self.caller.adjust_xp(1)
-                self.msg("You have marked your impression as publicly viewable and gained 1 xp.")
+                # self.caller.adjust_xp(1)
+                # self.msg("You have marked your impression as publicly viewable and gained 1 xp.")
                 return
             return
         # check if the target has written a first impression of us. If not, we'll need to be in the same room
@@ -3296,18 +3295,18 @@ class CmdFirstImpression(ArxCommand):
                                                                                    summary=self.rhs)
             self.msg("{wYou have recorded your first impression on %s:{n\n%s" % (targ, self.rhs))
             if "quiet" not in self.switches:
-                msg = "%s has written their +firstimpression on you, giving you 4 xp." % self.caller.key
+                msg = "%s has written their +firstimpression on you, giving you 1 xp." % self.caller.key
                 if not received:
                     msg += " If you want to return the favor with +firstimpression, you will gain 1 additional xp, and "
-                    msg += "give them 4 in return. You are under no obligation to do so."
+                    msg += "give them 1 in return. You are under no obligation to do so."
                 if "private" not in self.switches:
                     msg += "\nSummary of the scene they gave: %s" % self.rhs
                 targ.inform(msg, category="First Impression")
             inform_staff("%s's first impression of %s: %s" % (self.caller.key, targ, self.rhs))
-            xp = 2 if writer_share else 1
+            xp = 1
             self.caller.adjust_xp(xp)
             self.msg("You have gained %s xp." % xp)
-            targ.char_ob.adjust_xp(4)
+            targ.char_ob.adjust_xp(1)
 
 
 class CmdGetInLine(ArxCommand):
