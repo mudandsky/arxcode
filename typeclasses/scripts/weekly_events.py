@@ -389,7 +389,7 @@ class WeeklyEvents(RunDateMixin, Script):
             player = char.player_ob
             if char and player:
                 scenes = self.ndb.scenes[char]
-                xp = scale_xp(scenes)
+                xp = self.scale_xp(scenes)
                 if scenes and xp:
                     msg = "You were in %s random scenes this week, earning %s xp." % (scenes, xp)
                     self.award_xp(char, xp, player, msg, xptype="scenes")
