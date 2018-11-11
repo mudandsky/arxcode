@@ -165,15 +165,15 @@ def award_bonus_by_age(age):
         bonus = 10
         if age < 150:
             bonus = 0
-        else if age >= 150 and age < 250:
+        elif age >= 150 and age < 250:
     	    bonus = 1 * bonus
-        else if age >= 250 and age < 350:
+        elif age >= 250 and age < 350:
             bonus = 3 * bonus
-        else if age >= 350 and age < 450:
+        elif age >= 350 and age < 450:
             bonus = 6 * bonus
-        else if age >= 450 and age < 550:
+        elif age >= 450 and age < 550:
             bonus = 10 * bonus
-        else if age >= 550:
+        elif age >= 550:
             bonus = 15 * bonus
     except (TypeError, ValueError):
         bonus = 0
