@@ -310,21 +310,20 @@ class CmdWatch(ArxPlayerCommand):
 
 class CmdFinger(ArxPlayerCommand):
     """
-    +finger
+    +info
 
     Usage:
-        +finger <character>
-        +finger/preferences <note on RP preferences>
-        +finger/playtimes <note on your playtimes>
+        +info <character>
+        +info/preferences <note on RP preferences>
+        +info/playtimes <note on your playtimes>
 
     Displays information about a given character. To set RP hooks, use the
     +rphooks command. Use the 'preferences' or 'playtimes' switches to add
-    information about your RP preferences or your playtimes to your finger
-    information.
+    information about your RP preferences or your playtimes to your info.
     """
-    key = "+finger"
+    key = "+info"
     locks = "cmd:all()"
-    aliases = ["@finger", "finger"]
+    aliases = ["@finger", "finger", "+finger", "info", "@info"]
     help_category = "Social"
 
     def func(self):
@@ -348,7 +347,7 @@ class CmdFinger(ArxPlayerCommand):
             return
         show_hidden = caller.check_permstring("builders")
         if not self.args:
-            caller.msg("You must supply a character name to +finger.")
+            caller.msg("You must supply a character name to +info.")
             return
         player = caller.search(self.args)
         if not player:
