@@ -36,7 +36,7 @@ class PhotoEditForm(forms.Form):
     """Form for selecting a photo to edit"""
     select_photo = PhotoModelChoiceField(queryset=None, empty_label="(No Image Selected)")
     title = forms.CharField(max_length=200)
-    alt_text = forms.CharField(max_length=200)
+    artist_credit = forms.CharField(max_length=200)
     
     def __init__(self, object_id=None, *args, **kwargs):
         super(PhotoEditForm, self).__init__(*args, **kwargs)

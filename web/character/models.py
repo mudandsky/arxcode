@@ -37,7 +37,7 @@ class Photo(SharedMemoryModel):
     title = models.CharField("Name or description of the picture (optional)", max_length=200, blank=True)
     owner = models.ForeignKey("objects.ObjectDB", blank=True, null=True, verbose_name='owner',
                               help_text='a Character owner of this image, if any.')
-    alt_text = models.CharField("Optional 'alt' text when mousing over your image", max_length=200, blank=True)
+    alt_text = models.CharField("Credit the Artist", max_length=200, blank=True)
 
     # Points to a Cloudinary image
     image = CloudinaryField('image')
