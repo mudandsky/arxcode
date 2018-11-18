@@ -218,7 +218,7 @@ class InvestigationFormCommand(ArxCommand):
             return False
         return True
 
-
+'''
 class CmdAssistInvestigation(InvestigationFormCommand):
     """
     @helpinvestigate
@@ -1052,7 +1052,7 @@ class CmdInvestigate(InvestigationFormCommand):
                 return
         caller.msg("Invalid switch.")
         return
-
+'''
 
 class CmdAdminInvestigations(ArxPlayerCommand):
     """
@@ -1081,7 +1081,7 @@ class CmdAdminInvestigations(ArxPlayerCommand):
     key = "@gminvest"
     aliases = ["@gminvestigations"]
     locks = "cmd:perm(wizards)"
-    help_category = "Investigation"
+    help_category = "Clues"
     
     @property
     def qs(self):
@@ -1205,8 +1205,8 @@ class CmdListClues(ArxPlayerCommand):
     """
     key = "@clues"
     locks = "cmd:all()"
-    aliases = ["+clues", "@clue", "+clue", "@zoinks", "@jinkies"]
-    help_category = "Investigation"
+    aliases = ["+clues", "@clue", "+clue", "clue"]
+    help_category = "Clues"
 
     def get_help(self, caller, cmdset):
         if caller.player_ob:
@@ -1269,10 +1269,10 @@ class CmdListClues(ArxPlayerCommand):
         else:
             rhslist = self.rhslist
         shared_names = []
-        cost = len(rhslist) * len(clues_to_share) * self.caller.clue_cost
-        if cost > self.caller.roster.action_points:
-            self.msg("Sharing the clue(s) with them would cost %s action points." % cost)
-            return
+        # cost = len(rhslist) * len(clues_to_share) * self.caller.clue_cost
+        # if cost > self.caller.roster.action_points:
+        #    self.msg("Sharing the clue(s) with them would cost %s action points." % cost)
+        #    return
         for arg in rhslist:
             pc = self.caller.search(arg)
             if not pc:
@@ -1286,7 +1286,7 @@ class CmdListClues(ArxPlayerCommand):
             for clue in clues_to_share:
                 clue.share(pc.roster, note=note)
             shared_names.append(str(pc.roster))
-        if shared_names and self.caller.pay_action_points(cost):
+        if shared_names:
             msg = "You have shared the clue(s) '%s' with %s." % (", ".join(str(ob.clue) for ob in clues_to_share),
                   ", ".join(shared_names))
             if note:
@@ -1336,7 +1336,7 @@ class CmdListRevelations(ArxPlayerCommand):
     """
     key = "@revelations"
     locks = "cmd:all()"
-    help_category = "Investigation"
+    help_category = "Clues"
 
     def disp_rev_table(self):
         caller = self.caller
@@ -1404,7 +1404,7 @@ class CmdListMysteries(ArxPlayerCommand):
     """
     key = "@mysteries"
     locks = "cmd:all()"
-    help_category = "Investigation"
+    help_category = "Clues"
 
     def func(self):
         if not self.args:
@@ -1441,7 +1441,7 @@ class CmdTheories(ArxPlayerCommand):
     """
     key = "@theories"
     locks = "cmd:all()"
-    help_category = "Investigation"
+    help_category = "Clues"
 
     def display_theories(self):
         table = EvTable("{wID #{n", "{wTopic{n")
@@ -1622,10 +1622,8 @@ class CmdPRPClue(ArxPlayerCommand):
         +prpclue/event <event ID>
         +prpclue/name <clue name>
         +prpclue/desc <description>
-        +prpclue/difficulty <investigation difficulty, 1-50>
         +prpclue/tags <tag 1>,<tag 2>,etc
         +prpclue/fake
-        +prpclue/noinvestigate
         +prpclue/noshare
         +prpclue/finish
         +prpclue/abandon
@@ -1634,15 +1632,14 @@ class CmdPRPClue(ArxPlayerCommand):
 
     Allows a GM to create custom clues for their PRP, and then send it to
     participants. Tags are the different keywords/phrases that allow it
-    to be matched to an investigate. Setting a clue as fake means that it's
-    false/a hoax. /noinvestigate and /noshare prevent investigating the
-    clue or sharing it, respectively.
+    to be matched to a revelation. Setting a clue as fake means that it's
+    false/a hoax. /noshare prevents the clue from being sharable.
 
     Once the clue is created, it can be sent to any participant with the
     /sendclue switch.
     """
     key = "+prpclue"
-    help_category = "Investigation"
+    help_category = "Clues"
     locks = "cmd: all()"
     aliases = ["prpclue", "@prpclue"]
 
@@ -1672,10 +1669,8 @@ class CmdPRPClue(ArxPlayerCommand):
         msg = "{wName{n: %s\n" % form[0]
         msg += "{wDesc{n: %s\n" % form[1]
         msg += "{wEvent:{n %s\n" % event
-        msg += "{wDifficulty{n: %s\n" % form[3]
         msg += "{wTags:{n %s\n" % form[4]
         msg += "{wReal:{n %s\n" % form[5]
-        msg += "{wCan Investigate:{n %s\n" % form[6]
         msg += "{wCan Share:{n %s\n" % form[7]
         self.msg(msg)
         return
@@ -1750,10 +1745,10 @@ class CmdPRPClue(ArxPlayerCommand):
                     search_tag = SearchTag.objects.create(name=tag_name)
                 search_tags.append(search_tag)
             red_herring = not form[5]
-            allow_investigation = form[6]
+            # allow_investigation = form[6]
             allow_sharing = form[7]
-            clue = event.clues.create(name=name, desc=desc, rating=rating, red_herring=red_herring,
-                                      allow_investigation=allow_investigation, allow_sharing=allow_sharing)
+            clue = event.clues.create(name=name, desc=desc, red_herring=red_herring,
+                                      allow_sharing=allow_sharing)
             for search_tag in search_tags:
                 clue.search_tags.add(search_tag)
             self.msg("Clue #%s created." % clue.id)
@@ -1772,17 +1767,17 @@ class CmdPRPClue(ArxPlayerCommand):
             if not event:
                 return
             form[2] = event.id
-        if "difficulty" in self.switches:
-            try:
-                form[3] = int(self.args)
-            except ValueError:
-                self.msg("Must be a number.")
+        # if "difficulty" in self.switches:
+        #    try:
+        #        form[3] = int(self.args)
+        #    except ValueError:
+        #        self.msg("Must be a number.")
         if "tags" in self.switches:
             form[4] = self.args
         if "fake" in self.switches:
             form[5] = not form[5]
-        if "noinvestigate" in self.switches:
-            form[6] = not form[6]
+        #if "noinvestigate" in self.switches:
+        #    form[6] = not form[6]
         if "noshare" in self.switches:
             form[7] = not form[7]
         self.caller.db.clue_creation_form = form

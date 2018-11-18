@@ -390,7 +390,7 @@ class CmdSendVision(ArxPlayerCommand):
     appropriate text to a given character.
     """
     key = "sendvision"
-    aliases = ["sendvisions", "sendclue"]
+    aliases = ["sendvisions", "sendclue", "giveclue"]
     locks = "cmd:perm(sendvision) or perm(Wizards)"
     help_category = "GMing"
 
