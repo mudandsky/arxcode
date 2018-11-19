@@ -161,12 +161,11 @@ def journal_list_json(request):
     def get_fullname(char):
         """Auto-generate last names for people who don't have em. Poor bastards. Literally!"""
         commoner_names = {
-            'Velenosa': 'Masque',
-            'Valardin': 'Honor',
-            'Crownsworn': 'Crown',
-            'Redrain': 'Frost',
-            'Grayson': 'Crucible',
-            'Thrax': 'Waters'
+            'Aeran': 'Oceans',
+            'Faenor': 'Snow',
+            'Duindar': 'Rivers',
+            'Thalerith': 'Sand',
+            'Lorandi': 'Stone'
         }
         last = commoner_names.get(char.db.fealty, "") if char.db.family == "None" else char.db.family
         return "{0} {1}".format(char.key, last)

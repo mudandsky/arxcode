@@ -44,7 +44,7 @@ class CmdAdmDomain(ArxPlayerCommand):
       @admin_domain/transferowner receiver=domain_id
       @admin_domain/transferrule char=domain_id
       @admin_domain/liege domain_id=family
-      @admin_domain/list <fealty, eg: 'Velenosa'>
+      @admin_domain/list <fealty, eg: 'Lorandi'>
       @admin_domain/list_char player
       @admin_domain/list_land (x,y)
       @admin_domain/view domain_id
@@ -58,7 +58,7 @@ class CmdAdmDomain(ArxPlayerCommand):
       transferowner - make character and their family ruler of a domain
       transferrule - Just change who is castellan/acting ruler
       liege - sets the liege of a domain to be given family
-      list - all domains for a particular fealty, like Velenosa
+      list - all domains for a particular fealty, like Faenor
       list_land - lists all domains in a given x,y land square
       list_char - lists all domains for a given character name
       view - get stats on a domain
@@ -153,16 +153,16 @@ class CmdAdmDomain(ArxPlayerCommand):
                     caller.msg("Dominion could not find a suitable liege.")
             if srank == 3:
                 try:
-                    if region.name == "Lyceum":
-                        house = Organization.objects.get(name__iexact="Velenosa")
-                    elif region.name == "Oathlands":
-                        house = Organization.objects.get(name__iexact="Valardin")
-                    elif region.name == "Mourning Isles":
-                        house = Organization.objects.get(name__iexact="Thrax")
-                    elif region.name == "Northlands":
-                        house = Organization.objects.get(name__iexact="Redrain")
-                    elif region.name == "Crownlands":
-                        house = Organization.objects.get(name__iexact="Grayson")
+                    if region.name == "Lorawin":
+                        house = Organization.objects.get(name__iexact="Aeran")
+                    elif region.name == "Isalspire":
+                        house = Organization.objects.get(name__iexact="Duindar")
+                    elif region.name == "Nasherat":
+                        house = Organization.objects.get(name__iexact="Thalerith")
+                    elif region.name == "Khelgar":
+                        house = Organization.objects.get(name__iexact="Faenor")
+                    elif region.name == "Torendaar":
+                        house = Organization.objects.get(name__iexact="Lorandi")
                     else:
                         self.msg("House for that region not found.")
                         return
@@ -296,7 +296,7 @@ class CmdAdmDomain(ArxPlayerCommand):
             caller.msg("{wDomains owned directly by {c%s {wfamily{n: %s" % (family, owned))
             return
         if "list" in self.switches:
-            valid_fealty = ("Grayson", "Velenosa", "Redrain", "Valardin", "Thrax")
+            valid_fealty = ("Aeran", "Thalerith", "Duindar", "Faenor", "Lorandi")
             fealty = self.args.capitalize()
             if fealty not in valid_fealty:
                 caller.msg("Listing by fealty must be in %s, you provided %s." % (valid_fealty, fealty))

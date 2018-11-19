@@ -252,7 +252,7 @@ class CmdBuildRoom(CmdDig):
     Examples:
        +buildroom kitchen = north;n, south;s
        +buildroom sheer cliff= climb up, climb down
-       +buildroom/org velenosa/dungeon=door;d, out;o
+       +buildroom/org Faenor/dungeon=door;d, out;o
 
     This command is a convenient way to build rooms quickly; it creates the
     new room and you can optionally set up exits back and forth between your
