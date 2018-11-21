@@ -162,7 +162,7 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
 
     @property
     def species(self):
-        return self.db.species or "Human"
+        return self.db.species or "Elf"
 
     @property
     def appearance_script(self):

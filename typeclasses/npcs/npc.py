@@ -702,7 +702,7 @@ class AgentMixin(object):
         if "animal" in self.agent.type_str:
             default = "animal"
         else:
-            default = "human"
+            default = "elf"
         return self.db.species or default
     
     @property
