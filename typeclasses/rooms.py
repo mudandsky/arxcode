@@ -288,7 +288,7 @@ class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom):
             owners.remove(char)
             self.remove_key(char)
             if char.home == self:
-                char.home = ObjectDB.objects.get(id=13)
+                char.home = ObjectDB.objects.get(id=30)
                 char.save()
             self.db.owners = owners
             if not owners:

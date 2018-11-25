@@ -5998,7 +5998,7 @@ class PlotRoom(SharedMemoryModel):
         if arx_exit:
             from typeclasses.rooms import ArxRoom
             try:
-                city_center = ArxRoom.objects.get(id=13)
+                city_center = ArxRoom.objects.get(id=30)
                 create.create_object(settings.BASE_EXIT_TYPECLASS,
                                      key="Back to Arx <Arx>",
                                      location=room,

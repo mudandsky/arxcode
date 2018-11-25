@@ -1086,7 +1086,7 @@ class CmdSetRoom(ArxCommand):
     HOMECMD = "commands.cmdsets.home.HomeCmdSet"
 
     def func(self):
-        default_home = ObjectDB.objects.get(id=13)
+        default_home = ObjectDB.objects.get(id=30)
         caller = self.caller
         if not (set(self.switches) & set(self.allowed_switches)):
             caller.msg("Please select one of the following: %s" % str(self.allowed_switches))
@@ -1201,7 +1201,7 @@ class CmdSetRoom(ArxCommand):
                 if char.home == loc:
                     try:
                         # set them to default home square if this was their home
-                        home = ObjectDB.objects.get(id=13)
+                        home = ObjectDB.objects.get(id=30)
                         char.home = home
                         char.save()
                     except ObjectDB.DoesNotExist:
