@@ -2175,19 +2175,21 @@ class CmdRoomMood(ArxCommand):
 
 class CmdSocialScore(ArxCommand):
     """
-    The who's-who of Arx
+    Ithir's list of which organizations people are in or our of favor with.
 
     Usage:
 
-        +score/reputation[/bad] [<organization>][=<start #>,<stop #>]
+        +reputation/rank[/bad] [<organization>][=<start #>,<stop #>]
+        +reputation/rank <character name>
+        +reputation/rank <organization>
 
-    Checks the organizations and players who have the highest prestige.
-    Renown measures the influence a character has built with different npc
-    groups, while reputation is how a character is thought of by the npcs
-    within an organization. The 'bad' switch shows only those with respect or
-    affection below zero.
+    Reputation is how we measure what standing a player is in with a particular
+    faction or organization in Ithir. The first instance of this command shows
+    the reputation for the highest ranking individuals on the grid. The second
+    shows all the reputations of a single player. The third shows all of an
+    organization's ranked characters.
     """
-    key = "+score"
+    key = "+reputation"
     aliases = ["reputation", "score"]
     locks = "cmd:all()"
     help_category = "Information"
@@ -2211,7 +2213,7 @@ class CmdSocialScore(ArxCommand):
 #                table.add_row([str(ob.player), ob.category, ob.level, ob.rating])
 #            self.msg(str(table))
 #            return
-        if "reputation" in self.switches:
+        if "rank" in self.switches:
             rep = Reputation.objects.filter(player__player__isnull=False,
                                             player__player__roster__roster__name="Active")
             if "bad" in self.switches:
