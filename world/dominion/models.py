@@ -507,7 +507,7 @@ class AssetOwner(SharedMemoryModel):
     # money stored in the bank
     vault = models.PositiveIntegerField(default=0, blank=0)
     # prestige we've earned
-    fame = models.IntegerField(default=0, blank=0)
+    # fame = models.IntegerField(default=0, blank=0)
     legend = models.IntegerField(default=0, blank=0)
     # resources
     economic = models.PositiveIntegerField(default=0, blank=0)
@@ -523,17 +523,17 @@ class AssetOwner(SharedMemoryModel):
         """Our prestige used for different mods. aggregate of fame, legend, and grandeur"""
         if hasattr(self, '_cached_prestige'):
             return self._cached_prestige
-        self._cached_prestige = self.fame + self.total_legend + self.grandeur + self.propriety
+        self._cached_prestige = self.legend
         return self._cached_prestige
 
-    @property
-    def propriety(self):
-        """A modifier to our fame based on tags we have"""
-        if hasattr(self, '_cached_propriety'):
-            return self._cached_propriety
-        percentage = max(sum(ob.percentage for ob in self.proprieties.all()), -100)
-        self._cached_propriety = int(self.fame * percentage/100.0)
-        return self._cached_propriety
+#    @property
+#    def propriety(self):
+#        """A modifier to our fame based on tags we have"""
+#        if hasattr(self, '_cached_propriety'):
+#            return self._cached_propriety
+#        percentage = max(sum(ob.percentage for ob in self.proprieties.all()), -100)
+#        self._cached_propriety = int(self.fame * percentage/100.0)
+#        return self._cached_propriety
 
     @property
     def honor(self):
@@ -543,10 +543,10 @@ class AssetOwner(SharedMemoryModel):
         self._cached_honor = sum(ob.amount for ob in self.honorifics.all())
         return self._cached_honor
 
-    @property
-    def total_legend(self):
-        """Sum of legend and honor"""
-        return self.legend + self.honor
+#    @property
+#    def total_legend(self):
+#        """Sum of legend and honor"""
+#        return self.legend + self.honor
 
     @property
     def prestige_mod(self):
@@ -562,9 +562,9 @@ class AssetOwner(SharedMemoryModel):
         bonus = (mod * base_amount)/100.0
         return int(bonus)
 
-    def get_bonus_income(self, base_amount):
-        """Calculates the bonus to domain/org income we get from prestige."""
-        return self.get_bonus_resources(base_amount)/4
+#    def get_bonus_income(self, base_amount):
+#        """Calculates the bonus to domain/org income we get from prestige."""
+#        return self.get_bonus_resources(base_amount)/4
 
     def _get_owner(self):
         if self.player:
@@ -580,72 +580,72 @@ class AssetOwner(SharedMemoryModel):
     def __repr__(self):
         return "<Owner (#%s): %s>" % (self.id, self.owner)
 
-    @property
-    def grandeur(self):
-        """Value used for prestige that represents prestige from external sources"""
-        if self.organization_owner:
-            return self.get_grandeur_from_members()
-        val = 0
-        val += self.get_grandeur_from_patron()
-        val += self.get_grandeur_from_proteges()
-        val += self.get_grandeur_from_orgs()
-        return val
+#    @property
+#    def grandeur(self):
+#        """Value used for prestige that represents prestige from external sources"""
+#        if self.organization_owner:
+#            return self.get_grandeur_from_members()
+#        val = 0
+#        val += self.get_grandeur_from_patron()
+#        val += self.get_grandeur_from_proteges()
+#        val += self.get_grandeur_from_orgs()
+#        return val
 
-    @property
-    def base_grandeur(self):
-        """The amount we contribute to other people when they're totalling up grandeur"""
-        return int(self.fame/10.0 + self.total_legend/10.0 + self.propriety/10.0)
+#    @property
+#    def base_grandeur(self):
+#        """The amount we contribute to other people when they're totalling up grandeur"""
+#        return int(self.fame/10.0 + self.total_legend/10.0 + self.propriety/10.0)
 
-    def get_grandeur_from_patron(self):
-        """Gets our grandeur value from our patron, if we have one"""
-        try:
-            return self.player.patron.assets.base_grandeur
-        except AttributeError:
-            return 0
+#    def get_grandeur_from_patron(self):
+#        """Gets our grandeur value from our patron, if we have one"""
+#        try:
+#            return self.player.patron.assets.base_grandeur
+#        except AttributeError:
+#            return 0
 
-    def get_grandeur_from_proteges(self):
-        """Gets grandeur value from each of our proteges, if any"""
-        base = 0
-        for protege in self.player.proteges.all():
-            base += protege.assets.base_grandeur
-        return base
+#    def get_grandeur_from_proteges(self):
+#        """Gets grandeur value from each of our proteges, if any"""
+#        base = 0
+#        for protege in self.player.proteges.all():
+#            base += protege.assets.base_grandeur
+#        return base
 
-    def get_grandeur_from_orgs(self):
-        """Gets grandeur value from orgs we're a member of."""
-        base = 0
-        memberships = list(self.player.memberships.filter(deguilded=False, secret=False,
-                                                          organization__secret=False).distinct())
-        too_many_org_penalty = max(len(memberships) * 0.5, 1.0)
-        for member in memberships:
-            rank_divisor = max(member.rank, 1)
-            grandeur = member.organization.assets.base_grandeur / rank_divisor
-            grandeur /= too_many_org_penalty
-            base += grandeur
-        return int(base)
+#    def get_grandeur_from_orgs(self):
+#        """Gets grandeur value from orgs we're a member of."""
+#        base = 0
+#        memberships = list(self.player.memberships.filter(deguilded=False, secret=False,
+#                                                          organization__secret=False).distinct())
+#        too_many_org_penalty = max(len(memberships) * 0.5, 1.0)
+#        for member in memberships:
+#            rank_divisor = max(member.rank, 1)
+#            grandeur = member.organization.assets.base_grandeur / rank_divisor
+#            grandeur /= too_many_org_penalty
+#            base += grandeur
+#        return int(base)
 
-    def get_grandeur_from_members(self):
-        """Gets grandeur for an org from its members"""
-        base = 0
-        members = list(self.organization_owner.active_members)
-        ranks = 0
-        for member in members:
-            rank_divisor = max(member.rank, 1)
-            grandeur = member.player.assets.base_grandeur / rank_divisor
-            base += grandeur
-            ranks += 11 - member.rank
-        too_many_members_mod = max(ranks/200.0, 0.01)
-        base /= too_many_members_mod
-        sign = -1 if base < 0 else 1
-        return min(abs(int(base)), abs(self.fame + self.legend) * 2) * sign
+#    def get_grandeur_from_members(self):
+#        """Gets grandeur for an org from its members"""
+#        base = 0
+#        members = list(self.organization_owner.active_members)
+#        ranks = 0
+#        for member in members:
+#            rank_divisor = max(member.rank, 1)
+#            grandeur = member.player.assets.base_grandeur / rank_divisor
+#            base += grandeur
+#            ranks += 11 - member.rank
+#        too_many_members_mod = max(ranks/200.0, 0.01)
+#        base /= too_many_members_mod
+#        sign = -1 if base < 0 else 1
+#        return min(abs(int(base)), abs(self.fame + self.legend) * 2) * sign
 
     def adjust_prestige(self, value, force=False):
         """
         Adjusts our prestige. We gain fame equal to the value, and then our legend is modified
         if the value of the hit is greater than our current legend or the force flag is set.
         """
-        self.fame += value
-        if value > self.legend or force:
-            self.legend += value / 100
+#        self.fame += value
+#        if value > self.legend or force:
+#            self.legend += value / 100
         self.save()
 
     def _income(self):
@@ -698,10 +698,10 @@ class AssetOwner(SharedMemoryModel):
             target = self.organization_owner
         return target
 
-    def prestige_decay(self):
-        """Decreases our fame for the week"""
-        self.fame -= int(self.fame * PRESTIGE_DECAY_AMOUNT)
-        self.save()
+#    def prestige_decay(self):
+#        """Decreases our fame for the week"""
+#        self.fame -= int(self.fame * PRESTIGE_DECAY_AMOUNT)
+#        self.save()
 
     def do_weekly_adjustment(self, week, inform_creator=None):
         """
@@ -753,7 +753,6 @@ class AssetOwner(SharedMemoryModel):
         """Returns formatted string display of this AssetOwner"""
         msg = "{wName{n: %s\n" % self.owner
         msg += "{wVault{n: %s\n" % self.vault
-        msg += "{wPrestige{n: %s\n" % self.grandeur
         if hasattr(self, 'estate'):
             msg += "{wHoldings{n: %s\n" % ", ".join(str(dom) for dom in self.estate.holdings.all())
         msg += "{wAgents{n: %s\n" % ", ".join(str(agent) for agent in self.agents.all())
@@ -765,10 +764,10 @@ class AssetOwner(SharedMemoryModel):
             del self._cached_income
         if hasattr(self, '_cached_costs'):
             del self._cached_costs
-        if hasattr(self, '_cached_prestige'):
-            del self._cached_prestige
-        if hasattr(self, '_cached_propriety'):
-            del self._cached_propriety
+#        if hasattr(self, '_cached_prestige'):
+#            del self._cached_prestige
+#        if hasattr(self, '_cached_propriety'):
+#            del self._cached_propriety
         if hasattr(self, '_cached_honor'):
             del self._cached_honor
 

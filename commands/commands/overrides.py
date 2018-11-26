@@ -172,12 +172,10 @@ class CmdInventory(ArxCommand):
             econ = player.Dominion.assets.economic
             soc = player.Dominion.assets.social
             mil = player.Dominion.assets.military
-            msg += "\n{wPrestige:{n      %-10s  {wResources         {wSocial Clout:{n %s" % (assets.prestige,
-                                                                                             char.social_clout)
-            msg += "\n{w||__ Legend:{n    %-10s  {wEconomic:{n %s" % (assets.total_legend, econ)
-            msg += "\n{w||__ Fame:{n      %-10s  {wMilitary:{n %s" % (assets.fame, mil)
-            msg += "\n{w||__ Grandeur:{n  %-10s  {wSocial:{n   %s" % (assets.grandeur, soc)
-            msg += "\n{w||__ Propriety:{n %-10s" % assets.propriety
+            msg += "\n{wResources           {wSocial Scores"
+            msg += "\n{wEconomic:{n %-10s"         "{wPrestige:{n   %-10s" % (econ, assets.prestige)
+            msg += "\n{wMilitary:{n %-10s"         "{wSocial Clout:{n %s" % (mil, char.social_clout)
+            msg += "\n{wSocial:{n   %s" % (soc)
             mats = player.Dominion.assets.materials.filter(amount__gte=1)
             msg += "\n{wMaterials:{n %s" % ", ".join(str(ob) for ob in mats)
         self.msg(msg)

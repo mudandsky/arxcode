@@ -468,7 +468,7 @@ class AppearanceMixins(BaseObjectMixins):
         currency = self.currency
         if not currency:
             return None
-        string = "coins worth a total of %.2f silver pieces" % currency
+        string = "%.2f silver coins" % currency
         return string
 
     def return_appearance(self, pobject, detailed=False, format_desc=False,

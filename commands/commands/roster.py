@@ -916,7 +916,6 @@ def display_recognition(caller, charob):
     actions = charob.player_ob.Dominion.assets.honorifics.all()
     for action in actions:
         msg += "\n  {wTitle:{n %s\n" % action.title
-        msg += "  {wAmount:{n %d\n" % action.amount
         msg += "  {wDescription:{n %s\n" % action.description
     if not actions:
         msg += "\n  There's no record of any actions that have earned them special acclaim or notoriety."
