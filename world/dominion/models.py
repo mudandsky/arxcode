@@ -562,9 +562,9 @@ class AssetOwner(SharedMemoryModel):
         bonus = (mod * base_amount)/100.0
         return int(bonus)
 
-#    def get_bonus_income(self, base_amount):
-#        """Calculates the bonus to domain/org income we get from prestige."""
-#        return self.get_bonus_resources(base_amount)/4
+    def get_bonus_income(self, base_amount):
+        """Calculates the bonus to domain/org income we get from prestige."""
+        return self.get_bonus_resources(base_amount)/4
 
     def _get_owner(self):
         if self.player:

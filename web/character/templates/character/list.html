@@ -21,14 +21,14 @@
 	</div>
 	<table class="table table-hover">
 	<tr bgcolor="#333333">
-		<td>Name</td>
-		<td><a href="{% url 'help_topics:topic' 'gender'%}">Gender</a></td>
+        <td><b>Name</b></td>
+		<td><b href="{% url 'help_topics:topic' 'gender'%}">Gender</b></td>
 		<td><a href="{% url 'help_topics:topic' 'age'%}">Age</a></td>
 		<td><a href ="{% url 'help_topics:topic' 'concept' %}">Concept</a></td>
 		<td><a href="{% url 'help_topics:topic' 'kinship' %}">Kinship</a></td>
 		<td><a href="{% url 'help_topics:topic' 'social_rank' %}">Social Rank</a></td>
 		{% if show_hidden %}
-		<td>Alts</td>
+		<td><b>Alts</b></td>
 		{% endif %}
 	</tr>
 
@@ -38,11 +38,11 @@
     {% for char in object_list %}
 	  <tr bgcolor="#336666">
         <td>{% if char.get_absolute_url %}<a href="{{ char.get_absolute_url }}">{{ char.key }}</a>{% else %}{{ char.key }}{% endif %}</td>
-		<td>{{ char.db.gender }}</td>
-		<td>{{ char.db.age }}</td>
-		<td>{{char.db.concept}}</td>
-		<td>{{char.db.fealty}}</td>
-		<td>{{char.db.social_rank}}</td>
+          <td><b>{{ char.db.gender }}</b></td>
+		<td><b>{{ char.db.age }}</b></td>
+		<td><b>{{char.db.concept}}</b></td>
+		<td><b>{{char.db.fealty}}</b></td>
+		<td><b>{{char.db.social_rank}}</b></td>
 		{% if show_hidden %}
 		<td>{% for alt in char.roster.alts %}{% if alt.character.get_absolute_url %}<a href="{{ alt.character.get_absolute_url }}">{{alt}}</a>{% else %}{{ alt }}{% endif %}{% endfor %}</td>
 		{% endif %}

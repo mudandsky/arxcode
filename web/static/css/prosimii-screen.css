@@ -10,11 +10,20 @@
 /* ##### Common Styles ##### */
 
 body {
-  font-family: "Palatino Linotype"
+  font-family: "Helvetica";
   font-size: 73%;  /* Enables font size scaling in MSIE */
   margin: 0;
   padding: 0;
   background-color: #1c1c1c;
+}
+
+.backgroundimag{
+  background-image: url('/static/images/IthirBanner2.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  height: 300px;
+  width: 100%;
 }
 
 html > body {
@@ -31,7 +40,7 @@ acronym, .titleTip {
 a {
   color: rgb(255, 255, 255);
   background-color: transparent;
-  text-decoration: underline;
+  text-decoration: none;
   margin: 0;
   padding: 0 1px 2px 1px;
 }
@@ -155,6 +164,7 @@ dd {
   position: absolute;
   right: 1.5em;
   top: 3.5em;
+  text-decoration: none;
 }
 
 .headerLinks a {
@@ -169,7 +179,7 @@ dd {
 .headerLinks a:hover {
   color: rgb(195,196,210);
   background-color: transparent;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .subHeader {
@@ -186,7 +196,7 @@ dd {
   background-color: transparent;
   font-size: 110%;
   font-weight: bold;
-  text-decoration: none;
+  text-decoration: underline;
   margin: 0;
   padding: 0 0.25ex 0 0;
 }
@@ -194,7 +204,7 @@ dd {
 .subHeader a:hover, .subHeader .highlight {
   color: rgb(32, 127, 70);
   background-color: transparent;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 
@@ -227,12 +237,31 @@ dd {
   text-align: center;
 }
 
+#main-copy h3 {
+  color: #004d35;
+  background-color: transparent;
+  font-family: "Palatino Linotype";
+  font-weight: normal;
+  font-size: 125%;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
 #main-copy p {
     color: #8c8c8c;
   line-height: 1.75em;
   margin: 1em 0 1.5em 0;
   padding-left: 5%;
     text-align: left;
+}
+
+#main-copy b {
+  color: #FFFFFF;
+  line-height: .25em;
+  margin: 1em 0 1.5em 0;
+  padding-left: 0%;
+  text-align: left;
 }
 
 .newsHeading {
@@ -281,12 +310,25 @@ dd {
 
 .more a:hover {
   color: rgb(183, 183, 183);
+  text-decoration: underline;
+}
+
+.more b {
+  color: rgb(140, 140, 140);
+  background-color: transparent;
+  font-size: 98%;
   text-decoration: none;
+  margin: 0;
+  padding: 0.25ex 0.75ex;
 }
 
 .container-fluid {
-    text-align: center;
-      padding: 0 1.9%;
+  text-align: center;
+  padding: 0 1.9%;
+  align-items: center;
+  align-content: center;
+  align-self: center;
+  child-align: middle;
 }
 .rowOfBoxes {
   clear: both;
@@ -321,21 +363,10 @@ dd {
 }
 
 .fullWidth {
-  position: absolute;
+  position: relative;
   left: 50%;
-  top: 0%;
-  -webkit-transform: translateY(-50%) translateX(-50%);
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  padding-top: 260px;
-  /*text-align: center;
-  padding-top: 0px;
- padding-right: auto;
-  padding-left: auto;
-  border-left: none;
+  -webkit-transform: translate(-50%);
   margin: auto;
-  flex-wrap: wrap; */
 }
 
 .filler {  /* use with an empty <p> element to add padding to the end of a text box */
@@ -409,4 +440,99 @@ dd {
     .headerLinks {
         position: static;
     }
+
+  .navbar-custom .navbar-nav .open .dropdown-menu > li > a {
+    color: #ffffff;
+  }
+  .navbar-custom .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-custom .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #c0c0c0;
+    background-color: transparent;
+  }
+  .navbar-custom .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-custom .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-custom .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #c0c0c0;
+    background-color: #222222;
+  }
+  .navbar-custom .navbar-nav .open .dropdown-menu > .disabled > a,
+  .navbar-custom .navbar-nav .open .dropdown-menu > .disabled > a:hover,
+  .navbar-custom .navbar-nav .open .dropdown-menu > .disabled > a:focus {
+    color: #cccccc;
+    background-color: transparent;
+  }
+}
+
+#custom-bootstrap-menu.navbar-default .navbar-brand {
+    color: rgba(255, 255, 255, 1);
+}
+#custom-bootstrap-menu.navbar-default {
+    font-size: 14px;
+    background-color: rgba(28, 28, 28, 1);
+    border-bottom-width: 0px;
+  text-align: center;
+}
+#custom-bootstrap-menu.navbar-default .navbar-nav>li>a {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(28, 28, 28, 1);
+  text-align: center;
+}
+#custom-bootstrap-menu.navbar-default .navbar-nav>li>a:hover,
+#custom-bootstrap-menu.navbar-default .navbar-nav>li>a:focus {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(10, 110, 70, 1);
+}
+#custom-bootstrap-menu.navbar-default .navbar-nav>.active>a,
+#custom-bootstrap-menu.navbar-default .navbar-nav>.active>a:hover,
+#custom-bootstrap-menu.navbar-default .navbar-nav>.active>a:focus {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(0, 77, 53, 1);
+}
+#custom-bootstrap-menu.navbar-default .navbar-toggle {
+    border-color: #004d35;
+}
+#custom-bootstrap-menu.navbar-default .navbar-toggle:hover,
+#custom-bootstrap-menu.navbar-default .navbar-toggle:focus {
+    background-color: #004d35;
+}
+#custom-bootstrap-menu.navbar-default .navbar-toggle .icon-bar {
+    background-color: #004d35;
+}
+#custom-bootstrap-menu.navbar-default .navbar-toggle:hover .icon-bar,
+#custom-bootstrap-menu.navbar-default .navbar-toggle:focus .icon-bar {
+    background-color: #1c1c1c;
+}
+
+.navbar-custom .navbar-nav > .dropdown > a .caret {
+  border-top-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+.dropdown-menu{
+  color: rgb(74, 74, 74);
+  background-color: #1c1c1c;
+  font-size: 100%;
+  text-align: center;
+  line-height: 20px;
+  margin: 2em 0 0 0;
+  padding: 2ex 10px;
+  clear: left;}
+
+.dropdown-item{
+  list-style-type: none;
+}
+
+.dropdown-info{
+    color: rgb(74, 74, 74);
+  background-color: #1c1c1c;
+  font-size: 100%;
+  text-align: center;
+  line-height: 20px;
+  margin: 2em 0 0 0;
+  padding: 2ex 10px;
+  clear: left;
+}
+
+.table-hover thead tr:hover th, .table-hover tbody tr:hover td {
+    background-color: #A9A9A9;
 }

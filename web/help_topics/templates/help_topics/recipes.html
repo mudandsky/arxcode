@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% load app_filters %}
 {% block content %}
-	<button data-toggle="collapse" data-target="#Recipes">
-    <h2>Crafting Recipes</h2></button><hr />
+	<button type="button" class="btn btn-success" data-toggle="collapse" data-target="#Recipes">
+    <h2>Crafting Recipes</h2></button>
     <form method="get" action="." class="navbar-form">
+     <label for="sel1"><h2>Recipe Search: </h2></label>
     <input type="text" id="searchBox" class="input-medium search-query" name="recipe_name" placeholder="Recipe Name">
-    <input type="text" id="searchBox" class="input-medium search-query" name="difficulty" placeholder="Minimum difficulty">
+        <br>
     <div class="form-group">
-    <label for="sel1">Ability List:</label>
+        <label for="sel1"><h2>Ability List: </h2></label>
         <select class="form-control" id="sel1" name="ability">
             <option value=""></option>
             <option value="weaponsmith">Weaponsmith</option>
@@ -21,15 +22,18 @@
     </div>
     <input type="submit" class="btn" value="Search" >
     </form>
+        <style>
+	tr:nth-child(even) {background-color: #336633;}
+</style>
 	<div id="Recipes" class="collapse in">
 	<table class="table table-hover">
 	<tr bgcolor="#336666">
-		<td>Name</td>
-		<td>Ability</td>
-		<td>Difficulty</td>
-		<td>Requirements</td>
-        <td>Base Stats</td>
-		<td>Description</td>
+        <td><b>Name</b></td>
+		<td><b>Ability</b></td>
+		<td><b>Difficulty</b></td>
+		<td><b>Requirements</b></td>
+        <td><b>Base Stats</b></td>
+		<td><b>Description</b></td>
 	</tr>
 	{% for recipe in all_recipes %}
 		{% if recipe in known_recipes %}
@@ -37,32 +41,35 @@
 		{% else %}
 		<tr>
 		{% endif %}
-		<td width="20%">{{ recipe.name }}</td>
-		<td width="10%">{{ recipe.ability }}</td>
-		<td width="10%">{{ recipe.difficulty }}</td>
-		<td width="20%">{{ recipe.display_reqs|mush_to_html }}</td>
-        <td width="10%">{{ recipe.baseval }}</td>
-		<td width="50%">{{ recipe.desc }}</td>
+		<td width="20%"><b>{{ recipe.name }}</b></td>
+		<td width="10%"><b>{{ recipe.ability }}</b></td>
+		<td width="10%"><b>{{ recipe.difficulty }}</b></td>
+		<td width="20%"><b>{{ recipe.display_reqs|mush_to_html }}</b></td>
+        <td width="10%"><b>{{ recipe.baseval }}</b></td>
+		<td width="50%"><b>{{ recipe.desc }}</b></td>
 		</tr>
 	{% endfor %}
 	</table>
 	</div>
-	<button data-toggle="collapse" data-target="#Materials">
+	<button type="button" class="btn btn-success" data-toggle="collapse" data-target="#Materials">
     <h2>Crafting Materials</h2></button><hr />
+            <style>
+	tr:nth-child(even) {background-color: #336633;}
+</style>
 	<div id="Materials" class="collapse in">
 	<table class="table table-hover">
 	<tr bgcolor="#336666">
-		<td>Name</td>
-		<td>Value</td>
-		<td>Category</td>
-		<td>Description</td>
+		<td><b>Name</b></td>
+		<td><b>Value</b></td>
+		<td><b>Category</b></td>
+		<td><b>Description</b></td>
 	</tr>
 	{% for mat in materials %}
 		<tr>
-		<td width="10%">{{ mat.name }}</td>
-		<td width="10%">{{ mat.value }}</td>
-		<td width="20%">{{ mat.category }}</td>
-		<td width="70%">{{ mat.desc }}</td>
+		<td width="10%"><b>{{ mat.name }}</b></td>
+		<td width="10%"><b>{{ mat.value }}</b></td>
+		<td width="20%"><b>{{ mat.category }}</b></td>
+		<td width="70%"><b>{{ mat.desc }}</b></td>
 		</tr>
 	{% endfor %}
 	</table>

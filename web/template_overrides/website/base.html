@@ -39,12 +39,12 @@
       <div id="top"><a href="#main-copy" class="doNotDisplay doNotPrint">Skip to main content.</a></div>
 
     <!-- ##### Header ##### -->
-    <div class="dividingBorderAbove"></div>
+<!---    <div class="dividingBorderAbove"></div>
           <div class="fullWidth noBorderOnLeft">
                 <img src="/static/images/IthirBanner2.jpg"/>
         <!--span>Sites:</span-->
         <!--a href="http://evennia.com" title="The Python-based MUD server">Evennia.com</a-->
-      </div>
+
  <!---   <div id="header">
       <div class="subHeader">
         <h1 class="headerTitle" lang="la">Ithir</h1>
@@ -52,8 +52,13 @@
                 {{game_slogan}}			&nbsp;
         </div> --->
 
+
         <br class="doNotDisplay doNotPrint" />
 
+    <div class="row backgroundimag">
+        <div class="container">
+        </div>
+    </div>
         <div class="headerLinks">
           <span class="doNotDisplay">Tools:</span>
           {% if user.is_authenticated %}
@@ -71,15 +76,78 @@
         </div>
       </div>
 
+<div id="custom-bootstrap-menu" class="navbar navbar-default navbar-static-top" role="navigation">
+    <div class="fullWidth noBorderOnLeft">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-menubuilder">
+                <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span>
+                <span class="icon-bar"></span><span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse navbar-menubuilder">
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a>
+                </li>
+                <li><a href="/character/{% if user.is_authenticated %}active{% else %}available{% endif %}">Characters</a>
+                </li>
+            <li class="nav-item dropdown">
+                <a class="dropdown-toggle" id="navbarDropdownMenuLink"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">Lore
+                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span></a>
+                <div class="dropdown-menu dropdown-info" aria-labelledby="navbarDropdownMenuLink">
+                    <ul><a class="dropdown-item" href="/topics/">World</a></ul>
+                    <ul><a class="dropdown-item" href="#">Gods</a></ul>
+                    <ul><b class="dropdown-item">Kinships</b></ul>
+                    <ul><a class="dropdown-item" href="#">Aeran</a></ul>
+                    <ul><a class="dropdown-item" href="#">Duindir</a></ul>
+                    <ul><a class="dropdown-item" href="#">Faenor</a></ul>
+                    <ul><a class="dropdown-item" href="#">Lorandi</a></ul>
+                    <ul><a class="dropdown-item" href="#">Thalerith</a></ul>
+                </div>
+            </li>
+                <li class="nav-item dropdown">
+                <a class="dropdown-toggle" id="navbarDropdownMenuLink"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">Guides
+                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span></a>
+                <div class="dropdown-menu">
+                    <ul><a class="dropdown-item" href="#">Game Rules</a></ul>
+                    <ul><a class="dropdown-item" href="#">Getting Started</a></ul>
+                    <ul><a class="dropdown-item" href="#">Character Creation</a></ul>
+                    <ul><a class="dropdown-item" href="#">Guides</a></ul>
+                </div>
+            </li>
+                <li class="nav-item dropdown">
+                <a class="dropdown-toggle" id="navbarDropdownMenuLink"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">Chronicle
+                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span></a>
+                <div class="dropdown-menu">
+                    <ul><a class="dropdown-item" href="/character/story/">Story</a></ul>
+                    <ul><a class="dropdown-item" href="/dom/cal/list/">Events</a></ul>
+                    <ul><a class="dropdown-item" href="/comms/boards/">Boards</a></ul>
+                </div>
+            </li>
+                    {% if user.is_authenticated and user.is_staff %}
+                <li><a href="/admin/">Admin</a></li>
+                <li><a href="/support/">Requests</a></li>
+                    {% endif %}
+                    {% if webclient_enabled %}
+                <li><a href="/webclient">Play Ithir</a>
+                    {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!---
       <div class="subHeader">
         <!--span class="doNotDisplay">Navigation:</span-->
-        <a href="/">Home</a> |
+<!---        <a href="/">Home</a> |
         <a href="/character/{% if user.is_authenticated %}active{% else %}available{% endif %}">Characters</a> |
         <a href="/topics/">World</a> |
         <a href="/character/story/">Story</a> |
-		<a href="/dom/cal/list/">Events</a> |
+		<a href="/dom/cal/list/">Events</a> | --->
 		<!---<a href="/comms/journals/list/">Journals</a> | --->
-        <a href="/comms/boards/">Boards</a>
+<!---        <a href="/comms/boards/">Boards</a>
         {% if user.is_authenticated and user.is_staff %}
          | <a href="/admin/">Admin Interface</a>
          | <a href="/support/">Requests</a>
@@ -90,7 +158,7 @@
         
       </div>
     </div>
-
+--->
 
     <!-- ##### Side Menu ##### -->
     {% block sidebar %}{% endblock %}
