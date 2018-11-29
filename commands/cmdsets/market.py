@@ -75,7 +75,7 @@ class MarketCmdSet(CmdSet):
         """
         from world.petitions.petitions_commands import CmdBroker
         self.add(CmdMarket())
-        self.add(CmdHaggle())
+        # self.add(CmdHaggle())
         self.add(CmdBroker())
 
 
@@ -274,7 +274,7 @@ class CmdMarket(ArxCommand):
         caller.msg("Invalid switch.")
         return
 
-
+'''
 class HaggleError(Exception):
     """Errors raised when haggling"""
     pass
@@ -633,3 +633,4 @@ class CmdHaggle(ArxCommand):
             bonus = min(amount_found - amount, 25)
             self.msg("Due to your success in searching for a deal, haggling rolls will have a bonus of %s." % bonus)
         return min(amount, amount_found), bonus
+'''
