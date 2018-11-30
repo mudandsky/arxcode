@@ -25,12 +25,13 @@ CONNECTION_SCREEN = \
  If you have an existing account, connect to it by typing:
       {wconnect <username> <password>{n
       
- To join the game by creating a character or choosing one
- from our roster of characters, first login as a guest by
- typing '{wguest{n' and then use either the {w@roster{n command,
- or the '{w@charcreate <email>{n' command.
-
- Enter {whelp{n for more info. {wlook{n will re-show this screen.
+ {rWe are not currently ready for active characters. Please come
+ back at the end of December when we will be opening for our alpha
+ phase of development.
+ 
+ Thanks!
+ -Ithir Staff{n
+ 
 {b=============================================================={n"""
 
 ##"""{b=============================================================={n
