@@ -130,7 +130,7 @@ class CmdFashionOutfit(ArxCommand):
 
 class CmdFashionModel(ArxCommand):
     """
-    Model items that can be worn or wielded to earn fame.
+    Model items that can be worn or wielded to earn prestige.
     Usage:
         model <item>=<organization>
         model/outfit <outfit>=<organization>
@@ -139,9 +139,9 @@ class CmdFashionModel(ArxCommand):
         model/designers[/all] [<designer name>]
         model/orgs[/all] [<organization>]
 
-    A fashion model tests their composure & performance to earn fame. The
+    A fashion model tests their composure & performance to earn prestige. The
     organization sponsoring the model and the item's designer accrues a portion
-    of fame as well. Although masks may be modeled, doing so will reveal the
+    of prestige as well. Although masks may be modeled, doing so will reveal the
     model's identity in subsequent item labels and informs.
     Without the /all switch for leaderboards, only Top 20 are displayed.
     """
@@ -165,7 +165,7 @@ class CmdFashionModel(ArxCommand):
             self.msg(err)
 
     def model_item(self):
-        """Models an item to earn fame."""
+        """Models an item to earn prestige."""
         if not self.rhs:
             raise FashionError("Please specify <item>=<organization>")
         item = self.caller.search(self.lhs, location=self.caller)
@@ -174,44 +174,44 @@ class CmdFashionModel(ArxCommand):
             return
         player = self.caller.player
         try:
-            fame = item.model_for_fashion(player, org)
+            prestige = item.model_for_fashion(player, org)
         except AttributeError:
             raise FashionError("%s is not an item you can model for fashion." % item)
         else:
-            self.emit_modeling_result(item, org, fame)
+            self.emit_modeling_result(item, org, prestige)
 
     def model_outfit(self):
-        """Models an outfit to earn fame."""
+        """Models an outfit to earn prestige."""
         if not self.rhs:
             raise FashionError("Please specify <outfit>=<organization>")
         outfit = get_caller_outfit_from_args(self.caller, self.lhs)
         org = Organization.objects.get_public_org(self.rhs, self.caller)
         if not outfit or not org:
             return
-        fame = outfit.model_outfit_for_fashion(org)
-        self.emit_modeling_result(outfit, org, fame)
+            prestige = outfit.model_outfit_for_fashion(org)
+        self.emit_modeling_result(outfit, org, prestige)
 
-    def emit_modeling_result(self, thing, org, fame):
+    def emit_modeling_result(self, thing, org, prestige):
         """A local emit and caller message about an outfit/item that has been modeled."""
         player = self.caller.player
-        emit = Snapshot.get_emit_msg(player, thing, org, fame)
+        emit = Snapshot.get_emit_msg(player, thing, org, prestige)
         self.caller.location.msg_contents(emit)
-        success = "For modeling %s{n you earn {c%d{n fame. " % (thing, fame)
+        success = "For modeling %s{n you earn {c%d{n prestige. " % (thing, prestige)
         success += "Your prestige is now %d." % player.assets.prestige
         self.msg(success)
 
     def view_leaderboards(self):
         """Views table of fashion leaders"""
         from django.db.models import Sum, Count, Avg, F, IntegerField
-        pretty_headers = ["Fashion Model", "Fame", "Items", "Avg Item Fame"]  # default for top 20 models
+        pretty_headers = ["Fashion Model", "Prestige", "Items", "Avg Item Prestige"]  # default for top 20 models
 
-        def get_queryset(manager, group_by_string, fame_divisor):
+        def get_queryset(manager, group_by_string, prestige_divisor):
             """Teeny helper function for getting annotated queryset"""
             return (manager.values_list(group_by_string)
-                           .annotate(total_fame=Sum(F('fame')/fame_divisor))
+                           .annotate(total_prestige=Sum(F('prestige')/prestige_divisor))
                            .annotate(Count('id'))
-                           .annotate(avg=Avg(F('fame')/fame_divisor, output_field=IntegerField()))
-                           .order_by('-total_fame'))
+                           .annotate(avg=Avg(F('prestige')/prestige_divisor, output_field=IntegerField()))
+                           .order_by('-total_prestige'))
 
         if "designer" in self.switches or "designers" in self.switches:
             if self.args:
@@ -221,21 +221,21 @@ class CmdFashionModel(ArxCommand):
                 pretty_headers[0] = "%s Model" % designer
                 designer = designer.Dominion
                 qs = get_queryset(designer.designer_snapshots, 'fashion_model__player__username',
-                                  Snapshot.DESIGNER_FAME_DIVISOR)
+                                  Snapshot.DESIGNER_PRESTIGE_DIVISOR)
             else:
                 pretty_headers[0] = "Designer"
-                qs = get_queryset(Snapshot.objects, 'designer__player__username', Snapshot.DESIGNER_FAME_DIVISOR)
+                qs = get_queryset(Snapshot.objects, 'designer__player__username', Snapshot.DESIGNER_PRESTIGE_DIVISOR)
         elif "org" in self.switches or "orgs" in self.switches:
             if self.args:
                 org = Organization.objects.get_public_org(self.args, self.caller)
                 if not org:
                     return
                 pretty_headers[0] = "%s Model" % org
-                qs = get_queryset(org.fashion_snapshots, 'fashion_model__player__username', Snapshot.ORG_FAME_DIVISOR)
+                qs = get_queryset(org.fashion_snapshots, 'fashion_model__player__username', Snapshot.ORG_PRESTIGE_DIVISOR)
             else:
                 pretty_headers[0] = "Organization"
-                qs = get_queryset(Snapshot.objects, 'org__name', Snapshot.ORG_FAME_DIVISOR)
-        else:  # Models by fame
+                qs = get_queryset(Snapshot.objects, 'org__name', Snapshot.ORG_PRESTIGE_DIVISOR)
+        else:  # Models by prestige
             qs = get_queryset(Snapshot.objects, 'fashion_model__player__username', 1)
         qs = qs[:20] if "all" not in self.switches else qs
         if not qs:
@@ -298,5 +298,5 @@ class CmdAdminFashion(ArxCommand):
         except Snapshot.DoesNotExist:
             raise FashionError("No snapshot with ID# %s." % snapshot_id)
         snapshot.reverse_snapshot()
-        self.msg("Snapshot #%s fame/ap has been reversed. Deleting it." % snapshot.id)
+        self.msg("Snapshot #%s prestige/ap has been reversed. Deleting it." % snapshot.id)
         snapshot.delete()

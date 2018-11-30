@@ -17,13 +17,13 @@ class FashionableMixins(object):
         if self.modeled_by:
             raise FashionError("%s has already been used to model fashion." % self)
         if not self.crafted_by_mortals:
-            raise FashionError("%s was wrought by no mortal hand, and from it no mortal fame can be earned." % self)
+            raise FashionError("%s was wrought by no mortal hand, and from it no mortal prestige can be earned." % self)
         return True
 
     def model_for_fashion(self, player, org, outfit=None):
         """ Our spine:
         Checks the item's availability as well as the model's. Makes snapshot object
-        and has it calculate fame. Then fame is awarded and a record of it made.
+        and has it calculate prestige. Then prestige is awarded and a record of it made.
         """
         self.check_fashion_ready()
         if not outfit and not player.pay_action_points(self.fashion_ap_cost):
@@ -31,10 +31,10 @@ class FashionableMixins(object):
             raise FashionError(msg)
         snapshot = FashionSnapshot.objects.create(fashion_model=player.Dominion, fashion_item=self, org=org,
                                                   designer=self.designer.Dominion, outfit=outfit)
-        snapshot.roll_for_fame()
-        snapshot.apply_fame()
+        snapshot.roll_for_prestige()
+        snapshot.apply_prestige()
         snapshot.inform_fashion_clients()
-        return snapshot.fame
+        return snapshot.prestige
 
     def return_appearance(self, pobject, detailed=False, format_desc=False,
                           show_contents=True):
@@ -67,8 +67,8 @@ class FashionableMixins(object):
     @property
     def fashion_mult(self):
         """
-        Returns a multiplier for fashion fame based on its recipe's 'baseval'.
-        Recipes with no baseval recieve a bonus to fame awarded. The awarded
+        Returns a multiplier for fashion prestige based on its recipe's 'baseval'.
+        Recipes with no baseval recieve a bonus to prestige awarded. The awarded
         amount swiftly decreases if recipe armor/damage is over 2, unless admin
         overrides with "fashion_mult" in the recipe's 'result' field.
         """

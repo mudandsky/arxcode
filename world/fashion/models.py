@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 The Fashion app is for letting players have a mechanical benefit for fashion. Without
 a strong mechanical benefit for fashion, players who don't care about it will tend
@@ -40,30 +41,30 @@ class FashionCommonMixins(SharedMemoryModel):
     BUZZIES = zip(BUZZ_TYPES, COLOR_TYPES, EMIT_TYPES)
 
     @staticmethod
-    def granulate_fame(fame):
+    def granulate_prestige(prestige):
         buzz_level = 0
-        if fame <= 100:
+        if prestige <= 100:
             pass
-        elif fame <= 1000:
+        elif prestige <= 1000:
             buzz_level = 1
-        elif fame <= 10000:
+        elif prestige <= 10000:
             buzz_level = 2
-        elif fame <= 100000:
+        elif prestige <= 100000:
             buzz_level = 3
-        elif fame <= 1000000:
+        elif prestige <= 1000000:
             buzz_level = 4
-        elif fame <= 10000000:
+        elif prestige <= 10000000:
             buzz_level = 5
         else:
             buzz_level = 6
         return buzz_level
 
-    def get_buzz_word(self, fame):
-        """Returns a colorized buzz term based on the amount of fame."""
-        buzzy = self.BUZZIES[self.granulate_fame(fame)]
+    def get_buzz_word(self, prestige):
+        """Returns a colorized buzz term based on the amount of prestige."""
+        buzzy = self.BUZZIES[self.granulate_prestige(prestige)]
         return buzzy[1] + buzzy[0] + "{n"
 
-    def get_model_msg(self, fashion_model, org, date, fame):
+    def get_model_msg(self, fashion_model, org, date, prestige):
         """
         Returns a string summary about the modeling of an outfit or item,
         how much buzz it garnered, and the date it was modeled.
@@ -71,16 +72,16 @@ class FashionCommonMixins(SharedMemoryModel):
                 fashion_model:  PlayerOrNpc object
                 org:            organization
                 date:           datetime
-                fame:           integer
+                prestige:       integer
         """
-        punctuation = "." if self.granulate_fame(fame) < 3 else "!"
+        punctuation = "." if self.granulate_prestige(prestige) < 3 else "!"
         msg = "Modeled by {315%s{n for {125%s{n, " % (fashion_model, org)
-        msg += "generating %s buzz " % self.get_buzz_word(fame)
+        msg += "generating %s buzz " % self.get_buzz_word(prestige)
         msg += "on %s%s" % (date.strftime("%Y/%m/%d"), punctuation)
         return msg
 
     @classmethod
-    def get_emit_msg(cls, fashion_model, thing, org, fame):
+    def get_emit_msg(cls, fashion_model, thing, org, prestige):
         """
         Returns the string a room sees when the fashionista models their item
         or outfit. Higher impacts notify staff as well.
@@ -88,12 +89,12 @@ class FashionCommonMixins(SharedMemoryModel):
                 fashion_model:  player/account object
                 thing:          an item or an outfit
                 org:            organization
-                fame:           integer
+                prestige:       integer
         String interpolation is specific order, eg: "Despite efforts made by
         <name>, modeling <item> on behalf of <org> attracts <adjective> notice."
-        Order: fashion model, item/outfit, org, buzz_type (based on fame)
+        Order: fashion model, item/outfit, org, buzz_type (based on prestige)
         """
-        buzz_level = cls.granulate_fame(fame)
+        buzz_level = cls.granulate_prestige(prestige)
         buzzy = cls.BUZZIES[buzz_level]
         color = buzzy[1]
         diva = str(fashion_model)
@@ -122,7 +123,7 @@ class FashionOutfit(FashionCommonMixins):
         return str(self.name)
 
     def invalidate_outfit_caches(self):
-        del self.fame
+        del self.prestige
         del self.model_info
         del self.list_display
         del self.modeled
@@ -213,7 +214,7 @@ class FashionOutfit(FashionCommonMixins):
         """
         Modeling Spine. If there are items in this outfit that can be modeled &
         action points are paid, then snapshots are created for each and a sum of
-        all their fame is returned.
+        all their prestige is returned.
         """
         from world.fashion.mixins import FashionableMixins
         if self.modeled:
@@ -224,10 +225,10 @@ class FashionOutfit(FashionCommonMixins):
         ap_cost = len(valid_items) * FashionableMixins.fashion_ap_cost
         if not self.owner.player.pay_action_points(ap_cost):
             raise FashionError("It costs %d AP to model %s; you do not have enough energy." % (ap_cost, self))
-        outfit_fame = 0
+        outfit_prestige = 0
         for item in valid_items:
-            outfit_fame += item.model_for_fashion(self.owner.player, org, outfit=self)
-        return outfit_fame
+            outfit_prestige += item.model_for_fashion(self.owner.player, org, outfit=self)
+        return outfit_prestige
 
     @property
     def table_display(self):
@@ -292,16 +293,16 @@ class FashionOutfit(FashionCommonMixins):
             del self._cached_model_bool
 
     @property
-    def fame(self):
+    def prestige(self):
         if self.modeled:
-            if not hasattr(self, '_cached_fame'):
-                self._cached_fame = sum([ob.fame for ob in self.fashion_snapshots.all()])
-            return self._cached_fame
+            if not hasattr(self, '_cached_prestige'):
+                self._cached_prestige = sum([ob.prestige for ob in self.fashion_snapshots.all()])
+            return self._cached_prestige
 
-    @fame.deleter
-    def fame(self):
-        if hasattr(self, '_cached_fame'):
-            del self._cached_fame
+    @prestige.deleter
+    def prestige(self):
+        if hasattr(self, '_cached_prestige'):
+            del self._cached_prestige
 
     @property
     def appraisal_or_buzz(self):
@@ -321,10 +322,10 @@ class FashionOutfit(FashionCommonMixins):
 
     @property
     def buzz(self):
-        """Returns colorized string: the term for outfit's fame impact."""
+        """Returns colorized string: the term for outfit's prestige impact."""
         buzz = ""
         if self.modeled:
-            buzz = self.get_buzz_word(self.fame)
+            buzz = self.get_buzz_word(self.prestige)
         return buzz
 
     @property
@@ -393,8 +394,8 @@ class FashionSnapshot(FashionCommonMixins):
     The recorded moment when a piece of gear becomes a weapon
     of the fashionpocalypse.
     """
-    ORG_FAME_DIVISOR = 2
-    DESIGNER_FAME_DIVISOR = 4
+    ORG_PRESTIGE_DIVISOR = 2
+    DESIGNER_PRESTIGE_DIVISOR = 4
     db_date_created = models.DateTimeField(auto_now_add=True)
     fashion_item = models.ForeignKey('objects.ObjectDB', related_name='fashion_snapshots',
                                      on_delete=models.SET_NULL, null=True)
@@ -404,7 +405,7 @@ class FashionSnapshot(FashionCommonMixins):
                             on_delete=models.SET_NULL, null=True)
     designer = models.ForeignKey('dominion.PlayerOrNpc', related_name='designer_snapshots',
                                  on_delete=models.SET_NULL, null=True)
-    fame = models.IntegerField(default=0, blank=True)
+    prestige = models.IntegerField(default=0, blank=True)
     outfit = models.ForeignKey('FashionOutfit', related_name='fashion_snapshots',
                                on_delete=models.SET_NULL, null=True)
 
@@ -414,8 +415,8 @@ class FashionSnapshot(FashionCommonMixins):
     @property
     def display(self):
         """The modeled info and 'buzz message' that appears on items."""
-        displayed_fame = self.fame if not self.outfit else self.outfit.fame
-        msg = self.get_model_msg(self.fashion_model, self.org, self.db_date_created, displayed_fame)
+        displayed_prestige = self.prestige if not self.outfit else self.outfit.prestige
+        msg = self.get_model_msg(self.fashion_model, self.org, self.db_date_created, displayed_prestige)
         return msg
 
     def save(self, *args, **kwargs):
@@ -433,11 +434,11 @@ class FashionSnapshot(FashionCommonMixins):
             self.outfit.invalidate_outfit_caches()
         self.fashion_item.invalidate_snapshots_cache()
 
-    def roll_for_fame(self):
+    def roll_for_prestige(self):
         """
-        Rolls for amount of fame the item generates, minimum 2 fame. The fashion model's social clout and
+        Rolls for amount of prestige the item generates, minimum 2 prestige. The fashion model's social clout and
         skill check of composure + performance is made exponential to be an enormous swing in the efficacy
-        of fame generated: Someone whose roll+social_clout is 50 will be hundreds of times as effective
+        of prestige generated: Someone whose roll+social_clout is 50 will be hundreds of times as effective
         as someone who flubs the roll.
         """
         from world.stats_and_skills import do_dice_check
@@ -449,47 +450,47 @@ class FashionSnapshot(FashionCommonMixins):
         percentage *= max(level_mod, 0.01)
         percentage *= max((self.fashion_item.quality_level/40.0), 0.01)
         # they get either their percentage of the item's worth, their modified roll, or 4, whichever is highest
-        self.fame = max(int(self.fashion_item.item_worth * percentage), max(int(roll), 4))
+        self.prestige = max(int(self.fashion_item.item_worth * percentage), max(int(roll), 4))
         self.save()
 
-    def apply_fame(self, reverse=False):
+    def apply_prestige(self, reverse=False):
         """
-        Awards full amount of fame to fashion model and a portion to the
+        Awards full amount of prestige to fashion model and a portion to the
         sponsoring Organization & the item's Designer.
         """
         mult = -1 if reverse else 1
-        model_fame = self.fame * mult
-        org_fame = self.org_fame * mult
-        designer_fame = self.designer_fame * mult
-        self.fashion_model.assets.adjust_prestige(model_fame, force=reverse)
-        self.org.assets.adjust_prestige(org_fame, force=reverse)
-        self.designer.assets.adjust_prestige(designer_fame, force=reverse)
+        model_prestige = self.prestige * mult
+        org_prestige = self.org_prestige * mult
+        designer_prestige = self.designer_prestige * mult
+        self.fashion_model.assets.adjust_prestige(model_prestige, force=reverse)
+        self.org.assets.adjust_prestige(org_prestige, force=reverse)
+        self.designer.assets.adjust_prestige(designer_prestige, force=reverse)
 
     def inform_fashion_clients(self):
         """
-        Informs clients when fame is earned, by using their AssetOwner method.
+        Informs clients when prestige is earned, by using their AssetOwner method.
         """
         category = "fashion"
-        msg = "fame awarded from %s modeling %s." % (self.fashion_model, self.fashion_item)
-        if self.org_fame > 0:
-            org_msg = "{315%d{n %s" % (self.org_fame, msg)
+        msg = "prestige awarded from %s modeling %s." % (self.fashion_model, self.fashion_item)
+        if self.org_prestige > 0:
+            org_msg = "{315%d{n %s" % (self.org_prestige, msg)
             self.org.assets.inform_owner(org_msg, category=category, append=True)
-        if self.designer_fame > 0:
-            designer_msg = "{315%d{n %s" % (self.designer_fame, msg)
+        if self.designer_prestige > 0:
+            designer_msg = "{315%d{n %s" % (self.designer_prestige, msg)
             self.designer.assets.inform_owner(designer_msg, category=category, append=True)
 
     def reverse_snapshot(self):
-        """Reverses the fame / action point effects of this snapshot"""
+        """Reverses the prestige / action point effects of this snapshot"""
         from world.fashion.mixins import FashionableMixins
-        self.apply_fame(reverse=True)
+        self.apply_prestige(reverse=True)
         self.fashion_model.player.pay_action_points(-FashionableMixins.fashion_ap_cost)
 
     @property
-    def org_fame(self):
-        """The portion of fame awarded to sponsoring org"""
-        return int(self.fame/self.ORG_FAME_DIVISOR)
+    def org_prestige(self):
+        """The portion of prestige awarded to sponsoring org"""
+        return int(self.prestige/self.ORG_PRESTIGE_DIVISOR)
 
     @property
-    def designer_fame(self):
-        """The portion of fame awarded to item designer."""
-        return int(self.fame/self.DESIGNER_FAME_DIVISOR)
+    def designer_prestige(self):
+        """The portion of prestige awarded to item designer."""
+        return int(self.prestige/self.DESIGNER_PRESTIGE_DIVISOR)

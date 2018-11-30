@@ -9,7 +9,7 @@ from .models import FashionSnapshot
 
 class SnapshotAdmin(admin.ModelAdmin):
     """Snapshot admin class"""
-    list_display = ('id', 'fashion_model', 'fashion_item_raw_name', 'org', 'fame', 'designer')
+    list_display = ('id', 'fashion_model', 'fashion_item_raw_name', 'org', 'prestige', 'designer')
     list_select_related = True
     raw_id_fields = ('fashion_item', 'fashion_model', 'org', 'designer')
     readonly_fields = ('item_worth',)

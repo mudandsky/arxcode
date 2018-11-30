@@ -26,7 +26,7 @@ game world.
 The second part is organizations, and giving who obey you orders, and
 trying to represent how those orders are obeyed. It's where we establish
 ranks, relationships such as loyalty and morale, and give strong
-consequences to social systems such as prestiege or your reputation
+consequences to social systems such as prestige or your reputation
 because it will determine how npcs will react to a character on a macro
 level.
 
@@ -507,7 +507,7 @@ class AssetOwner(SharedMemoryModel):
     # money stored in the bank
     vault = models.PositiveIntegerField(default=0, blank=0)
     # prestige we've earned
-    # fame = models.IntegerField(default=0, blank=0)
+    fame = models.IntegerField(default=0, blank=0)
     legend = models.IntegerField(default=0, blank=0)
     # resources
     economic = models.PositiveIntegerField(default=0, blank=0)
