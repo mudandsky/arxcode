@@ -223,14 +223,14 @@ class Wieldable(Wearable):
         """Sheathed/worn weapons have no armor value or other modifiers"""
         return 0, 0, 0
 
-    def check_fashion_ready(self):
-        from world.fashion.mixins import FashionableMixins
-        FashionableMixins.check_fashion_ready(self)
-        if not (self.is_wielded or self.is_worn):
-            from world.fashion.exceptions import FashionError
-            verb = "wear" if self.decorative else "sheathe"
-            raise FashionError("Please wield or %s %s before trying to model it as fashion." % (verb, self))
-        return True
+#    def check_fashion_ready(self):
+#        from world.fashion.mixins import FashionableMixins
+#        FashionableMixins.check_fashion_ready(self)
+#        if not (self.is_wielded or self.is_worn):
+#            from world.fashion.exceptions import FashionError
+#            verb = "wear" if self.decorative else "sheathe"
+#            raise FashionError("Please wield or %s %s before trying to model it as fashion." % (verb, self))
+#        return True
 
     @property
     def damage_bonus(self):
