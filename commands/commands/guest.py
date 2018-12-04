@@ -118,7 +118,7 @@ def setup_voc(char, args):
 STAT_POINTS = 12
 SKILL_POINTS = 20
 CONCEPT_MAX_LEN = 30
-DESC_MIN_LEN = 200
+DESC_MIN_LEN = 0
 DESC_MAX_LEN = 1000
 
 XP_BONUS_BY_SRANK = {2: 0,
@@ -147,16 +147,16 @@ def census_of_fealty():
     return OrderedDict(sorted(fealties.items(), key=lambda k: k[1]))
 
 
-def award_bonus_by_fealty(fealty):
-    """Awards bonus xp based on fealty population - less populated gets a bonus"""
-    census = census_of_fealty()
-    max_pop = census[census.keys()[-1]]
-    try:
-        fealty = fealty.capitalize()
-        bonus = XP_BONUS_BY_POP * (max_pop - census[fealty])
-    except (KeyError, AttributeError):
-        bonus = 0
-    return bonus
+# def award_bonus_by_fealty(fealty):
+#    """Awards bonus xp based on fealty population - less populated gets a bonus"""
+#    census = census_of_fealty()
+#    max_pop = census[census.keys()[-1]]
+#    try:
+#        fealty = fealty.capitalize()
+#        bonus = XP_BONUS_BY_POP * (max_pop - census[fealty])
+#    except (KeyError, AttributeError):
+#        bonus = 0
+#    return bonus
 
 
 def award_bonus_by_age(age):
@@ -740,10 +740,10 @@ class CmdGuestAddInput(ArxPlayerCommand):
                 caller.msg("The argument for fealty must be one of the following: {w%s{n"
                            % fealties)
                 return
-            bonus = award_bonus_by_fealty(args)
-            msg = "For having the fealty of %s, you will receive %s " % (args, bonus)
-            msg += "bonus xp after character creation."
-            caller.msg(msg)
+#            bonus = award_bonus_by_fealty(args)
+#            msg = "For having the fealty of %s, you will receive %s " % (args, bonus)
+#            msg += "bonus xp after character creation."
+#            caller.msg(msg)
         if 'family' in switches:
             args = args.capitalize()
             if args not in _valid_family_:
@@ -776,6 +776,11 @@ class CmdGuestAddInput(ArxPlayerCommand):
         if 'personality' in switches:
             if not (DESC_MAX_LEN > len(args) > DESC_MIN_LEN):
                 caller.msg("Personality length must be between %s and %s characters." % (DESC_MIN_LEN, DESC_MAX_LEN))
+                caller.msg("Current length was: %s" % len(args))
+                return
+        if 'concept' in switches:
+            if not CONCEPT_MAX_LEN > len(args):
+                caller.msg("Concept length must be under %s characters." % CONCEPT_MAX_LEN)
                 caller.msg("Current length was: %s" % len(args))
                 return
         if 'desc' in switches:
@@ -934,7 +939,7 @@ class CmdGuestAddInput(ArxPlayerCommand):
     @staticmethod
     def do_stage_5(caller, args):
         """Handle submission/written application"""
-        if not args or len(args) < 78:
+        if not args or len(args) < 10:
             caller.msg("Please write a more detailed application for your character. " +
                        "Your application should state how you intend to RP your character, " +
                        "your preferences in stories, the type of RP you want to seek out or " +
@@ -966,7 +971,7 @@ class CmdGuestAddInput(ArxPlayerCommand):
         # noinspection PyBroadException
         try:
             xp_bonus = XP_BONUS_BY_SRANK.get(srank, 0)
-            xp_bonus += award_bonus_by_fealty(char.db.fealty)
+#            xp_bonus += award_bonus_by_fealty(char.db.fealty)
             xp_bonus += award_bonus_by_age(char.db.age)
             char.db.xp = xp_bonus
         except Exception:
