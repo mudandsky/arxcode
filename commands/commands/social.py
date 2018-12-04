@@ -2878,7 +2878,7 @@ class CmdLanguages(ArxCommand):
             return
         if not self.switches:
             args = self.args.lower()
-            if args == "elvish" or args == "common":
+            if args == "Elvish" or args == "common":
                 self.caller.attributes.remove("currently_speaking")
                 self.msg("{wYou are now speaking Elvish.{n")
                 return
