@@ -74,10 +74,13 @@ from evennia import utils
 from evennia.utils.utils import lazy_property
 from evennia.objects.models import ObjectDB
 
-from server.utils.arx_utils import ArxCommand
+from commands.base import ArxCommand
 from typeclasses.scripts import gametime
 from typeclasses.mixins import NameMixins, ObjectMixins
+from world.magic.mixins import MagicMixins
 from world.msgs.messagehandler import MessageHandler
+
+from world.weather import utils as weather_utils
 
 # error return function, needed by Extended Look command
 _AT_SEARCH_RESULT = utils.variable_from_module(*settings.SEARCH_AT_RESULT.rsplit('.', 1))
@@ -93,7 +96,7 @@ SHOPCMD = "cmdsets.home.ShopCmdSet"
 # implements the Extended Room
 
 # noinspection PyUnresolvedReferences
-class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom):
+class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom, MagicMixins):
     """
     This room implements a more advanced look functionality depending on
     time. It also allows for "details", together with a slightly modified
@@ -103,36 +106,7 @@ class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom):
         """
         Calculate the current time and season ids.
         """
-        # get the current time as parts of year and parts of day
-        # returns a tuple (years,months,weeks,days,hours,minutes,sec)
-        MONTHS_PER_YEAR = 12
-        SEASONAL_BOUNDARIES = (3 / 12.0, 6 / 12.0, 9 / 12.0)
-        HOURS_PER_DAY = 24
-        DAY_BOUNDARIES = (0, 6 / 24.0, 12 / 24.0, 18 / 24.0)
-        time = gametime.gametime(format=True)
-        month, hour = time[1], time[4]
-        season = float(month) / MONTHS_PER_YEAR
-        timeslot = float(hour) / HOURS_PER_DAY
-
-        # figure out which slots these represent
-        if SEASONAL_BOUNDARIES[0] <= season < SEASONAL_BOUNDARIES[1]:
-            curr_season = "spring"
-        elif SEASONAL_BOUNDARIES[1] <= season < SEASONAL_BOUNDARIES[2]:
-            curr_season = "summer"
-        elif SEASONAL_BOUNDARIES[2] <= season < 1.0 + SEASONAL_BOUNDARIES[0]:
-            curr_season = "autumn"
-        else:
-            curr_season = "winter"
-
-        if DAY_BOUNDARIES[0] <= timeslot < DAY_BOUNDARIES[1]:
-            curr_timeslot = "night"
-        elif DAY_BOUNDARIES[1] <= timeslot < DAY_BOUNDARIES[2]:
-            curr_timeslot = "morning"
-        elif DAY_BOUNDARIES[2] <= timeslot < DAY_BOUNDARIES[3]:
-            curr_timeslot = "afternoon"
-        else:
-            curr_timeslot = "evening"
-        return curr_season, curr_timeslot
+        return gametime.get_time_and_season()
 
     @property
     def is_room(self):
@@ -166,7 +140,8 @@ class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom):
         ExtendedRoom.return_appearance(self, looker)
         # return updated desc plus other stuff
         return (ObjectMixins.return_appearance(self, looker, detailed, format_desc)
-                + self.command_string() + self.mood_string + self.event_string() + self.combat_string(looker))
+                + self.command_string() + self.mood_string + self.event_string() + self.extra_status_string(looker)
+                + self.combat_string(looker))
     
     def _current_event(self):
         if not self.db.current_event:
@@ -192,6 +167,9 @@ class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom):
                 return msg
         except AttributeError:
             pass
+        return ""
+
+    def extra_status_string(self, looker):
         return ""
     
     def event_string(self):
@@ -307,7 +285,7 @@ class ArxRoom(NameMixins, ObjectMixins, ExtendedRoom):
         try:
             # add our room owner as a homeowner if they're a player
             aowner = AssetOwner.objects.get(id=self.db.room_owner)
-            char = aowner.player.player.db.char_ob
+            char = aowner.player.player.char_ob
             if char not in owners:
                 self.add_homeowner(char, False)
         except (AttributeError, AssetOwner.DoesNotExist, ValueError, TypeError):
@@ -556,7 +534,7 @@ class CmdStudyRawAnsi(ArxCommand):
             targ.msg("%s sent you this @study on %s: " % (caller, ob))
             caller.msg("Sent to %s." % targ)
         targ.msg("Escaped name: %s" % raw(ob.name))
-        targ.msg("Escaped desc: %s" % raw(ob.return_appearance(caller, detailed=False)))
+        targ.msg("Escaped desc: %s" % raw(ob.desc))
 
 
 # Custom build commands for setting seasonal descriptions
@@ -709,8 +687,8 @@ class CmdExtendedDesc(default_cmds.CmdDesc):
                         caller = caller.player
                     obj = caller.search(self.lhs)
                     # if we did a search as a player, get the character object
-                    if obj and obj.db.char_ob:
-                        obj = obj.db.char_ob
+                    if obj and obj.char_ob:
+                        obj = obj.char_ob
                     if not obj:
                         return
                 else:
@@ -734,23 +712,56 @@ class CmdExtendedDesc(default_cmds.CmdDesc):
 # Simple command to view the current time and season
 class CmdGameTime(ArxCommand):
     """
-    Check the game time
+    Check the game time and weather
 
     Usage:
       time
+      time <YYYY/mm/dd[ HH:MM]>
 
-    Shows the current in-game time and season.
+    Shows the current in-game time, season, and the last weather emit, in case you
+    missed it or have emits turned off.  (To turn off weather emits, use the
+    @settings command to toggle the 'ignore_weather' setting.)
+
+    The second format will show what the in-game date was for a given real date
+    (and optional time).
     """
     key = "time"
     locks = "cmd:all()"
     help_category = "General"
+    aliases = "weather"
 
     # noinspection PyUnusedLocal
     def get_help(self, caller, cmdset):
-        return self.__doc__ + "\n\nGame time moves %s faster than real time." % settings.TIME_FACTOR
+        return self.__doc__ + "\nGame time moves %s times faster than real time." % gametime.time_factor()
 
     def func(self):
         """Reads time info from current room"""
+        if self.args:
+            parsed = None
+            to_parse = self.args.strip()
+            try:
+                import time
+                parsed = time.strptime(to_parse, "%Y/%m/%d %H:%M")
+            except ValueError:
+                try:
+                    parsed = time.strptime(to_parse, "%Y/%m/%d")
+                except ValueError:
+                    pass
+
+            if not parsed:
+                self.caller.msg("Unable to understand that date!  It must be in the format "
+                                "|wYYYY/mm/dd|n or |wYYYY/mm/dd HH:MM|n to be understood.")
+                return
+
+            parsed = time.mktime(parsed)
+            game_time = gametime.realtime_to_gametime(parsed)
+            if game_time is None:
+                self.caller.msg("Real date |w{}|n was before the game started!".format(to_parse))
+                return
+            from server.utils.arx_utils import get_date
+            self.caller.msg("Real date |w{}|n was about |w{}|n in game time.".format(to_parse, get_date(game_time)))
+            return
+
         location = self.caller.location
         if not location or not hasattr(location, "get_time_and_season"):
             self.caller.msg("No location available - you are outside time.")
@@ -759,11 +770,61 @@ class CmdGameTime(ArxCommand):
             prep = "a"
             if season == "autumn":
                 prep = "an"
-            self.caller.msg("It's %s %s day, in the %s." % (prep, season.capitalize(), timeslot))
+            weather = weather_utils.get_last_emit()
+            self.caller.msg("It's %s %s day, in the %s.  %s" % (prep, season, timeslot, weather))
             time = gametime.gametime(format=True)
             hour, minute = time[4], time[5]
             from server.utils.arx_utils import get_date
             self.caller.msg("Today's date: %s. Current time: %s:%02d" % (get_date(), hour, minute))
+
+
+class CmdSetGameTimescale(ArxCommand):
+    """
+    Sets or checks the multiplier for the current IC timescale.
+
+    Usage:
+        timescale
+        timescale/set <new>
+
+    The first form of this command will display what the current time
+    factor is, the speed at which IC time runs compared to normal time.
+    The second form will set a new time factor.
+    """
+    key = "timescale"
+    locks = "cmd:perm(Wizards)"
+
+    def func(self):
+        if "set" in self.switches:
+            try:
+                factor = float(self.args)
+                gametime.set_time_factor(factor)
+                self.msg("IC time now runs at {}:1 scale.".format(factor))
+            except ValueError:
+                self.msg("You need to provide a number for the new time factor.")
+            return
+
+        elif "history" in self.switches:
+            from datetime import datetime
+            from evennia.utils.evtable import EvTable
+            table = EvTable("Real Time", "Game Date", "Multiplier")
+            for tdict in gametime.time_intervals():
+                dt = datetime.fromtimestamp(tdict['real'])
+                ic_time = gametime._format(tdict['game'], gametime.YEAR, gametime.MONTH, gametime.WEEK, gametime.DAY,
+                                           gametime.HOUR, gametime.MIN)
+                month, day, year = ic_time[1] + 1, ic_time[3] + 1, ic_time[0] + 1001
+
+                real_time = dt.strftime("%m/%d/%Y %H:%M")
+                ic_timestamp = "{}/{}/{} {}:{}".format(month, day, year, ic_time[4], ic_time[5])
+
+                multiplier = tdict['multiplier']
+
+                table.add_row(real_time, ic_timestamp, multiplier)
+
+            self.msg(table)
+            return
+
+        factor = gametime.time_factor()
+        self.msg("IC time is running at {}:1 scale".format(factor))
 
 
 class TempRoom(ArxRoom):

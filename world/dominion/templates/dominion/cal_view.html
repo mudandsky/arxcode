@@ -24,7 +24,7 @@
       {% if obj.get_absolute_url %}<a href="{{ obj.get_absolute_url }}">{{ obj }}</a>{% else %}{{ obj }}
       {% endif %}
   {% endfor %}</p>
-  <h2 class="text-center">Location</h2> <p class="text-center">{{ object.location.key|mush_to_html}}</p>
+  <h2 class="text-center">Location</h2> <p class="text-center">{{ object.location_name|mush_to_html}}</p>
   <h2 class="text-center">Largesse Level</h2> <p class="text-center">{{ object.get_celebration_tier_display }}</p>
   {% if object.public_event or can_view %}
   <h3>Comments and Log</h3>
@@ -42,7 +42,7 @@
   <div class="well">{{ comment.db_message|mush_to_html }}</div>
   {% endfor %}
   {% endwith %}
-  {% if user.db.char_ob %}
+  {% if user.char_ob %}
   <br>
   <button class="btn btn-info" data-toggle="collapse" data-target="#writecomment">Write Journal Entry</button>
   <div id="writecomment" class="collapse">

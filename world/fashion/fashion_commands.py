@@ -1,11 +1,15 @@
 """
 Commands for the fashion app.
 """
-from server.utils.arx_utils import ArxCommand, list_to_string
+from datetime import datetime, timedelta
+
+from evennia.server.models import ServerConfig
+
+from commands.base import ArxCommand
 from server.utils.prettytable import PrettyTable
 from world.dominion.models import Organization
 from world.fashion.exceptions import FashionError
-from world.fashion.models import FashionSnapshot as Snapshot, FashionOutfit as Outfit, ModusOrnamenta as MO
+from world.fashion.models import FashionSnapshot as Snapshot, FashionOutfit as Outfit
 
 
 def get_caller_outfit_from_args(caller, args):
@@ -35,23 +39,23 @@ class CmdFashionOutfit(ArxCommand):
         outfits [<outfit name>]
         outfits/archives
 
-    Management: The /create switch makes a new outfit from your currently
-    worn, sheathed, and wielded items. The /delete switch deletes an existing
-    outfit, but its items still exist. Note that after deleting a modeled
-    outfit, each of its items' "buzz messages" will revert to their
-    individual value. Toggle the archive status of an outfit by specifying
-    its name after the /archive switch.
+    The /create switch makes a new outfit from your currently worn, sheathed,
+    and wielded items. The /delete switch deletes an existing outfit, but its
+    items still exist. Note that after deleting a modeled outfit, each item's
+    "buzz message" will revert to its individual value. Toggle archival
+    status of an outfit with its name after the /archive switch.
 
-    Viewing: With no switch or name, view your non-archived outfits.
-    Similarly, use the archive switch without a name to see archived outfits.
-    This table shows appraisal* of fashion-worth if it's yet to be modeled,
-    or the buzz impact it had when it was. (See 'help model' for modeling.)
-    Specify any outfit name with no switches to see the items comprising it.
+    Follow base command with an outfit name to see items comprising it. With
+    no switch or name, view your outfits. Similarly, use the archive switch
+    by itself to see archived outfits. These tables show an appraisal number
+    for outfits yet to be modeled, or the buzz their modeling had generated.
 
-    *An outfit's appraisal is based on items that can be modeled. Items
-    that weren't crafted by mortals and pre-modeled items do not count
-    toward the modeling value of an outfit. Appraisal allows a fashion
-    model to compare the potential impact of outfits before events.
+    An outfit's appraisal is based on items that can be modeled; it excludes
+    items not crafted by mortals and all previously-modeled items. Appraisal
+    allows a fashion model to compare outfits, and does not consider the
+    model's skills.
+
+    Other commands that utilize outfits: Wear, Model, Get, Put
     """
     key = "outfit"
     aliases = ["outfits"]
@@ -146,8 +150,17 @@ class CmdFashionModel(ArxCommand):
     A fashion model tests their composure & performance to earn fame. The
     organization sponsoring the model and the item's designer accrues a portion
     of fame as well. Although masks may be modeled, doing so will reveal the
-    model's identity in subsequent item labels and informs.
+    model's identity in subsequent item labels and informs.  Additionally,
+    modeling must have an audience; you cannot model in an empty room.  The
+    size and collective social rank of your audience will influence the amount
+    of fame generated; showing off for a single commoner will not merit as
+    much fame as modeling an outfit for the King!
+
     Without the /all switch for leaderboards, only Top 20 are displayed.
+
+    If you want to ignore modeling emits (such as at parties and other large
+    scenes), you can use the @settings command to turn on ignore_model_emit.
+    (See help @settings for more information.)
     """
     key = "model"
     aliases = ["models"]
@@ -177,6 +190,7 @@ class CmdFashionModel(ArxCommand):
         if not item or not org:
             return
         player = self.caller.player
+        self.check_recency(org)
         try:
             fame = item.model_for_fashion(player, org)
         except AttributeError:
@@ -192,6 +206,7 @@ class CmdFashionModel(ArxCommand):
         org = Organization.objects.get_public_org(self.rhs, self.caller)
         if not outfit or not org:
             return
+        self.check_recency(org)
         fame = outfit.model_outfit_for_fashion(org)
         self.emit_modeling_result(outfit, org, fame)
 
@@ -199,9 +214,13 @@ class CmdFashionModel(ArxCommand):
         """A local emit and caller message about an outfit/item that has been modeled."""
         player = self.caller.player
         emit = Snapshot.get_emit_msg(player, thing, org, fame)
-        self.caller.location.msg_contents(emit)
-        success = "For modeling %s{n you earn {c%d{n fame. " % (thing, fame)
-        success += "Your prestige is now %d." % player.assets.prestige
+        for obj in self.caller.location.contents:
+            ignore_model = obj.db.ignore_model_emits or False
+            if not ignore_model:
+                obj.msg(emit)
+
+        success = "For modeling {}{{n you earn {{c{:,}{{n fame. ".format(thing, fame)
+        success += "Your prestige is now {:,}.".format(player.assets.prestige)
         self.msg(success)
 
     def view_leaderboards(self):
@@ -245,13 +264,34 @@ class CmdFashionModel(ArxCommand):
         if not qs:
             raise FashionError("Nothing was found.")
         table = PrettyTable(pretty_headers)
+        table.align = "r"
         for q in qs:
+            q = list(q)
+            q[1] = "{:,}".format(q[1])
+            q[3] = "{:,}".format(q[3])
             # for lowercase names, we'll capitalize them
             if q[0] == q[0].lower():
-                q = list(q)
                 q[0] = q[0].capitalize()
+
             table.add_row(q)
         self.msg(str(table))
+
+    def check_recency(self, org=None):
+        """Raises an error if we've modelled too recently"""
+        from evennia.scripts.models import ScriptDB
+        maximum = ServerConfig.objects.conf(key="MAX_FASHION_PER_WEEK")
+        if not maximum:
+            return
+        try:
+            last_cron = ScriptDB.objects.get(db_key="Weekly Update").db.run_date - timedelta(days=7)
+        except (ScriptDB.DoesNotExist, ValueError, TypeError):
+            last_cron = datetime.now() - timedelta(days=7)
+        qs = self.caller.dompc.fashion_snapshots
+        if qs.filter(db_date_created__gte=last_cron).count() >= maximum:
+            raise FashionError("You may only model up to %s items a week before the public tires of you." % maximum)
+        if org:
+            if qs.filter(db_date_created__gte=last_cron, org=org):
+                raise FashionError("You have displayed fashion too recently for %s to bring them more acclaim." % org)
 
 
 class CmdAdminFashion(ArxCommand):

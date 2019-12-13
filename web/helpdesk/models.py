@@ -10,6 +10,7 @@ models.py - Model (and hence database) definitions. This is the core of the
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _, ugettext
 from django import VERSION
 from evennia.typeclasses.models import SharedMemoryModel
@@ -18,6 +19,7 @@ try:
     from django.utils import timezone
 except ImportError:
     from datetime import datetime as timezone
+
 
 class Queue(models.Model):
     """
@@ -265,12 +267,7 @@ class Ticket(SharedMemoryModel):
     the dashboard to prompt users to take ownership of them.
     """
 
-    OPEN_STATUS = 1
-    REOPENED_STATUS = 2
-    RESOLVED_STATUS = 3
-    CLOSED_STATUS = 4
-    DUPLICATE_STATUS = 5
-
+    OPEN_STATUS, REOPENED_STATUS, RESOLVED_STATUS, CLOSED_STATUS, DUPLICATE_STATUS = range(1, 6)
     STATUS_CHOICES = (
         (OPEN_STATUS, _('Open')),
         (REOPENED_STATUS, _('Reopened')),
@@ -278,7 +275,6 @@ class Ticket(SharedMemoryModel):
         (CLOSED_STATUS, _('Closed')),
         (DUPLICATE_STATUS, _('Duplicate')),
     )
-
     PRIORITY_CHOICES = (
         (1, _('1. Critical')),
         (2, _('2. High')),
@@ -287,88 +283,30 @@ class Ticket(SharedMemoryModel):
         (5, _('5. Very Low')),
         (6, _('6. Super Low')),
     )
-
-    title = models.CharField(
-        _('Title'),
-        max_length=200,
-        )
-
-    queue = models.ForeignKey(
-        Queue,
-        verbose_name=_('Queue'),
-        )
-
-    db_date_created = models.DateTimeField(
-        _('Created'),
-        blank=True,
-        help_text=_('Date this ticket was first created'),
-        )
-
-    modified = models.DateTimeField(
-        _('Modified'),
-        blank=True,
-        help_text=_('Date this ticket was most recently changed.'),
-        )
-
-    submitter_email = models.EmailField(
-        _('Submitter E-Mail'),
-        blank=True,
-        null=True,
-        help_text=_('The submitter will receive an email for all public '
-            'follow-ups left for this task.'),
-        )
-
-    assigned_to = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='assigned_to',
-        blank=True,
-        null=True,
-        verbose_name=_('Assigned to'),
-        )
-    
-    submitting_player = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='tickets',
-        blank=True,
-        null=True,
-        verbose_name=_('Player who opened this ticket'),
-        )
-
-    submitting_room = models.ForeignKey(
-        'objects.ObjectDB',
-        blank=True,
-        null=True,
-        verbose_name=_('Room where this was submitted'),
-        on_delete=models.SET_NULL,
-        )
-    
-    status = models.IntegerField(
-        _('Status'),
-        choices=STATUS_CHOICES,
-        default=OPEN_STATUS,
-        )
-
-    on_hold = models.BooleanField(
-        _('On Hold'),
-        blank=True,
-        default=False,
-        help_text=_('If a ticket is on hold, it will not automatically be '
-            'escalated.'),
-        )
-
-    description = models.TextField(
-        _('Description'),
-        blank=True,
-        null=True,
-        help_text=_('The content of the customers query.'),
-        )
-
-    resolution = models.TextField(
-        _('Resolution'),
-        blank=True,
-        null=True,
-        help_text=_('The resolution provided to the customer by our staff.'),
-        )
+    title = models.CharField( _('Title'), max_length=200,)
+    queue = models.ForeignKey(Queue, verbose_name=_('Queue'),)
+    db_date_created = models.DateTimeField(_('Created'), blank=True, help_text=_('Date this ticket was first created'),)
+    modified = models.DateTimeField(_('Modified'), blank=True,
+                                    help_text=_('Date this ticket was most recently changed.'))
+    submitter_email = models.EmailField(_('Submitter E-Mail'), blank=True, null=True, help_text=_(
+        'The submitter will receive an email for all public follow-ups left for this task.'))
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='assigned_to', blank=True, null=True,
+                                    verbose_name=_('Assigned to'))
+    submitting_player = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='tickets', blank=True, null=True,
+                                          verbose_name=_('Player who opened this ticket'))
+    submitting_room = models.ForeignKey('objects.ObjectDB', blank=True, null=True,
+                                        verbose_name=_('Room where this was submitted'), on_delete=models.SET_NULL)
+    plot = models.ForeignKey('dominion.Plot', blank=True, null=True, related_name="tickets")
+    beat = models.ForeignKey('dominion.PlotUpdate', blank=True, null=True, related_name="tickets")
+    goal_update = models.ForeignKey('character.GoalUpdate', blank=True, null=True, related_name="tickets")
+    kb_category = models.ForeignKey('KBCategory', blank=True, null=True)
+    status = models.IntegerField(_('Status'), choices=STATUS_CHOICES, default=OPEN_STATUS)
+    on_hold = models.BooleanField(_('On Hold'), blank=True, default=False, help_text=_(
+        'If a ticket is on hold, it will not automatically be escalated.'))
+    description = models.TextField(_('Description'), blank=True, null=True,
+                                   help_text=_('The content of the customers query.'))
+    resolution = models.TextField(_('Resolution'), blank=True, null=True, help_text=_(
+        'The resolution provided to the customer by our staff.'))
 
     priority = models.IntegerField(
         _('Priority'),
@@ -389,7 +327,7 @@ class Ticket(SharedMemoryModel):
         null=True,
         editable=False,
         help_text=_('The date this ticket was last escalated - updated '
-            'automatically by management/commands/escalate_tickets.py.'),
+                    'automatically by management/commands/escalate_tickets.py.'),
         )
 
     def _get_assigned_to(self):
@@ -503,8 +441,7 @@ class Ticket(SharedMemoryModel):
         return u'%s %s' % (self.id, self.title)
 
     def get_absolute_url(self):
-        return ('helpdesk_view', (self.id,))
-    get_absolute_url = models.permalink(get_absolute_url)
+        return reverse('helpdesk_view', args=(self.id,))
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -525,31 +462,47 @@ class Ticket(SharedMemoryModel):
             A string with ansi/Evennia markup that displays appropriate ticket
             information. Not meant to be used outside of telnet.
         """
-
-        msg = "\n{wQueue:{n %s" % self.queue
-        msg += "\n{wTicket Number:{n %s" % self.id
+        priority = self.priority
+        priority_color = "|w"
+        if priority == 1:
+            priority_color = "|r"
+        elif priority >= 5:
+            priority_color = "|333"
+        msg = "\n|w[Ticket #%s]|n %s" % (self.id, self.title)
+        msg += "\n|wQueue:|n %s - %sPriority %s|n" % (self.queue, priority_color, priority)
         if self.submitting_player:
-            msg += "\n{wPlayer:{n %s" % self.submitting_player.key
-        msg += "\n{wDate submitted:{n %s" % self.db_date_created.strftime("%x %X")
-        msg += "\n{wLast modified:{n %s" % self.modified.strftime("%x %X")
-        msg += "\n{wTitle:{n %s" % self.title
+            msg += "\n|wPlayer: |c%s|n" % self.submitting_player.key
         room = self.submitting_room
         if room:
-            msg += "\n{wLocation:{n %s (#%s)" % (room, room.id)
-        msg += "\n{wPriority:{n %s" % self.priority
+            msg += "\n|wLocation:|n %s |n(#%s)" % (room, room.id)
+        msg += "\n|wSubmitted:|n %s" % self.db_date_created.strftime("%x %X")
+        if self.modified:
+            msg += " - |wLast Update:|n %s" % self.modified.strftime("%x %X")
         msg += self.request_and_response_body()
         return msg
 
     def request_and_response_body(self):
-        msg = "\n{wRequest:{n %s" % self.description
-        if self.assigned_to:
-            msg += "\n{wGM:{n %s" % self.assigned_to.key
+        msg = "\n|wRequest:|n %s" % self.description
+        if self.plot:
+            msg += "\n"
+            if self.plot.usage == self.plot.PITCH:
+                msg += "\n|wPlot Pitch: (#%s)|n\n" % self.plot.id
+                msg += self.plot.display(staff_display=True)
+                msg += "\n"
+            else:
+                msg += "|wPlot:|n %s (#%s)" % (self.plot, self.plot.id)
+                if self.beat:
+                    msg += " |wBeat ID:|n #%s" % self.beat.id
+        if self.goal_update:
+            goal = self.goal_update.goal
+            msg += "\nUpdate for goal: %s (#%s)" % (goal, goal.id)
+            msg += "\nPlayer Summary: %s" % self.goal_update.player_summary
         for followup in self.followup_set.all():
-            msg += "\n{wFollowup by:{n %s" % followup.user
-            msg += "\n{wComment:{n %s" % followup.comment
-        msg += "\n\n{wGM Resolution:{n %s" % self.resolution
+            msg += "\n|wFollowup by |c%s|w:|n %s" % (followup.user, followup.comment)
+        if self.assigned_to:
+            msg += "\n|wAssigned GM:|n %s" % self.assigned_to.key
+        msg += "\n|wGM Resolution:|n %s" % self.resolution
         return msg
-
 
 
 class FollowUpManager(models.Manager):
@@ -630,7 +583,7 @@ class FollowUp(models.Model):
         return u'%s' % self.title
 
     def get_absolute_url(self):
-        return u"%s#followup%s" % (self.ticket.get_absolute_url(), self.id)
+        return reverse(u"%s#followup%s" % (self.ticket.get_absolute_url(), self.id))
 
     def save(self, *args, **kwargs):
         t = self.ticket
@@ -895,22 +848,28 @@ class KBCategory(models.Model):
     Lets help users help themselves: the Knowledge Base is a categorised
     listing of questions & answers.
     """
+    title = models.CharField(_('Title'), max_length=100, unique=True)
+    slug = models.SlugField(_('Slug'), unique=True)
+    description = models.TextField(_('Description'), blank=True)
+    parent = models.ForeignKey('self', null=True, blank=True, related_name="subcategories")
+    search_tags = models.ManyToManyField('character.SearchTag', blank=True, related_name="kb_categories")
 
-    title = models.CharField(
-        _('Title'),
-        max_length=100,
-        )
+    def display(self):
+        """In-game text display of a KBCategory"""
+        msg = "|c%s|n\n" % self.title
+        msg += "|wDescription:|n %s\n" % self.description
+        if self.parent:
+            msg += "|wParent Category:|n %s\n" % self.parent
+        subs = self.subcategories.all()
+        if subs:
+            msg += "|wSubcategories:|n %s\n" % ", ".join(str(ob) for ob in subs)
+        items = self.kb_items.all()
+        if items:
+            msg += "|wEntries:|n %s\n" % ", ".join(str(ob) for ob in items)
+        return msg
 
-    slug = models.SlugField(
-        _('Slug'),
-        )
-
-    description = models.TextField(
-        _('Description'),
-        )
-
-    def __unicode__(self):
-        return u'%s' % self.title
+    def __str__(self):
+        return str(self.title)
 
     class Meta:
         ordering = ['title',]
@@ -918,75 +877,48 @@ class KBCategory(models.Model):
         verbose_name_plural = _('Knowledge base categories')
 
     def get_absolute_url(self):
-        return ('helpdesk_kb_category', (), {'slug': self.slug})
-    get_absolute_url = models.permalink(get_absolute_url)
+        return reverse('helpdesk_kb_category', kwargs={'slug': self.slug})
 
 
 class KBItem(models.Model):
     """
-    An item within the knowledgebase. Very straightforward question/answer
+    An item within the knowledge base. Very straightforward question/answer
     style system.
     """
-    category = models.ForeignKey(
-        KBCategory,
-        verbose_name=_('Category'),
-        )
+    category = models.ForeignKey(KBCategory, verbose_name=_('Category'), blank=True, null=True,
+                                 on_delete=models.SET_NULL, related_name="kb_items")
+    title = models.CharField(_('Title'), max_length=100, unique=True)
+    question = models.TextField(_('Question'), blank=True)
+    answer = models.TextField(_('Answer'), blank=True)
+    search_tags = models.ManyToManyField('character.SearchTag', blank=True, related_name="kb_items")
+    last_updated = models.DateTimeField(_('Last Updated'), blank=True,
+                                        help_text=_('The date on which this question was most recently changed.'))
 
-    title = models.CharField(
-        _('Title'),
-        max_length=100,
-        )
-
-    question = models.TextField(
-        _('Question'),
-        )
-
-    answer = models.TextField(
-        _('Answer'),
-        )
-
-    votes = models.IntegerField(
-        _('Votes'),
-        help_text=_('Total number of votes cast for this item'),
-        default=0,
-        )
-
-    recommendations = models.IntegerField(
-        _('Positive Votes'),
-        help_text=_('Number of votes for this item which were POSITIVE.'),
-        default=0,
-        )
-
-    last_updated = models.DateTimeField(
-        _('Last Updated'),
-        help_text=_('The date on which this question was most recently '
-            'changed.'),
-        blank=True,
-        )
+    def display(self):
+        """In-game text display of an item"""
+        msg = "|c%s|n\n" % self.title
+        msg += "|wCategory|n: %s\n" % self.category
+        if self.question:
+            msg += "|wQuestion:|n %s\n" % self.question
+        if self.answer:
+            msg += "|wAnswer:|n %s\n" % self.answer
+        return msg
 
     def save(self, *args, **kwargs):
         if not self.last_updated:
             self.last_updated = timezone.now()
         return super(KBItem, self).save(*args, **kwargs)
 
-    def _score(self):
-        if self.votes > 0:
-            return int(self.recommendations / self.votes)
-        else:
-            return _('Unrated')
-    score = property(_score)
-
-    def __unicode__(self):
-        return u'%s' % self.title
+    def __str__(self):
+        return str(self.title)
 
     class Meta:
-        ordering = ['title',]
+        ordering = ['title']
         verbose_name = _('Knowledge base item')
         verbose_name_plural = _('Knowledge base items')
 
     def get_absolute_url(self):
-        return ('helpdesk_kb_item', (self.id,))
-    get_absolute_url = models.permalink(get_absolute_url)
+        return reverse('helpdesk_kb_item', args=[self.id])
 
 
 class SavedSearch(models.Model):

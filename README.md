@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Arx-Game/arxcode.svg?branch=stable_orphan)](https://travis-ci.org/Arx-Game/arxcode)
+
 Arx is a game based on Evennia. I decided to make an orphan branch open source to let people
 use code as they like for their own games and contribute if they like. In general we should
 be compatible with any given Evennia branch, though I tend to stay on master and occasionally
@@ -13,10 +15,9 @@ for example, will throw errors from its middleware whenever an in-game script ru
 
 Evennia resources:
 
-From here on you might want to look at one of the beginner tutorials:
-http://github.com/evennia/evennia/wiki/Tutorials.
+From here on you might want to look at one of the [beginner tutorials](https://github.com/evennia/evennia/wiki/Tutorials).
 
-Evennia's documentation is here:
-https://github.com/evennia/evennia/wiki.
+Evennia's documentation is [here](https://github.com/evennia/evennia/wiki).
 
+Griatch wrote a great guide to installing arx [here](https://github.com/evennia/evennia/wiki/Arxcode-installing-help).
 Enjoy!

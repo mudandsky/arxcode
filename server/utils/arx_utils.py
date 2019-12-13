@@ -9,7 +9,6 @@ import re
 from datetime import datetime
 
 from django.conf import settings
-from evennia.commands.default.muxcommand import MuxCommand, MuxAccountCommand
 
 
 def validate_name(name, formatting=True, not_player=True):
@@ -29,7 +28,7 @@ def validate_name(name, formatting=True, not_player=True):
     return re.findall('^[\w\']+$', name)
 
 
-def inform_staff(message, post=False, subject=None):
+def inform_staff(message, post=False, subject=None, quiet=settings.DEBUG):
     """
     Sends a message to the 'Mudinfo' channel for staff announcements.
 
@@ -37,6 +36,7 @@ def inform_staff(message, post=False, subject=None):
             message: text message to broadcast
             post: If True, we post message. If a truthy value other than True, that's the body of the post.
             subject: Post subject.
+            quiet: Whether to print errors that are encountered
     """
     from evennia.comms.models import ChannelDB
     try:
@@ -51,7 +51,35 @@ def inform_staff(message, post=False, subject=None):
                 message = post
             board.bb_post(poster_obj=None, msg=message, subject=subject, poster_name="Staff")
     except Exception as err:
-        print("ERROR when attempting utils.inform_staff() : %s" % err)
+        if not quiet:
+            print("ERROR when attempting utils.inform_staff() : %s" % err)
+
+
+def inform_guides(message, post=False, subject=None, quiet=settings.DEBUG):
+    """
+    Sends a message to the 'Guides' channel for guide announcements.
+
+        Args:
+            message: text message to broadcast
+            post: If True, we post message. If a truthy value other than True, that's the body of the post.
+            subject: Post subject.
+            quiet: Whether to print errors that are encountered
+    """
+    from evennia.comms.models import ChannelDB
+    try:
+        guide_chan = ChannelDB.objects.get(db_key__iexact="Guides")
+        now = time_now().strftime("%H:%M")
+        guide_chan.tempmsg("{r[%s]:{n %s" % (now, message))
+        if post:
+            from typeclasses.bulletin_board.bboard import BBoard
+            board = BBoard.objects.get(db_key__iexact="Jobs")
+            subject = subject or "Staff Activity"
+            if post is not True:
+                message = post
+            board.bb_post(poster_obj=None, msg=message, subject=subject, poster_name="Staff")
+    except Exception as err:
+        if not quiet:
+            print("ERROR when attempting utils.inform_guides() : %s" % err)
 
 
 def setup_log(logfile):
@@ -68,23 +96,29 @@ def setup_log(logfile):
     return log
 
 
-def get_date():
+def get_date(game_time=None):
     """
     Get in-game date as a string
     format is 'M/D/YEAR AR'
     """
     from typeclasses.scripts import gametime
-    time = gametime.gametime(format=True)
+    time = gametime.gametime(game_time=game_time, format=True)
     month, day, year = time[1] + 1, time[3] + 1, time[0] + 1001
     day += (time[2] * 7)
     date = ("%s/%s/%s AR" % (month, day, year))
     return date
 
 
-def get_week():
+def get_week(use_default=settings.DEBUG, default=1):
     """Gets the current week for dominion."""
     from evennia.scripts.models import ScriptDB
-    weekly = ScriptDB.objects.get(db_key="Weekly Update")
+    try:
+        weekly = ScriptDB.objects.get(db_key="Weekly Update")
+    except ScriptDB.DoesNotExist:
+        if use_default:
+            return default
+        else:
+            raise
     return weekly.db.week
 
 
@@ -338,6 +372,7 @@ def post_roster_dompc_cleanup(player):
         dompc = player.Dominion
     except AttributeError:
         return
+    dompc.proteges.clear()
     dompc.patron = None
     dompc.save()
     for member in dompc.memberships.filter(rank=2):
@@ -435,23 +470,6 @@ def cache_safe_update(queryset, **kwargs):
             setattr(obj, keyword, value)
 
 
-class ArxCommmandMixins(object):
-    """Mixin class for Arx commands"""
-    def check_switches(self, switch_set):
-        """Checks if the commands switches are inside switch_set"""
-        return set(self.switches) & set(switch_set)
-
-
-class ArxCommand(ArxCommmandMixins, MuxCommand):
-    """Base command for Characters for Arx"""
-    pass
-
-
-class ArxPlayerCommand(ArxCommmandMixins, MuxAccountCommand):
-    """Base command for Players/Accounts for Arx"""
-    pass
-
-
 def text_box(text):
     """Encloses characters in a cute little text box"""
     boxchars = '\n{w' + '*' * 70 + '{n\n'
@@ -477,6 +495,7 @@ def create_gemit_and_post(msg, caller, episode_name=None, synopsis=None, orgs_li
     gemit.broadcast()
     return gemit
 
+
 def broadcast_msg_and_post(msg, caller, episode_name=None):
     """Sends a message to all online sessions, then makes a post about it."""
     caller.msg("Announcing to all connected players ...")
@@ -495,6 +514,7 @@ def broadcast_msg_and_post(msg, caller, episode_name=None):
     if episode_name:
         subject = "Episode: %s" % episode_name
     bboard.bb_post(poster_obj=caller, msg=post_msg, subject=subject, poster_name="Story")
+
 
 def dict_from_choices_field(cls, field_name, include_uppercase=True):
     """Gets a dict from a Choices tuple in a model"""
@@ -577,6 +597,7 @@ def fix_broken_attributes(broken_object):
             print("Error for attr %s: %s" % (attr.key, err))
             continue
 
+
 def list_to_string(inlist, endsep="and", addquote=False):
     """
     This pretty-formats a list as string output, adding an optional
@@ -618,3 +639,146 @@ def list_to_string(inlist, endsep="and", addquote=False):
         if len(inlist) == 1:
             return str(inlist[0])
         return ", ".join(str(v) for v in inlist[:-1]) + "%s %s" % (endsep, inlist[-1])
+
+
+def queryset_to_string(qset):
+    """
+    Gets a string representation of the queryset. We check plural class name for each object in the
+    queryset, starting a new line & title to represent separate match categories.
+    Args:
+        qset (queryset): The pre-ordered queryset to print. If multiple ObjectDB classes, should
+                         already be ordered by 'db_typeclass_path' as well.
+    Returns:
+        Example string: [Weapons] Sword of Killing; Stabbyknife
+                        [Wearables] Sleek Catsuit; Fox-eared Scarf; Beaded Belt
+    """
+    class_name = None
+    message = ""
+    sep = ""
+    for obj in qset:
+        # noinspection PyProtectedMember
+        plural_name = obj._meta.verbose_name_plural
+        if plural_name != class_name:
+            class_name = plural_name
+            message += "\n|w[%s]|n " % class_name.title()
+            sep = ""
+        message += sep + str(obj)
+        sep = "; "
+    return message
+
+
+def qslist_to_string(qslist):
+    """
+    Gets a string representation of multiple querysets in a list, separated by queryset classes.
+    Args:
+        qslist (list of querysets): Each queryset should be pre-ordered. If a qet contains
+                                    multiple ObjectDB classes, should already be ordered by
+                                    'db_typeclass_path' as well.
+    Returns:
+        Example string: [Weapons] Sword of Killing; Stabbyknife
+                        [Wearables] Sleek Catsuit; Fox-eared Scarf; Beaded Belt
+                        [Clues] Vixens are Evil
+    """
+    qslist = [ob.distinct() for ob in qslist if len(ob) > 0]
+    message = ""
+    if qslist:
+        for qset in qslist:
+            message += queryset_to_string(qset)
+    return message
+
+
+class CachedProperty(object):
+    """
+    Pretty similar to django's cached_property, but will be used for the CachedPropertiesMixin for models
+    wiping their cached properties upon saving
+    """
+
+    def __init__(self, func, name=None):
+        self.func = func
+        self.__doc__ = getattr(func, '__doc__')
+        self.name = name or func.__name__
+
+    def __get__(self, instance, cls=None):
+        if instance is None:
+            return self
+        if self.name not in instance.__dict__:
+            instance.__dict__[self.name] = self.func(instance)
+        return instance.__dict__[self.name]
+
+    def __delete__(self, instance):
+        instance.__dict__.pop(self.name, None)
+
+    def __set__(self, instance, value):
+        instance.__dict__[self.name] = value
+
+
+class CachedPropertiesMixin(object):
+    """Class that has a clear properties class method"""
+
+    def clear_cached_properties(self):
+        """Clear all cached properties from this object"""
+        cls = self.__class__
+        props = [ob for ob in cls.__dict__.values() if isinstance(ob, CachedProperty)]
+        for prop in props:
+            delattr(self, prop.name)
+
+    def save(self, *args, **kwargs):
+        super(CachedPropertiesMixin, self).save(*args, **kwargs)
+        self.clear_cached_properties()
+
+
+def a_or_an(word):
+
+    if word[:1].lower() in ['a', 'e', 'i', 'o', 'u']:
+        return "an"
+
+    return "a"
+
+
+def commafy(string_list):
+    if len(string_list) == 0:
+        return "None"
+    elif len(string_list) == 1:
+        return string_list[0]
+    elif len(string_list) == 2:
+        return string_list[0] + " and " + string_list[1]
+    else:
+        return ", ".join(string_list[:-2] + [" and ".join(string_list[-2:])])
+
+
+# noinspection PyPep8Naming
+class classproperty(object):
+    """Descriptor for making a property that always goes off the class, not the instance."""
+    def __init__(self, getter):
+        """
+        Args:
+            getter (function): the method that will become a class property
+        """
+        self.getter = getter
+
+    def __get__(self, instance, owner):
+        """
+
+        Args:
+            instance: instance of class or None, ignored
+            owner: The class object itself
+
+        Returns:
+            Returns the result of calling self.getter with the class passed in, instead of 'self'
+        """
+        return self.getter(owner)
+
+
+def get_full_url(url):
+    """
+    Gets the full url when given a partial, used for formatting links. For this to work
+    properly, you should define your Site's url under the 'Sites' app in django's admin
+    site.
+    Args:
+        url: A partial url from a few, like '/namespace/view/'
+
+    Returns:
+        A full url, like "http://www.example.com/namespace/view/"
+    """
+    from django.contrib.sites.models import Site
+    return "http://%s%s" % (Site.objects.get_current(), url)

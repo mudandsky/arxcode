@@ -4,7 +4,9 @@ Readable/Writable objects
 
 from typeclasses.objects import Object
 from evennia import CmdSet
-from server.utils.arx_utils import ArxCommand
+
+from commands.base import ArxCommand
+from world.templates.mixins import TemplateMixins
 
 
 class Readable(Object):
@@ -21,10 +23,9 @@ class Readable(Object):
         self.db.num_instances = 1
         self.db.can_stack = True
         self.db.do_not_format_desc = True
-        self.db.destroyable = True
         self.at_init()
-        
-    def at_after_move(self, source_location):
+
+    def at_after_move(self, source_location, **kwargs):
         if self.db.num_instances > 1 and not self.db.written:
             self.setup_multiname()
         location = self.location
@@ -37,7 +38,7 @@ class Readable(Object):
             if self.db.written:
                 self.cmdset.add_default(SignCmdSet, permanent=True)
             else:
-                self.cmdset.add_default(WriteCmdSet, permanent=True)  
+                self.cmdset.add_default(WriteCmdSet, permanent=True)
         else:
             self.cmdset.delete_default()
 
@@ -59,6 +60,17 @@ class Readable(Object):
     def set_num(self, value):
         self.db.num_instances = value
         self.setup_multiname()
+
+    @property
+    def junkable(self):
+        """A check for this object's plot connections."""
+        return not self.is_plot_related
+
+    def do_junkout(self, caller):
+        """Junks us as if we were a crafted item."""
+        caller.msg("You destroy %s." % self)
+        self.softdelete()
+        return
 
 
 class WriteCmdSet(CmdSet):
@@ -105,10 +117,10 @@ class CmdSign(ArxCommand):
         return
 
 
-class CmdWrite(ArxCommand):
+class CmdWrite(ArxCommand, TemplateMixins):
     """
     Write upon a scroll/book/letter.
-    
+
     Usage:
         write <description>
         write/title <title>
@@ -121,8 +133,8 @@ class CmdWrite(ArxCommand):
     write and set its name to the title you specify. For example,
     to rename 'a scroll' into 'Furen's Book of Wisdom', use
     'write/title Furen's Book of Wisdom'. To write in other languages,
-    use /translated_text to show what the material actually says. 
-    Check your changes with /proof, and then finalize changes with /finish. 
+    use /translated_text to show what the material actually says.
+    Check your changes with /proof, and then finalize changes with /finish.
     Once set, no further changes can be made.
     """
     key = "write"
@@ -138,14 +150,17 @@ class CmdWrite(ArxCommand):
         for lang in transtext:
             msg += "\n{wWritten in {c%s:{n\n%s\n" % (lang.capitalize(), transtext[lang])
         return msg
-        
+
     def func(self):
         """Look for object in inventory that matches args to wear"""
         caller = self.caller
         obj = self.obj
+
         if not self.args and not self.switches:
             self.switches.append("proof")
         if not self.switches or 'desc' in self.switches:
+            if not self.can_apply_templates(caller, self.args):
+                return
             obj.ndb.desc = self.args
             caller.msg("Desc set to:\n%s" % self.args)
             return
@@ -189,7 +204,10 @@ class CmdWrite(ArxCommand):
             obj.desc = desc
             if obj.ndb.transtext:
                 obj.db.translation = obj.ndb.transtext
-            obj.save()        
+            obj.save()
+            
+            self.apply_templates_to(obj)
+
             caller.msg("You have written on %s." % obj.name)
             obj.attributes.remove("quality_level")
             obj.attributes.remove("can_stack")
@@ -198,5 +216,6 @@ class CmdWrite(ArxCommand):
             obj.cmdset.delete_default()
             obj.cmdset.add_default(SignCmdSet, permanent=True)
             obj.aliases.add("book")
+
             return
         caller.msg("Unrecognized syntax for write.")

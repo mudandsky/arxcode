@@ -4,7 +4,7 @@ Script to handle timing for events in the game.
 
 from django.conf import settings
 from .scripts import Script
-from world.dominion.models import RPEvent
+from world.dominion.models import RPEvent, PrestigeCategory
 from twisted.internet import reactor
 from evennia.server.sessionhandler import SESSIONS
 from evennia.utils.ansi import parse_ansi
@@ -60,9 +60,9 @@ class EventManager(Script):
         """
         idles = self.db.idle_events
         actives = self.db.active_events
-        for eventid in idles:
+        for eventid, counter in idles.items():
             # if the event has been idle for an hour, close it down
-            if idles[eventid] >= 12:
+            if counter >= 12:
                 # noinspection PyBroadException
                 try:
                     event = RPEvent.objects.get(id=eventid)
@@ -262,7 +262,7 @@ class EventManager(Script):
                 pass
             # award prestige
             try:
-                host.assets.adjust_prestige(event.prestige/len(qualified_hosts))
+                host.assets.adjust_prestige(event.prestige / len(qualified_hosts), PrestigeCategory.EVENT)
             except (AttributeError, ValueError, TypeError):
                 continue
 

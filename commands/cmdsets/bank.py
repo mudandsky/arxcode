@@ -4,7 +4,7 @@ Commands for banking.
 
 from evennia.commands.cmdset import CmdSet
 from evennia.utils import evtable
-from server.utils.arx_utils import ArxCommand
+from commands.base import ArxCommand
 from world.dominion import setup_utils
 from world.dominion.models import CraftingMaterials, AccountTransaction, AssetOwner
 
@@ -71,11 +71,11 @@ class CmdBank(ArxCommand):
     @staticmethod
     def get_debt_table(debts):
         x = 0
-        table = evtable.EvTable("{w#{n", "{wReceiver{n", "{wAmount{n", "{wTime Remaining{n", width=60)
+        table = evtable.EvTable("{w#{n", "{wReceiver{n", "{wAmount{n", "{wTime Remaining{n", width=60,align="r")
         for debt in debts:
             x += 1
             time = "Permanent" if debt.repetitions_left == -1 else debt.repetitions_left
-            table.add_row(debt.id, debt.receiver, debt.weekly_amount, time)
+            table.add_row(debt.id, debt.receiver, "{:,}".format(debt.weekly_amount), time)
         return table
 
     @staticmethod
@@ -85,14 +85,14 @@ class CmdBank(ArxCommand):
             debits += debt.weekly_amount
         debits += amt
         return account.vault - debits
-    
+
     def inform_owner(self, owner, verb, amt, attr_type="silver", mat_str="silver"):
         attr_name = "min_%s_for_inform" % attr_type
         if amt >= getattr(owner, attr_name):
             preposition = "to" if "deposit" in verb.lower() else "from"
-            msg = ("%s %s %s %s %s %s" % (self.caller, verb, amt, mat_str, preposition, owner))
+            msg = ("{} has {} {:,} {} {} {} account.".format(self.caller, verb, amt, mat_str, preposition, owner))
             owner.inform(msg, category="Bank Transaction")
-        
+
     def func(self):
         """Execute command."""
         caller = self.caller
@@ -108,7 +108,7 @@ class CmdBank(ArxCommand):
             for acc in org_accounts:
                 if acc.can_be_viewed_by(caller) and acc.debts.all():
                     debts += list(acc.debts.all())
-            if not self.args:                
+            if not self.args:
                 caller.msg(str(self.get_debt_table(debts)), options={'box': True})
                 return
             if "endpayment" in self.switches or "adjustpayment" in self.switches:
@@ -134,11 +134,11 @@ class CmdBank(ArxCommand):
                     return
                 check = self.check_money(debt.sender, (amt - debt.weekly_amount))
                 if check < 0:
-                    caller.msg("Insufficient funds. You need %s more." % (-check))
+                    caller.msg("Insufficient funds. You need {:,} more.".format(-check))
                     return
                 debt.weekly_amount = amt
                 debt.save()
-                caller.msg("Weekly payment amount is now %s." % amt)
+                caller.msg("Weekly payment amount is now {:,}.".format(amt))
                 return
             # set up a new payment
             try:
@@ -166,17 +166,17 @@ class CmdBank(ArxCommand):
                 return
             check = self.check_money(sender, amt)
             if check < 0:
-                caller.msg("Insufficient funds: %s more required to set up payment." % (-check))
+                caller.msg("Insufficient funds: {:,} more required to set up payment.".format(-check))
                 return
             sender.debts.create(receiver=receiver, weekly_amount=amt, repetitions_left=-1)
-            caller.msg("New weekly payment set up: %s pays %s to %s every week." % (sender, amt, receiver))
+            caller.msg("New weekly payment set up: {} pays {:,} to {} every week.".format(sender, amt, receiver))
             return
         if not self.args:
             msg = "{wAccounts{n".center(60)
             msg += "\n"
             actable = evtable.EvTable("{wOwner{n", "{wBalance{n", "{wNet Income{n", "{wMaterials{n",
                                       "{wEcon{n", "{wSoc{n", "{wMil{n", width=78, border="cells")
-            
+
             for account in all_accounts:
                 if not account.can_be_viewed_by(self.caller):
                     continue
@@ -191,14 +191,14 @@ class CmdBank(ArxCommand):
                 actable.reformat_column(5, width=7)
                 actable.reformat_column(6, width=7)
                 incomes = account.incomes.all()
-                debts = account.debts.all()               
+                debts = account.debts.all()
                 if incomes:
                     msg += ("{w%s Incomes{n" % str(account)).center(60)
                     msg += "\n"
-                    table = evtable.EvTable("{wSender{n", "{wAmount{n", "{wTime Remaining{n", width=60)
+                    table = evtable.EvTable("{wSender{n", "{wAmount{n", "{wTime Remaining{n", width=60, align="r")
                     for inc in incomes:
                         time = "Permanent" if inc.repetitions_left == -1 else inc.repetitions_left
-                        table.add_row(inc.sender, inc.weekly_amount, time)
+                        table.add_row(inc.sender, "{:,}".format(inc.weekly_amount), time)
                     msg += str(table)
                     msg += "\n"
                 if debts:
@@ -208,7 +208,7 @@ class CmdBank(ArxCommand):
                     msg += "\n"
             msg += str(actable)
             caller.msg(msg, options={'box': True})
-            return       
+            return
         if ("depositmats" in self.switches or "withdrawmats" in self.switches
                 or "depositres" in self.switches or "withdrawres" in self.switches):
             account = self.match_account(all_accounts)
@@ -245,7 +245,7 @@ class CmdBank(ArxCommand):
                 if usingmats:
                     source = sender.materials.get(type__name__iexact=matname)
                     if source.amount < val:
-                        caller.msg("You tried to %s %s %s, but only %s available." % (
+                        caller.msg("You tried to {} {:,} {}, but only {:,} available.".format(
                             verb, val, source.type.name, source.amount))
                         return
                     try:
@@ -265,7 +265,7 @@ class CmdBank(ArxCommand):
                     sresamt = getattr(sender, matname)
                     if sresamt < val:
                         matname += " resources"
-                        caller.msg("You tried to %s %s %s, but only %s available." % (
+                        caller.msg("You tried to {} {:,} {}, but only {:,} available.".format(
                             verb, val, matname, sresamt))
                         return
                     tresamt = getattr(receiver, matname)
@@ -274,12 +274,12 @@ class CmdBank(ArxCommand):
                     setattr(sender, matname, samt)
                     setattr(receiver, matname, tamt)
                     matname += " resources"
-                source.save()    
+                source.save()
                 targ.save()
-                caller.msg("You have transferred %s %s from %s to %s." % (
+                caller.msg("You have transferred {:,} {} from {} to {}.".format(
                     val, matname, sender, receiver))
                 if account.can_be_viewed_by(caller):
-                    caller.msg("Sender now has %s, receiver has %s." % (samt, tamt))
+                    caller.msg("Sender now has {:,}, receiver has {:,}.".format(samt, tamt))
                 else:
                     caller.msg("Transaction successful.")
                 self.inform_owner(account, verb, val, attr_type, matname)
@@ -311,15 +311,15 @@ class CmdBank(ArxCommand):
                 caller.msg("You have no money to deposit.")
                 return
             if amount > cash:
-                caller.msg("You tried to deposit %s, but only have %s on hand." % (amount, cash))
+                caller.msg("You tried to deposit {:,}, but only have {:,} on hand.".format(amount, cash))
                 return
             account.vault += amount
             caller.db.currency = cash - amount
             account.save()
             if account.can_be_viewed_by(caller):
-                caller.msg("You have deposited %s. The new balance is %s." % (amount, account.vault))
+                caller.msg("You have deposited {:,}. The new balance is {:,}.".format(amount, account.vault))
             else:
-                caller.msg("You have deposited %s." % amount)
+                caller.msg("You have deposited {:,}.".format(amount))
             self.inform_owner(account, "deposited", amount)
             return
         if "withdraw" in self.switches:
@@ -330,7 +330,7 @@ class CmdBank(ArxCommand):
             check = self.check_money(account, amount)
             if check < 0:
                 caller.msg("You cannot withdraw more than the balance minus an account's debt obligations.")
-                caller.msg("You want to withdraw %s but only %s is available after debt obligations." % (amount,
+                caller.msg("You want to withdraw {:,} but only {:,} is available after debt obligations.".format(amount,
                                                                                                          check+amount))
                 if account.debts.all():
                     caller.msg("Cancelling payments would increase the amount available.")
@@ -339,7 +339,7 @@ class CmdBank(ArxCommand):
             account.vault -= amount
             caller.db.currency = cash + amount
             account.save()
-            caller.msg("You have withdrawn %s. New balance is %s." % (amount, account.vault))
+            caller.msg("You have withdrawn {:,}. New balance is {:,}.".format(amount, account.vault))
             self.inform_owner(account, "withdrawn", amount)
             return
         else:

@@ -5,12 +5,14 @@
 
 from django.contrib import admin
 from evennia.comms.models import Msg
-from .models import Inform, Messenger, Post, Journal, Vision, Rumor
 from evennia.typeclasses.admin import TagInline
 from evennia.objects.models import ObjectDB
 from evennia.objects.admin import ObjectDBAdmin
 from evennia.help.admin import HelpEntryAdmin
 from evennia.help.models import HelpEntry
+
+from .models import Inform, Messenger, Post, Journal, Rumor
+from web.character.models import Clue
 
 
 class InformFilter(admin.SimpleListFilter):
@@ -35,6 +37,8 @@ class InformAdmin(admin.ModelAdmin):
     list_display_links = ("id",)
     list_filter = (InformFilter,)
     search_fields = ['id', 'player__username', 'organization__name', 'message', 'category']
+
+
 admin.site.register(Inform, InformAdmin)
 
 
@@ -70,9 +74,9 @@ class MsgAdmin(admin.ModelAdmin):
                     'message')
     list_display_links = ("id",)
     ordering = ["-db_date_created"]
-    search_fields = ['db_sender_accounts__db_key',
-                     "db_sender_objects__db_key", "db_receivers_objects__db_key",
-                     'id', '^db_date_created']
+    search_fields = ['=db_sender_accounts__db_key',
+                     "=db_sender_objects__db_key", "=db_receivers_objects__db_key",
+                     '=id']
     save_as = True
     save_on_top = True
     list_select_related = True
@@ -100,15 +104,24 @@ class MsgAdmin(admin.ModelAdmin):
 class JournalAdmin(MsgAdmin):
     list_filter = (MsgListFilter,)
 
+
 admin.site.register(Messenger, MsgAdmin)
 admin.site.register(Journal, JournalAdmin)
-admin.site.register(Vision, MsgAdmin)
 admin.site.register(Post, MsgAdmin)
 admin.site.register(Rumor, MsgAdmin)
 
 
+class ClueForCharacterInline(admin.StackedInline):
+    model = Clue
+    extra = 0
+    raw_id_fields = ('tangible_object', 'author',)
+    filter_horizontal = ('search_tags',)
+    show_change_link = True
+
+
 class ArxObjectDBAdmin(ObjectDBAdmin):
-    search_fields = ['id', 'db_key', 'db_location__db_key']
+    search_fields = ['=id', 'db_key']
+    inlines = tuple(ObjectDBAdmin.inlines) + (ClueForCharacterInline,)
 
     
 class ArxHelpDBAdmin(HelpEntryAdmin):

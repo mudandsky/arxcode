@@ -6,7 +6,7 @@ from evennia.objects.models import ObjectDB
 # noinspection PyProtectedMember
 from evennia.objects.objects import _AT_SEARCH_RESULT
 
-from server.utils.arx_utils import ArxCommand, ArxPlayerCommand
+from commands.base import ArxCommand, ArxPlayerCommand
 from server.utils.arx_utils import validate_name, caller_change_field
 from typeclasses.npcs.npc_types import get_npc_type, generate_default_name_and_desc
 from .models import Agent, Organization, AssetOwner
@@ -155,7 +155,7 @@ class CmdAgents(ArxPlayerCommand):
                     return
                 try:
                     # assigning it to their character
-                    targ = targ.db.char_ob
+                    targ = targ.char_ob
                     if not targ:
                         caller.msg("They have no character to assign to.")
                         return
@@ -285,7 +285,7 @@ class CmdAgents(ArxPlayerCommand):
                         if agent.unique:
                             agent.dbobj.unassign()
                             try:
-                                char = agent.owner.player.player.db.char_ob
+                                char = agent.owner.player.player.char_ob
                                 agent.assign(char, 1)
                             except AttributeError:
                                 pass
@@ -428,7 +428,7 @@ class CmdRetainers(ArxPlayerCommand):
         agent = caller.Dominion.assets.agents.create(type=npc_type, quality=0, name=aname,
                                                      quantity=1, unique=True, desc=desc)
         caller.msg("You have created a new %s named %s." % (atype, aname))
-        agent.assign(caller.db.char_ob, 1)
+        agent.assign(caller.char_ob, 1)
         caller.msg("Assigning %s to you." % aname)
         self.msg("You now have a new agent. You can return to your home to summon them with the +guard command.")
         # sets its name and saves it
@@ -448,8 +448,9 @@ class CmdRetainers(ArxPlayerCommand):
         it appealing to dump xp on them rather than spend it personally.
         """
         if len(self.rhslist) < 2:
-            char = self.caller.db.char_ob
+            char = self.caller.char_ob
             xp_multiplier = 3
+            increase_training_cap = True
         else:
             try:
                 char = self.get_agent_from_args(self.rhslist[1])
@@ -457,6 +458,7 @@ class CmdRetainers(ArxPlayerCommand):
             except (Agent.DoesNotExist, ValueError):
                 self.msg("Could not find an agent by those args.")
                 return
+            increase_training_cap = False
         try:
             amt = int(self.rhslist[0])
             if amt < 1:
@@ -477,6 +479,9 @@ class CmdRetainers(ArxPlayerCommand):
         amt *= xp_multiplier
         agent.adjust_xp(amt)
         self.adjust_transfer_cap(agent, amt)
+        if increase_training_cap and agent.dbobj.uses_training_cap:
+            agent.xp_training_cap += amt
+            self.msg("The training cap of %s is now %s xp." % (agent, agent.xp_training_cap))
         self.msg("%s now has %s xp to spend." % (agent, agent.xp))
         return
 

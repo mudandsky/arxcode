@@ -8,6 +8,8 @@ creation commands.
 
 """
 from evennia.objects.objects import DefaultCharacter
+
+from server.utils.exceptions import PayError
 from typeclasses.mixins import MsgMixins, ObjectMixins, NameMixins
 from typeclasses.wearable.mixins import UseEquipmentMixins
 from world.msgs.messagehandler import MessageHandler
@@ -15,9 +17,10 @@ from world.msgs.languagehandler import LanguageHandler
 from evennia.utils.utils import lazy_property, variable_from_module
 import time
 from world.stats_and_skills import do_dice_check
+from world.magic.mixins import MagicMixins
 
 
-class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, DefaultCharacter):
+class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, MagicMixins, DefaultCharacter):
     """
     The Character defaults to reimplementing some of base Object's hook methods with the
     following functionality:
@@ -476,7 +479,9 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
 
     @property
     def xp(self):
-        return self.db.xp or 0
+        if self.db.xp is None:
+            self.db.xp = 0
+        return self.db.xp
 
     @xp.setter
     def xp(self, value):
@@ -491,19 +496,24 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
         """
         if not self.db.total_xp:
             self.db.total_xp = 0
-        if not self.xp:
-            self.xp = 0
         if value > 0:
             self.db.total_xp += value
             try:
                 self.roster.adjust_xp(value)
             except (AttributeError, ValueError, TypeError):
                 pass
+            self.xp += value
         else:
-            if self.xp < abs(value):
-                raise ValueError("Bad value passed to adjust_xp -" +
-                                 " character did not have enough xp to pay for the value.")
-        self.xp += value
+            self.pay_xp(abs(value))
+
+    def pay_xp(self, value):
+        """Attempts to spend xp"""
+        if value < 0:
+            raise ValueError("Attempted to spend negative xp.")
+        if self.xp < value:
+            raise PayError("You tried to spend %s xp, but only have %s available." % (value, self.xp))
+        self.xp -= value
+        self.msg("You spend %s xp and have %s remaining." % (value, self.xp))
 
     def follow(self, targ):
         if not targ.ndb.followers:
@@ -759,7 +769,7 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
         return CombatHandler(self)
 
     def view_stats(self, viewer, combat=False):
-        from commands.commands.roster import display_stats, display_skills, display_abilities
+        from commands.base_commands.roster import display_stats, display_skills, display_abilities
         display_stats(viewer, self)
         display_skills(viewer, self)
         display_abilities(viewer, self)
@@ -1028,6 +1038,13 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
         return False
 
     @property
+    def valid_actions(self):
+        from world.dominion.models import PlotAction
+        from django.db.models import Q
+        return PlotAction.objects.filter(Q(dompc=self.dompc) | Q(assistants=self.dompc)).exclude(
+            status=PlotAction.CANCELLED).distinct()
+
+    @property
     def past_actions(self):
         return self.player_ob.past_actions
 
@@ -1071,3 +1088,22 @@ class Character(UseEquipmentMixins, NameMixins, MsgMixins, ObjectMixins, Default
         """Returns our Dominion object"""
         return self.player_ob.Dominion
 
+    @property
+    def secrets(self):
+        from web.character.models import Clue
+        return self.roster.clue_discoveries.filter(clue__clue_type=Clue.CHARACTER_SECRET,
+                                                   clue__tangible_object=self).exclude(clue__desc="").distinct()
+
+    def at_magic_exposure(self, alignment=None, affinity=None, strength=10):
+        if not self.practitioner:
+            return
+
+        if not alignment:
+            from world.magic.models import Alignment
+            alignment = Alignment.PRIMAL
+
+        self.practitioner.at_magic_exposure(alignment=alignment, affinity=affinity, strength=strength)
+
+    @property
+    def char_ob(self):
+        return self

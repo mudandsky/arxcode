@@ -11,6 +11,7 @@ from . import views
 
 
 urlpatterns = [
+    url(r'^cal/$', views.event_calendar, name="calendar"),
     url(r'^cal/list/$', views.RPEventListView.as_view(), name="list_events"),
     url(r'^cal/create/$', views.RPEventCreateView.as_view(), name="create_event"),
     url(r'^cal/detail/(?P<pk>\d+)/$', views.RPEventDetailView.as_view(), name='display_event'),
@@ -19,5 +20,6 @@ urlpatterns = [
     url(r'^crisis/(?P<pk>\d+)/$', views.CrisisDetailView.as_view(), name="display_crisis"),
     url(r'^map/map.png$', views.map_image, name='map_image'),
     url(r'^map/$', views.map_wrapper, name='map'),
-    url(r'^fealties/chart.png$', views.fealty_chart, name='fealties')
+    url(r'^fealties/chart.png$', views.fealty_chart, name='fealties'),
+    url(r'^fealties/chart_full.png$', views.fealty_chart_full, name='fealties_full')
 ]

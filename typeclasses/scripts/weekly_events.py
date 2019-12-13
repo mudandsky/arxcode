@@ -13,7 +13,8 @@ from django.db.models import Q, F
 from evennia.objects.models import ObjectDB
 from evennia.utils.evtable import EvTable
 
-from world.dominion.models import AssetOwner, Army, Member, AccountTransaction, Orders
+from world.dominion.models import AssetOwner, Member, AccountTransaction
+from world.dominion.domain.models import Army, Orders
 from world.msgs.models import Inform
 from typeclasses.bulletin_board.bboard import BBoard
 from typeclasses.accounts import Account
@@ -29,9 +30,10 @@ PRESTIGE_BOARD_NAME = 'Prestige Changes'
 TRAINING_CAP_PER_WEEK = 10
 
 PLAYER_ATTRS = ("votes", 'claimed_scenelist', 'random_scenelist', 'validated_list', 'praises', 'condemns',
-                'requested_validation', 'donated_ap')
+                'requested_validation', 'donated_ap', 'masked_validated_list', 'event_xp')
 CHARACTER_ATTRS = ("currently_training", "trainer", 'scene_requests', "num_trained", "num_journals",
-                   "num_rel_updates", "num_comments", "num_flashbacks", "support_cooldown", "support_points_spent")
+                   "num_rel_updates", "num_comments", "num_flashbacks", "support_cooldown", "support_points_spent",
+                   "rp_command_used", "random_rp_command_this_week")
 
 
 class BulkInformCreator(object):
@@ -62,11 +64,11 @@ class BulkInformCreator(object):
         self.informs.append(inform)
         return inform
 
-    def create_and_send_informs(self):
+    def create_and_send_informs(self, sender="the Weekly Update script"):
         """Creates all our informs and notifies players/orgs about them"""
         Inform.objects.bulk_create(self.informs)
         for receiver in self.receivers_to_notify:
-            receiver.msg("{yYou have new informs from the Weekly Update script.{n")
+            receiver.msg("{yYou have new informs from %s.{n" % sender)
 
 
 class WeeklyEvents(RunDateMixin, Script):
@@ -87,6 +89,11 @@ class WeeklyEvents(RunDateMixin, Script):
         self.persistent = True
         self.start_delay = True
         self.attributes.add("run_date", datetime.now() + timedelta(days=7))
+
+    def at_start(self, **kwargs):
+        super(WeeklyEvents, self).at_start(**kwargs)
+        from world.magic.advancement import init_magic_advancement
+        init_magic_advancement()
 
     @property
     def inform_creator(self):
@@ -233,7 +240,7 @@ class WeeklyEvents(RunDateMixin, Script):
             # taking damage
             # conditions/social imperative
             # aspirations/progress toward goals
-            char = player.db.char_ob
+            char = player.char_ob
             # for lazy refresh_from_db calls for queries right after the script runs, but unnecessary after a @reload
             char.ndb.stale_ap = True
             # wipe cached attributes
@@ -307,7 +314,7 @@ class WeeklyEvents(RunDateMixin, Script):
         for ob in low_activity:
             table.add_row(ob.key, ob.db.previous_posecount)
         board.bb_post(poster_obj=self, msg=str(table), subject="Inactive by Poses List")
-        
+
     # Various 'Beats' -------------------------------------------------
 
     def process_journals(self, player):
@@ -358,7 +365,7 @@ class WeeklyEvents(RunDateMixin, Script):
         we need to track against abuse, but since voting is stored in each
         player it's fairly trivial to check each week on an individual basis
         anyway.
-        """       
+        """
         votes = player.db.votes or []
         for ob in votes:
             self.ndb.recorded_votes[ob] += 1

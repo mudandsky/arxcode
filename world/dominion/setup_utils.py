@@ -4,7 +4,8 @@ as creating Land squares of random terrain based on a regional
 climate, and setup a character's initial domain based on their
 social rank.
 """
-from world.dominion.models import (Land, PlayerOrNpc, Ruler, Domain, AssetOwner, Organization)
+from world.dominion.models import (Land, PlayerOrNpc, AssetOwner, Organization)
+from world.dominion.domain.models import Domain, Ruler
 from . import unit_constants
 from django.core.exceptions import ObjectDoesNotExist
 import random
@@ -123,7 +124,7 @@ def srank_dom_stats(srank, region, name, male=True):
     return title, name, dom_size, castle_level
 
 
-def setup_domain(dompc, region, srank, male=True, ruler=None):
+def setup_domain(dompc, region, srank, male=True, ruler=None, liege=None):
     """
     Sets up the domain for a given PlayerOrNpc object passed by
     'dompc'. region must be a Region instance, and srank must be
@@ -136,7 +137,7 @@ def setup_domain(dompc, region, srank, male=True, ruler=None):
             assetowner = dompc.assets
         else:
             assetowner = AssetOwner.objects.create(player=dompc)
-        ruler = Ruler.objects.create(castellan=dompc, house=assetowner)
+        ruler, _ = Ruler.objects.get_or_create(castellan=dompc, house=assetowner, liege=liege)
     else:
         assetowner = ruler.house
     title, name, dom_size, castle_level = srank_dom_stats(srank, region, name, male)
@@ -177,7 +178,7 @@ def set_domain_resources(domain, resources):
 def convert_domain(domain, srank=None, male=None):
     region = domain.land.region
     if not male or not srank:
-        char = domain.ruler.castellan.player.db.char_ob
+        char = domain.ruler.castellan.player.char_ob
         if not male:
             male = char.db.gender.lower() == "male"
         if not srank:
@@ -412,7 +413,7 @@ def setup_vassals(family, ruler, region, character, srank, num=2):
 
 def setup_vassals_for_player(player, num=2):
     dompc = player.Dominion
-    char = player.db.char_ob
+    char = player.char_ob
     family = char.db.family
     ruler = dompc.ruler
     srank = char.db.social_rank
@@ -504,7 +505,7 @@ def setup_dom_for_char(character, create_dompc=True, create_assets=True,
 
 
 def setup_dom_for_npc(name, srank, gender='male', region=None, ruler=None,
-                      create_domain=True):
+                      create_domain=True, liege=None):
     """
     If create_domain is True and region is defined, we also create a domain for
     this npc. Otherwise we just setup their PlayerOrNpc model and AssetOwner
@@ -517,7 +518,7 @@ def setup_dom_for_npc(name, srank, gender='male', region=None, ruler=None,
     domnpc, _ = PlayerOrNpc.objects.get_or_create(npc_name=name)
     setup_assets(domnpc, starting_money(srank))
     if create_domain and region:
-        setup_domain(domnpc, region, srank, male, ruler)
+        setup_domain(domnpc, region, srank, male, ruler, liege)
 
 
 def replace_vassal(domain, player, num_vassals=2):
@@ -525,7 +526,7 @@ def replace_vassal(domain, player, num_vassals=2):
     Replaces the npc ruler of a domain that is someone's vassal, and then
     creates vassals of their own.
     """
-    char = player.db.char_ob
+    char = player.char_ob
     if not char:
         raise ValueError("Character not found.")
     family = char.db.family
@@ -608,7 +609,7 @@ def update_navies_and_armies(adjust_armies=False, adjust_navies=True, replace=Fa
         owner = domain.ruler.house
         name = ""  # Do not override existing name
         try:
-            srank = domain.ruler.castellan.player.db.char_ob.db.social_rank
+            srank = domain.ruler.castellan.player.char_ob.db.social_rank
             if not srank or srank < 1 or srank > 6:
                 raise ValueError
         except AttributeError:

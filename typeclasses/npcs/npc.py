@@ -25,7 +25,7 @@ from .npc_types import (get_npc_stats, get_npc_desc, get_npc_skills,
                         get_npc_singular_name, get_npc_plural_name, get_npc_weapon,
                         get_armor_bonus, get_hp_bonus, primary_stats,
                         assistant_skills, spy_skills, get_npc_stat_cap, check_passive_guard,
-                        COMBAT_TYPES, get_innate_abilities, ABILITY_COSTS)
+                        COMBAT_TYPES, get_innate_abilities, ABILITY_COSTS, ANIMAL, SMALL_ANIMAL)
 from world.stats_and_skills import (do_dice_check, get_stat_cost, get_skill_cost,
                                     PHYSICAL_STATS, MENTAL_STATS, SOCIAL_STATS)
 import time
@@ -55,7 +55,7 @@ class Npc(Character):
         # if we're ordered to attack, don't vote to end
         if self.combat.state:
             self.combat.state.wants_to_end = False
-    
+
     def stop(self):
         """
         Stop attacking/exit combat.
@@ -102,7 +102,7 @@ class Npc(Character):
         self.db.automate_combat = True
         self.db.damage = 0
         self.at_init()
-    
+
     def resurrect(self, *args, **kwargs):
         """
         Cue 'Bring Me Back to Life' by Evanessence.
@@ -158,7 +158,7 @@ class Npc(Character):
         if awake and awake != "awake":
             msg += " They are %s." % awake
         return msg
-    
+
     def recovery_test(self, diff_mod=0, free=False):
         """
         A mechanism for healing characters. Whenever they get a recovery
@@ -183,7 +183,7 @@ class Npc(Character):
         if not free:
             self.db.last_recovery_test = time.time()
         return roll
-    
+
     def sensing_check(self, difficulty=15, invis=False, allow_wake=False):
         """
         See if the character detects something that is hiding or invisible.
@@ -273,27 +273,32 @@ class Npc(Character):
         self.db.damage = 0
         self.db.health_status = "alive"
         self.db.sleep_status = "awake"
+
+        from commands.cmdsets import death
+        self.cmdset.delete(death.DeathCmdSet)
+
         # if we don't
         if not keepold:
             self.db.npc_type = ntype
             self.set_npc_new_name(sing_name, plural_name)
             self.set_npc_new_desc(desc)
         self.setup_stats(ntype, threat)
-        
+
     def set_npc_new_name(self, sing_name=None, plural_name=None):
         self.name = sing_name or plural_name or "#%s" % self.id
-        
+
     def set_npc_new_desc(self, desc=None):
         self.desc = desc or get_npc_desc(self.db.npc_type or 0)
 
+
 class MultiNpc(Npc):
     def multideath(self, num, death=False):
-        living = self.db.num_living or 0       
+        living = self.db.num_living or 0
         if num > living:
             num = living
         self.db.num_living = living - num
         if death:
-            dead = self.db.num_dead or 0            
+            dead = self.db.num_dead or 0
             self.db.num_dead = dead + num
         else:
             incap = self.db.num_incap or 0
@@ -304,15 +309,16 @@ class MultiNpc(Npc):
 
     def get_plural_name(self):
         return self.db.plural_name or get_npc_plural_name(self._get_npc_type())
-        
+
     @property
     def ae_dmg(self):
         return self.ndb.ae_dmg or 0
-        
+
     @ae_dmg.setter
     def ae_dmg(self, val):
         self.ndb.ae_dmg = val
 
+    # noinspection PyAttributeOutsideInit
     def death_process(self, *args, **kwargs):
         """
         This object dying. Set its state to dead, send out
@@ -372,13 +378,13 @@ class MultiNpc(Npc):
         self.db.damage = 0
         self.db.health_status = "alive"
         self.db.sleep_status = "awake"
-        # if we don't 
+        # if we don't
         if not keepold:
             self.db.npc_type = ntype
             self.db.singular_name = sing_name
             self.db.plural_name = plural_name
             self.desc = desc or get_npc_desc(ntype)
-        self.setup_stats(ntype, threat)     
+        self.setup_stats(ntype, threat)
         self.setup_name()
 
     # noinspection PyAttributeOutsideInit
@@ -406,6 +412,7 @@ class MultiNpc(Npc):
         self.ndb.temp_losses = val
 
 
+# noinspection PyAttributeOutsideInit
 class AgentMixin(object):
 
     @property
@@ -447,7 +454,7 @@ class AgentMixin(object):
         atype = agent_class.type
         self.setup_npc(ntype=atype, threat=quality, num=agent.quantity, desc=desc)
         self.db.passive_guard = check_passive_guard(atype)
-        
+
     def setup_locks(self  # type: Retainer or Agent
                     ):
         # base lock - the 'command' lock string
@@ -525,7 +532,6 @@ class AgentMixin(object):
     def gain_agents(self, num):
         self.setup_name()
 
-    # noinspection PyAttributeOutsideInit
     def setup_name(self):
         self.name = self.agent.colored_name or self.agent.name
 
@@ -547,14 +553,14 @@ class AgentMixin(object):
         return self.agent.quality or 0
     npc_type = property(_get_npc_type)
     quality = property(_get_quality)
-    
+
     def stop_follow(self,  # type: Retainer or Agent
                     dismiss=True, unassigning=False):
         super(AgentMixin, self).stop_follow()
         # if we're not being unassigned, we dock them. otherwise, they're gone
         if dismiss:
             self.dismiss(dock=not unassigning)
-    
+
     def summon(self,  # type: Retainer or Agent
                summoner=None):
         """
@@ -585,7 +591,7 @@ class AgentMixin(object):
             docked = self.db.docked
             if docked and docked.db.docked_guards and self in docked.db.docked_guards:
                 docked.db.docked_guards.remove(self)
-            return       
+            return
         self.db.prelogout_location = loc
         if dock:
             self.db.docked = loc
@@ -594,7 +600,6 @@ class AgentMixin(object):
                 docked.append(self)
             loc.db.docked_guards = docked
         loc.msg_contents("%s have been dismissed." % self.name)
-        # noinspection PyAttributeOutsideInit
         self.location = None
         if self.ndb.combat_manager:
             self.ndb.combat_manager.remove_combatant(self)
@@ -630,7 +635,7 @@ class AgentMixin(object):
         else:  # special stats
             restype = "military"
         return xpcost, rescost, restype
-    
+
     def get_skill_cost(self, attr):
         """
         Get the cost of a skill based on our current rating and the
@@ -639,7 +644,7 @@ class AgentMixin(object):
         restype = "military"
         atype = self.agent.type
         primary_skills = get_npc_skills(atype)
-        base = get_skill_cost(self, attr)
+        base = get_skill_cost(self, attr, unmodified=True)
         if attr not in primary_skills:
             base *= 2
         xpcost = base
@@ -666,7 +671,7 @@ class AgentMixin(object):
         if cap > typecap:
             cap = typecap
         return cap
-    
+
     def get_skill_maximum(self, attr):
         """
         Get the current max for a skill based on the type
@@ -689,7 +694,7 @@ class AgentMixin(object):
     def train_agent(self, trainer, conditioning):
         trainer.msg("This type of agent cannot be trained.")
         return False
-    
+
     @property
     def training_skill(self):
         if "animal" in self.agent.type_str:
@@ -704,11 +709,11 @@ class AgentMixin(object):
         else:
             default = "human"
         return self.db.species or default
-    
+
     @property
     def owner(self):
         return self.agent.owner
-    
+
     def inform_owner(self, text):
         """Passes along an inform to our owner."""
         self.owner.inform_owner(text, category="Agents")
@@ -737,6 +742,18 @@ class AgentMixin(object):
 
     def adjust_xp(self, value):
         self.xp += value
+
+    @property
+    def uses_training_cap(self):
+        return self.npc_type not in (ANIMAL, SMALL_ANIMAL)
+
+    @property
+    def xp_training_cap(self):
+        return self.db.xp_training_cap or 0
+
+    @xp_training_cap.setter
+    def xp_training_cap(self, value):
+        self.db.xp_training_cap = value
 
     @property
     def xp_transfer_cap(self  # type: Retainer or Agent
@@ -798,6 +815,9 @@ class Retainer(AgentMixin, Npc):
         if not skill:
             trainer.msg("You must have %s skill to train them." % self.training_skill)
             return False
+        if self.uses_training_cap and self.xp_training_cap <= 0:
+            trainer.msg("They need more xp transferred to them before they can benefit from training.")
+            return False
         return super(Retainer, self).can_be_trained_by(trainer)
 
     def post_training(self, trainer, trainer_msg="", targ_msg="", ap_spent=0, **kwargs):
@@ -841,19 +861,26 @@ class Retainer(AgentMixin, Npc):
             trainer.msg("You have failed to teach them anything.")
             msg = "%s has attempted to train %s, but utterly failed to teach them anything." % (name, self)
         else:
+            if self.uses_training_cap:
+                if roll > self.xp_training_cap:
+                    roll = self.xp_training_cap
+                    trainer.msg("You were limited by %s's training cap, and could only give them %s xp." % (self, roll))
+                self.xp_training_cap -= roll
             self.agent.xp += roll
             self.agent.save()
             trainer.msg("You have trained %s, giving them %s xp." % (self, roll))
             msg = "%s has trained %s, giving them %s xp." % (name, self, roll)
             self.conditioning = 0
         self.inform_owner(msg)
-        print "Training log: %s" % msg
+        print("Training log: %s" % msg)
 
     def view_stats(self, viewer, combat=False):
         super(Retainer, self).view_stats(viewer, combat)
         msg = "\n{wCurrent Training Difficulty:{n %s" % self.training_difficulty
+        if self.uses_training_cap:
+            msg += "\n{wCurrent XP Training Cap:{n %s" % self.xp_training_cap
         viewer.msg(msg)
-    
+
 
 # noinspection PyAttributeOutsideInit
 class Agent(AgentMixin, MultiNpc):
@@ -894,11 +921,11 @@ class Agent(AgentMixin, MultiNpc):
             num = self.db.num_living
         self.multideath(num, death)
         self.agentob.lose_agents(num)
-        self.setup_name()       
+        self.setup_name()
         if self.db.num_living <= 0:
             self.unassign()
         return num
-    
+
     def gain_agents(self, num):
         self.db.num_living += num
         self.setup_name()

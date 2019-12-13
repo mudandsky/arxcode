@@ -11,6 +11,13 @@ from world.dominion.models import (CraftingRecipe, CraftingMaterialType,
 def topic(request, object_key):
     object_key = object_key.lower()
     topic_ob = get_object_or_404(HelpEntry, db_key__iexact=object_key)
+    can_see = False
+    try:
+        can_see = topic_ob.access(request.user, 'view', default=True)
+    except AttributeError:
+        pass
+    if not can_see:
+        raise PermissionDenied
     return render(request, 'help_topics/topic.html', {'topic': topic_ob, 'page_title': object_key})
 
 
@@ -48,7 +55,7 @@ def list_topics(request):
     secret_orgs = []
     # noinspection PyBroadException
     try:
-        if user.is_staff:
+        if user.is_staff or user.check_permstring("can_see_secret_orgs"):
             secret_orgs = Organization.objects.filter(secret=True)
         else:
             secret_orgs = Organization.objects.filter(Q(members__deguilded=False) & Q(secret=True)
@@ -94,24 +101,23 @@ def display_org(request, object_id):
     rank_display = 0
     show_secret = 0
     org = get_object_or_404(Organization, id=object_id)
-    if org.secret:
-        try:
-            if not (org.members.filter(deguilded=False, player__player__id=user.id)
-                    or user.is_staff):
-                raise PermissionDenied
-            if not user.is_staff:
+    if not user.is_staff:
+        if org.secret:
+            try:
+                if not org.members.filter(deguilded=False, player__player__id=user.id).exists():
+                    raise PermissionDenied
                 try:
                     rank_display = user.Dominion.memberships.get(organization=org, deguilded=False).rank
                 except (Member.DoesNotExist, AttributeError):
                     rank_display = 11
                 show_secret = rank_display
-        except (AttributeError, PermissionDenied):
-            raise PermissionDenied
-    elif not user.is_staff:
-        try:
-            show_secret = user.Dominion.memberships.get(organization=org, deguilded=False).rank
-        except (Member.DoesNotExist, AttributeError):
-            show_secret = 11
+            except (AttributeError, PermissionDenied):
+                raise PermissionDenied
+        else:
+            try:
+                show_secret = user.Dominion.memberships.get(organization=org, deguilded=False).rank
+            except (Member.DoesNotExist, AttributeError):
+                show_secret = 11
     try:
         show_money = org.assets.can_be_viewed_by(user)
     except AttributeError:
@@ -151,9 +157,20 @@ def list_commands(request):
         cmdname = cmd.key.lower()
         cmdname = cmdname.lstrip("+").lstrip("@")
         return cmdname
-    player_cmds = sorted([ob for ob in AccountCmdSet() if ob.access(user, 'cmd')], key=sort_name)
-    char_cmds = sorted([ob for ob in CharacterCmdSet() if ob.access(user, 'cmd')], key=sort_name)
-    situational_cmds = sorted([ob for ob in SituationalCmdSet() if ob.access(user, 'cmd')], key=sort_name)
+
+    def check_cmd_access(cmdset):
+        cmd_list = []
+        for cmd in cmdset:
+            try:
+                if cmd.access(user, 'cmd'):
+                    cmd_list.append(cmd)
+            except (AttributeError, ValueError, TypeError):
+                continue
+        return sorted(cmd_list, key=sort_name)
+
+    player_cmds = check_cmd_access(AccountCmdSet())
+    char_cmds = check_cmd_access(CharacterCmdSet())
+    situational_cmds = check_cmd_access(SituationalCmdSet())
     return render(request, 'help_topics/list_commands.html', {'player_cmds': player_cmds,
                                                               'character_cmds': char_cmds,
                                                               'situational_cmds': situational_cmds,

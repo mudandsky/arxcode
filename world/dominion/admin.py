@@ -2,17 +2,26 @@
 Admin for Dominion
 """
 from django.contrib import admin
-from .models import (PlayerOrNpc, Organization, Domain, Agent, AgentOb, Minister, MapLocation,
-                     AssetOwner, Region, Land, Castle, WorkSetting, PraiseOrCondemn,
-                     Ruler, Army, Orders, MilitaryUnit, Member, Task, OrgUnitModifiers,
-                     CraftingRecipe, CraftingMaterialType, CraftingMaterials, CrisisActionAssistant,
-                     RPEvent, AccountTransaction, AssignedTask, Crisis, CrisisAction, CrisisUpdate,
+from django.db.models import Q
+from django.shortcuts import reverse
+from django.utils.html import escape
+
+from .models import (PlayerOrNpc, Organization, Agent, AgentOb, MapLocation,
+                     AssetOwner, Region, Land, WorkSetting, PraiseOrCondemn,
+                     Member, Task, CraftingRecipe, CraftingMaterialType, CraftingMaterials,
+                     RPEvent, AccountTransaction, AssignedTask,
                      OrgRelationship, Reputation, TaskSupporter, InfluenceCategory,
-                     Renown, SphereOfInfluence, TaskRequirement, ClueForOrg, ActionOOCQuestion,
-                     PlotRoom, Landmark, Shardhaven, ShardhavenType, ShardhavenClue, ShardhavenDiscovery,
+                     Renown, SphereOfInfluence, TaskRequirement, ClueForOrg,
+                     PlotRoom, Landmark, PrestigeTier, PrestigeCategory, PrestigeAdjustment,
                      Honorific, Propriety, PCEventParticipation, OrgEventParticipation, Fealty)
 
+from world.dominion.plots.models import (Plot, PlotAction, PlotUpdate, ActionOOCQuestion,
+                                         PCPlotInvolvement, OrgPlotInvolvement, PlotActionAssistant)
+
+from world.dominion.domain.models import (Army, Orders, MilitaryUnit, OrgUnitModifiers, Domain, Castle, Ruler, Minister)
+
 from web.help_topics.templatetags.app_filters import mush_to_html
+from world.exploration.models import Shardhaven, ShardhavenType
 
 
 class DomAdmin(admin.ModelAdmin):
@@ -36,7 +45,7 @@ class ReputationInline(admin.TabularInline):
 
 class PCAdmin(DomAdmin):
     """Admin for main model of dominion, PlayerOrNpc, an extension of AUTH_USER_MODEL"""
-    search_fields = ['player__username', 'npc_name']
+    search_fields = ['=player__username', 'npc_name']
     filter_horizontal = ['parents', 'spouses']
     raw_id_fields = ('player', 'patron')
     list_select_related = (
@@ -99,7 +108,7 @@ class OrgAdmin(DomAdmin):
     """Admin for organizations"""
     list_display = ('id', 'name', 'category', 'fealty', 'org_board', 'org_channel')
     ordering = ['name']
-    search_fields = ['name', 'category', 'members__player__player__username', 'fealty__name']
+    search_fields = ['name', 'category', '=members__player__player__username', 'fealty__name']
     list_filter = (OrgListFilter,)
     filter_horizontal = ("theories",)
     # omit unused fields for now
@@ -222,9 +231,10 @@ class OrgEventParticipantInline(admin.TabularInline):
 class EventAdmin(DomAdmin):
     """Admin for RP Events/PRPs/GM Events"""
     list_display = ('id', 'name', 'date')
-    search_fields = ['name', 'dompcs__username', 'orgs__name']
+    search_fields = ['name', '=dompcs__player__username', 'orgs__name', '=id']
     ordering = ['date']
-    raw_id_fields = ('location', 'actions', 'plotroom')
+    raw_id_fields = ('location', 'beat', 'plotroom')
+    filter_horizontal = ('search_tags',)
     inlines = (PCEventParticipantInline, OrgEventParticipantInline)
 
 
@@ -259,7 +269,7 @@ class MaterialsInline(admin.TabularInline):
 class AssetAdmin(DomAdmin):
     """Admin for the assets of a player or organization"""
     list_display = ('id', 'ownername', 'vault', 'prestige', 'economic', 'military', 'social')
-    search_fields = ['player__npc_name', 'player__player__username', 'organization_owner__name']
+    search_fields = ['player__npc_name', '=player__player__username', 'organization_owner__name']
     inlines = [SendTransactionInline, ReceiveTransactionInline, MaterialsInline]
     raw_id_fields = ('player', 'organization_owner')
 
@@ -311,35 +321,108 @@ class TaskAdmin(DomAdmin):
         return super(TaskAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 
 
-class CrisisUpdateInline(admin.TabularInline):
-    """Inline showing crisis updates"""
-    model = CrisisUpdate
+class PlotUpdateTagMixin(object):
+    readonly_fields = ('tagged_actions', 'tagged_story_emits', 'tagged_events', 'tagged_flashbacks')
+
+    def tagged_actions(self, obj):
+        return "<br>".join('<a href="%s">%s</a>' % (reverse("admin:dominion_plotaction_change", args=[action.id]),
+                                                    escape(str(action)))
+                           for action in obj.actions.all())
+    tagged_actions.allow_tags = True
+
+    def tagged_story_emits(self, obj):
+        return "<br>".join('<a href="%s">%s</a>' % (reverse("admin:character_storyemit_change", args=[emit.id]),
+                                                    escape(emit.id))
+                           for emit in obj.emits.all())
+    tagged_story_emits.allow_tags = True
+
+    def tagged_events(self, obj):
+        return "<br>".join('<a href="%s">%s</a>' % (reverse("admin:dominion_rpevent_change", args=[ev.id]),
+                                                    escape(ev.name))
+                           for ev in obj.events.all())
+    tagged_events.allow_tags = True
+
+    def tagged_flashbacks(self, obj):
+        return "<br>".join('<a href="%s">%s</a>' % (reverse("admin:character_flashback_change", args=[fb.id]),
+                                                    escape(fb.title))
+                           for fb in obj.flashbacks.all())
+    tagged_flashbacks.allow_tags = True
+
+
+class PlotUpdateInline(PlotUpdateTagMixin, admin.StackedInline):
+    """Inline showing plot updates"""
+    model = PlotUpdate
     extra = 0
     raw_id_fields = ('episode',)
+    filter_horizontal = ('search_tags',)
+    classes = ['collapse']
+    show_change_link = True
 
 
-class CrisisAdmin(DomAdmin):
-    """Admin for Crises, macro-level events affecting the game/metaplot"""
-    list_display = ('id', 'name', 'desc', 'end_date', 'parent_crisis')
-    filter_horizontal = ['orgs']
-    raw_id_fields = ('required_clue', 'parent_crisis')
-    search_fields = ('id', 'name', 'desc')
-    list_filter = ('resolved',)
-    inlines = (CrisisUpdateInline,)
-
-
-class CrisisActionAssistantInline(admin.StackedInline):
-    """Inline of someone helping out on an Action"""
-    model = CrisisActionAssistant
+class PlotOrgInvolvementInline(admin.StackedInline):
+    """Inline for Orgs involved in plots"""
+    model = OrgPlotInvolvement
     extra = 0
-    raw_id_fields = ('crisis_action', 'dompc',)
+    raw_id_fields = ('org',)
+    classes = ['collapse']
+
+
+class PCPlotInvolvementInline(admin.StackedInline):
+    """Inline for PC involvement in plots"""
+    model = PCPlotInvolvement
+    extra = 0
+    raw_id_fields = ('dompc', 'recruited_by')
+    classes = ['collapse']
+
+
+class PlotRecruiterListFilter(OrgListFilter):
+    """List filter for showing Plots that are recruiting"""
+    title = 'Currently Recruiting'
+    parameter_name = 'recruiting'
+
+    def lookups(self, request, model_admin):
+        """Defines lookup display for list filter"""
+        return (
+            ('recruiting', 'Has Recruiters'),
+        )
+
+    def queryset(self, request, queryset):
+        """modifies orglistfilter query for domains"""
+        if self.value() == 'recruiting':
+            return queryset.filter(Q(dompc_involvement__activity_status=PCPlotInvolvement.ACTIVE)
+                                   & Q(dompc_involvement__admin_status__gte=PCPlotInvolvement.RECRUITER)
+                                   & ~Q(dompc_involvement__recruiter_story="")).distinct()
+
+
+class PlotAdmin(DomAdmin):
+    """Admin for Crises, macro-level events affecting the game/metaplot"""
+    list_display = ('id', 'name', 'desc', 'end_date', 'parent_plot')
+    filter_horizontal = ['orgs', 'search_tags']
+    raw_id_fields = ('required_clue', 'parent_plot')
+    search_fields = ('name', 'desc', '=dompcs__player__username', '=id')
+    list_filter = ('resolved', 'usage', PlotRecruiterListFilter)
+    inlines = (PlotUpdateInline, PlotOrgInvolvementInline, PCPlotInvolvementInline)
+
+
+class PlotUpdateAdmin(PlotUpdateTagMixin, DomAdmin):
+    """Admin for Plot Updates"""
+    list_display = ('id', 'plot', 'desc', 'date',)
+    filter_horizontal = ('search_tags',)
+    raw_id_fields = ('plot',)
+
+
+class PlotActionAssistantInline(admin.StackedInline):
+    """Inline of someone helping out on an Action"""
+    model = PlotActionAssistant
+    extra = 0
+    raw_id_fields = ('plot_action', 'dompc',)
     readonly_fields = ('ooc_intent',)
     fieldsets = [(None, {'fields': [('dompc', 'topic')]}),
                  ('Status', {'fields': [('editable', 'attending', 'traitor', 'free_action')], 'classes': ['collapse']}),
                  ('Story', {'fields': ['actions', 'secret_actions', 'ooc_intent'], 'classes': ['collapse']}),
                  ('Roll', {'fields': [('stat_used', 'skill_used', 'roll')], 'description': 'Stuff for roll and result',
                            'classes': ['collapse']}),
-                 ('Resources', {'fields': ['silver', ('action_points', 'social'), ('military', 'economic')],
+                 ('Resources', {'fields': [('military', 'silver'), ('social', 'action_points'), 'economic'],
                                 'classes': ['collapse']})
                  ]
 
@@ -356,47 +439,47 @@ class CrisisArmyOrdersInline(admin.TabularInline):
         ('Troops', {'fields': ['army', 'troops_sent']}),
         ('Costs', {'fields': ['coin_cost', 'food_cost']})
     ]
-    
-    
+
+
 class ActionOOCQuestionInline(admin.StackedInline):
     """Inline of questions players are asking re: their action"""
     model = ActionOOCQuestion
     extra = 0
-    readonly_fields = ('text_of_answers',)
-    raw_id_fields = ('action_assist',)
-    
+    readonly_fields = ('text_of_answers', 'action_assist')
+
     def get_queryset(self, request):
         """Limit queryset to things which aren't their OOC intentions - additional questions only"""
         qs = super(ActionOOCQuestionInline, self).get_queryset(request)
         return qs.filter(is_intent=False)
-        
+
     fieldsets = [
-        (None, {'fields': ['action', ('action_assist', 'is_intent')]}),
-        ('Q&A', {'fields': ['text', 'text_of_answers'], 'classes': ['collapse']})]
+        (None, {'fields': [('action', 'action_assist'), 'text_of_answers']})
+    ]
 
 
-class CrisisActionAdmin(DomAdmin):
+class PlotActionAdmin(DomAdmin):
     """Admin for @actions that players are taking, one of their primary ways of participating in the game's plot."""
-    list_display = ('id', 'dompc', 'crisis', 'player_action', 'week', 'status')
-    search_fields = ('crisis__name', 'dompc__player__username')
-    list_filter = ('crisis', 'status')
-    raw_id_fields = ('dompc', 'gemit', 'gm', 'crisis', 'update')
+    list_display = ('id', 'dompc', 'plot', 'player_action', 'week', 'status')
+    search_fields = ('plot__name', '=dompc__player__username', '=id')
+    list_filter = ('plot', 'status')
+    raw_id_fields = ('dompc', 'gemit', 'gm', 'plot', 'beat')
     readonly_fields = ('ooc_intent',)
-    fieldsets = [(None, {'fields': [('dompc', 'topic')]}),
+    filter_horizontal = ('search_tags',)
+    fieldsets = [(None, {'fields': [('dompc', 'topic'), ('search_tags',)]}),
                  ('Status', {'fields': [('attending', 'traitor', 'prefer_offscreen'),
                                         ('status', 'public', 'editable', 'free_action'),
-                                        ('crisis', 'update', 'gemit'), ('week', 'date_submitted')],
+                                        ('plot', 'beat', 'gemit'), ('week', 'date_submitted')],
                              'classes': ['collapse'], 'description': 'Current ooc status of the action'}),
                  ('Story', {'fields': [('topic', 'category'), 'actions', 'secret_actions', 'story', 'secret_story',
-                                       'ooc_intent'],
+                                       'gm_notes', 'ooc_intent'],
                             'description': "The player's story, and GM response to it.",
                             'classes': ['collapse']}),
                  ('Roll', {'fields': [('stat_used', 'skill_used', 'roll', 'difficulty'), 'outcome_value'],
                            'description': 'Stuff for roll and result', 'classes': ['collapse']}),
-                 ('Resources', {'fields': ['silver', ('action_points', 'social'), ('military', 'economic')],
+                 ('Resources', {'fields': [('military', 'silver'), ('social', 'action_points'), 'economic'],
                                 'classes': ['collapse']})
                  ]
-    inlines = (CrisisActionAssistantInline, CrisisArmyOrdersInline, ActionOOCQuestionInline)
+    inlines = (PlotActionAssistantInline, CrisisArmyOrdersInline, ActionOOCQuestionInline)
 
     @staticmethod
     def player_action(obj):
@@ -413,7 +496,7 @@ class ReputationAdmin(DomAdmin):
     """Admin for reputation players have with organizations."""
     list_display = ('player', 'organization', 'affection', 'respect')
     raw_id_fields = ('player', 'organization')
-    search_fields = ('player__player__username', 'organization__name')
+    search_fields = ('=player__player__username', 'organization__name')
 
 
 class SpheresInline(admin.TabularInline):
@@ -458,7 +541,7 @@ class AgentAdmin(DomAdmin):
     """Admin for agents, npcs owned by players or orgs"""
     list_display = ('id', 'name', 'quantity', 'quality', 'owner')
     raw_id_fields = ('owner',)
-    search_fields = ('name', 'owner__player__player__username', 'owner__organization_owner__name')
+    search_fields = ('name', '=owner__player__player__username', 'owner__organization_owner__name')
     inlines = [AgentObInline]
 
 
@@ -483,7 +566,7 @@ class ArmyAdmin(DomAdmin):
     """Admin for armies owned by organizations or players"""
     list_display = ('id', 'name', 'owner', 'domain')
     raw_id_fields = ('owner', 'domain', 'land', 'castle', 'general', 'temp_owner', 'group')
-    search_fields = ('name', 'domain__name', 'owner__player__player__username', 'owner__organization_owner__name')
+    search_fields = ('name', 'domain__name', '=owner__player__player__username', 'owner__organization_owner__name')
     inlines = (MilitaryUnitInline,)
     list_filter = (ArmyListFilter,)
 
@@ -530,12 +613,47 @@ class RegionFilter(admin.SimpleListFilter):
         return queryset.filter(location__land__region=region)
 
 
+class ShardhavenTypeFilter(admin.SimpleListFilter):
+    """List filter for plot rooms, letting us see what regions they're in"""
+    title = "Shardhaven Type"
+    parameter_name = "shardhaven_type"
+
+    def lookups(self, request, model_admin):
+        """Get lookup names derived from Regions"""
+        haven_types = ShardhavenType.objects.all().order_by('name')
+        result = []
+        for haven_type in haven_types:
+            result.append((haven_type.id, haven_type.name))
+        return result
+
+    def queryset(self, request, queryset):
+        """Filter queryset by Region selection"""
+        if not self.value():
+            return queryset
+
+        try:
+            haven_id = int(self.value())
+            haven = ShardhavenType.objects.get(id=haven_id)
+        except (ValueError, ShardhavenType.DoesNotExist):
+            haven = None
+
+        if not haven:
+            return queryset
+
+        return self.finish_queryset_by_haventype(queryset, haven)
+
+    # noinspection PyMethodMayBeStatic
+    def finish_queryset_by_haventype(self, queryset, haven_type):
+        """Finishes modifying the queryset. Overridden in subclasses"""
+        return queryset.filter(shardhaven_type=haven_type)
+
+
 class PlotRoomAdmin(DomAdmin):
     """Admin for plotrooms, templates that can be used repeatedly for temprooms for events"""
     list_display = ('id', 'domain', 'location', 'name', 'public')
     search_files = ('name', 'description')
     raw_id_fields = ('creator', 'domain')
-    list_filter = ('public', RegionFilter)
+    list_filter = ('public', RegionFilter, ShardhavenTypeFilter)
 
 
 class DomainInline(admin.TabularInline):
@@ -598,42 +716,6 @@ class LandAdmin(DomAdmin):
         return ", ".join(str(ob) for ob in obj.locations.all())
 
 
-class ShardhavenClueInline(admin.TabularInline):
-    """Inline for Clues about Shardhavens"""
-    model = ShardhavenClue
-    raw_id_fields = ('clue',)
-    extra = 0
-
-
-class ShardhavenDiscoveryInline(admin.TabularInline):
-    """Inline for players knowing about Shardhaven locations"""
-    model = ShardhavenDiscovery
-    raw_id_fields = ('player',)
-    extra = 0
-
-
-class ShardhavenAdmin(DomAdmin):
-    """Admin for shardhavens, Arx's very own abyssal-corrupted dungeons. Happy adventuring!"""
-    list_display = ('id', 'name', 'location', 'haven_type')
-    search_fields = ('name', 'description')
-    inlines = (ShardhavenClueInline, )
-    list_filter = ('haven_type', RegionFilter,)
-
-
-class ShardhavenTypeAdmin(DomAdmin):
-    """Admin for specifying types of Shardhavens"""
-    list_display = ('id', 'name', 'description')
-    search_fields = ('name',)
-    ordering = ('id',)
-
-
-class ShardhavenDiscoveryAdmin(DomAdmin):
-    """Non-inline admin for Shardhaven discoveries"""
-    list_display = ('id', 'player', 'shardhaven')
-    raw_id_fields = ('player', 'shardhaven')
-    search_fields = ('player__name', 'shardhaven__name')
-
-
 class WorkSettingAdmin(DomAdmin):
     """Non-inline admin for WorkSettings"""
     list_display = ('organization', 'resource', 'stat', 'skill', 'message')
@@ -643,20 +725,20 @@ class WorkSettingAdmin(DomAdmin):
 class PraiseAdmin(DomAdmin):
     """Admin for PraiseOrCondemn"""
     list_display = ('praiser', 'target', 'message', 'week', 'value')
-    search_fields = ('praiser__player__username', 'target__player__username')
+    search_fields = ('=praiser__player__username', '=target__player__username')
 
 
 class ProprietyAdmin(DomAdmin):
     """Admin for Propriety"""
     list_display = ('name', 'percentage')
-    search_fields = ('name', 'owners__organization_owner__name', 'owners__player__player__username')
+    search_fields = ('name', 'owners__organization_owner__name', '=owners__player__player__username')
     filter_horizontal = ('owners',)
 
 
 class HonorificAdmin(DomAdmin):
     """Admin for Honorifics"""
     list_display = ('owner', 'title', 'amount')
-    search_fields = ('owner__player__player__username', 'owner__organization_owner__name', 'title')
+    search_fields = ('=owner__player__player__username', 'owner__organization_owner__name', 'title')
     raw_id_fields = ('owner',)
 
 
@@ -669,6 +751,27 @@ class FealtyAdmin(DomAdmin):
     def org_names(obj):
         """Get names of organizations for this fealty"""
         return ", ".join(str(ob) for ob in obj.orgs.all())
+
+
+class PrestigeCategoryAdmin(DomAdmin):
+    """Admin for PrestigeCategory"""
+    list_display = ('name', 'male_noun', 'female_noun')
+    search_fields = ('name', 'male_noun', 'female_noun')
+
+
+class PrestigeAdjustmentAdmin(DomAdmin):
+    """Admin for Prestige Adjustments"""
+    list_display = ('id', 'asset_owner', 'category', 'adjusted_on', 'adjusted_by', 'adjustment_type')
+    search_fields = ('=asset_owner__player__player__username', 'asset_owner__organization_owner__name')
+    raw_id_fields = ('asset_owner',)
+    list_filter = ('category', 'adjustment_type')
+    readonly_fields = ('adjusted_by', 'effective_value')
+
+
+class PrestigeTierAdmin(DomAdmin):
+    """Admin for Prestige Tiers"""
+    list_display = ('rank_name', 'minimum_prestige')
+    search_fields = ('rank_name',)
 
 
 # Register your models here.
@@ -686,19 +789,20 @@ admin.site.register(Ruler, RulerAdmin)
 admin.site.register(CraftingRecipe, RecipeAdmin)
 admin.site.register(CraftingMaterialType, MaterialTypeAdmin)
 admin.site.register(RPEvent, EventAdmin)
-admin.site.register(Crisis, CrisisAdmin)
-admin.site.register(CrisisAction, CrisisActionAdmin)
+admin.site.register(Plot, PlotAdmin)
+admin.site.register(PlotUpdate, PlotUpdateAdmin)
+admin.site.register(PlotAction, PlotActionAdmin)
 admin.site.register(OrgRelationship, OrgRelationshipAdmin)
 admin.site.register(Reputation, ReputationAdmin)
 admin.site.register(AssignedTask, AssignedTaskAdmin)
 admin.site.register(InfluenceCategory, InfluenceCategoryAdmin)
 admin.site.register(PlotRoom, PlotRoomAdmin)
 admin.site.register(Landmark, LandmarkAdmin)
-admin.site.register(Shardhaven, ShardhavenAdmin)
-admin.site.register(ShardhavenType, ShardhavenTypeAdmin)
-admin.site.register(ShardhavenDiscovery, ShardhavenDiscoveryAdmin)
 admin.site.register(WorkSetting, WorkSettingAdmin)
 admin.site.register(PraiseOrCondemn, PraiseAdmin)
 admin.site.register(Honorific, HonorificAdmin)
 admin.site.register(Propriety, ProprietyAdmin)
 admin.site.register(Fealty, FealtyAdmin)
+admin.site.register(PrestigeAdjustment, PrestigeAdjustmentAdmin)
+admin.site.register(PrestigeCategory, PrestigeCategoryAdmin)
+admin.site.register(PrestigeTier, PrestigeTierAdmin)

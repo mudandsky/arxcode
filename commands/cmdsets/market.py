@@ -15,7 +15,8 @@ creative process.
 from random import randint
 
 from evennia import CmdSet
-from server.utils.arx_utils import ArxCommand
+from evennia.utils.logger import log_info
+from commands.base import ArxCommand
 from server.utils import prettytable
 from evennia.utils.create import create_object
 from world.dominion.models import (CraftingMaterialType, PlayerOrNpc, CraftingMaterials)
@@ -34,7 +35,7 @@ other_items = {"book": [BOOK_PRICE, "parchment",
 class OtherMaterial(object):
     """Class for handling transactions of buying generic items in shop"""
     def __init__(self, otype):
-        self.name = "book"       
+        self.name = "book"
         self.value = other_items[otype][0]
         self.category = other_items[otype][1]
         self.path = other_items[otype][2]
@@ -89,13 +90,14 @@ class CmdMarket(ArxCommand):
         market/sell <material>=<amount>
         market/info <material>
         market/import <material>=<amount>
+    Purchase with silver:
         market/economic <amount>
         market/social <amount>
         market/military <amount>
 
     Used to buy and sell materials at the market. Materials can be
-    sold to the market for 10% of the cost. Economic resources are worth
-    250 silver for buying materials, and cost 500 silver to purchase.
+    sold to the market for 5% of the cost. Economic resources are worth
+    250 silver for buying materials. Resources cost 500 silver each.
     """
     key = "market"
     aliases = ["buy", "sell"]
@@ -152,7 +154,7 @@ class CmdMarket(ArxCommand):
                     material = materials.get(name__iexact=self.lhs)
                 except (CraftingMaterialType.DoesNotExist, CraftingMaterialType.MultipleObjectsReturned):
                     caller.msg("Unable to get a unique match for that.")
-                    return           
+                    return
         if 'buy' in self.switches or 'import' in self.switches:
             if not usemats:
                 amt = 1
@@ -164,7 +166,7 @@ class CmdMarket(ArxCommand):
                     return
                 if amt < 1:
                     caller.msg("Amount must be a positive number")
-                    return    
+                    return
             cost = material.value * amt
             try:
                 dompc = caller.player_ob.Dominion
@@ -187,7 +189,7 @@ class CmdMarket(ArxCommand):
                 if assets.economic < eamt:
                     caller.msg("That costs %s economic resources, and you have %s." % (eamt, assets.economic))
                     return
-                assets.economic -= eamt         
+                assets.economic -= eamt
                 assets.save()
                 paystr = "%s economic resources" % eamt
                 # check if they could have bought more than the amount they specified
@@ -195,7 +197,7 @@ class CmdMarket(ArxCommand):
                 if amt < optimal_amt:
                     caller.msg("You could get %s for the same price, so doing that instead." % optimal_amt)
                     amt = optimal_amt
-            if usemats:             
+            if usemats:
                 try:
                     mat = dompc.assets.materials.get(type=material)
                     mat.amount += amt
@@ -233,20 +235,20 @@ class CmdMarket(ArxCommand):
             mat.amount -= amt
             mat.save()
             money = caller.db.currency or 0.0
-            sale = amt * material.value/10
+            sale = amt * material.value/20
             money += sale
             caller.db.currency = money
             caller.msg("You have sold %s %s for %s silver coins." % (amt, material.name, sale))
             return
         if 'info' in self.switches:
-            caller.msg("{wInformation on %s:{n" % material.name)
-            caller.msg(material.desc)
+            msg = "{wInformation on %s:{n %s\n" % (material.name, material.desc)
             price = material.value
-            caller.msg("{wPrice:{n %s" % price)
+            msg += "{wPrice in silver: {c%s{n\n" % price
             cost = price/250
             if price % 250:
                 cost += 1
-            caller.msg("{wPrice in economic resources:{n %s" % cost)
+            msg += "{wPrice in economic resources: {c%s{n" % cost
+            caller.msg(msg)
             return
         if "economic" in self.switches or "military" in self.switches or "social" in self.switches:
             try:
@@ -329,7 +331,7 @@ class HaggledDeal(object):
         noun = "Discount" if self.transaction_type == "buy" else "Markup Bonus"
         msg += "{wCurrent %s:{n %s\n" % (noun, self.discount)
         noun = "Value" if self.transaction_type == "sell" else "Cost"
-        msg += "{wSilver %s:{n %s" % (noun, self.silver_value)
+        msg += "{wSilver %s:{n %s (Base Cost Per Unit: %s)" % (noun, self.silver_value, self.base_cost)
         msg += "\n{wRoll Modifier:{n %s" % self.roll_bonus
         return msg
 
@@ -345,17 +347,12 @@ class HaggledDeal(object):
         if not self.caller.player_ob.pay_action_points(5):
             return
         self.noble_discovery_check()
-        difficulty = randint(1, 50) - self.roll_bonus
+        difficulty = randint(-15, 65) - self.roll_bonus
         clout = self.caller.social_clout
         if clout > 0:
             difficulty -= randint(0, clout)
-        try:
-            prest_factor = int(self.caller.player_ob.Dominion.assets.prestige_mod)
-            if prest_factor > 0:
-                difficulty -= randint(0, prest_factor)
-        except (AttributeError, ValueError, TypeError):
-            pass
-        roll = do_dice_check(self.caller, stat="charm", skill="haggling", difficulty=difficulty)
+        roll = do_dice_check(self.caller, stat="charm", skill_list=["haggling", "haggling", "haggling", "streetwise"],
+                             difficulty=difficulty)
         if roll <= self.discount_roll:
             self.caller.msg("You failed to find a better deal.\n%s" % self.display())
         else:
@@ -411,11 +408,18 @@ class HaggledDeal(object):
             discount = 100 - self.discount
         else:
             discount = self.discount
+        return (self.base_cost * discount/100.0) * self.amount
+
+    @property
+    def base_cost(self):
         if self.resource_type:
-            base_cost = 500.0
+            cost = 500.0
         else:
-            base_cost = self.material.value
-        return (base_cost * discount/100.0) * self.amount
+            if self.transaction_type == "buy":
+                cost = self.material.value
+            else:
+                cost = round(pow(self.material.value, 0.9))
+        return cost
 
     def sell_materials(self):
         """Attempt to sell the materials we made the deal for"""
@@ -436,7 +440,7 @@ class HaggledDeal(object):
         self.caller.pay_money(-silver)
         self.caller.msg("You have sold %s %s and gained %s silver." % (self.amount, self.material_display, silver))
         log_msg = "%s has sold %s %s and gained %s silver." % (self.caller, self.amount, self.material_display, silver)
-        print("Haggle Log: %s" % log_msg)
+        log_info("Haggle Log: %s" % log_msg)
 
     def buy_materials(self):
         """Attempt to buy the materials we made the deal for"""
@@ -456,7 +460,7 @@ class HaggledDeal(object):
         self.caller.pay_money(cost)
         self.caller.msg("You have bought %s %s for %s silver." % (self.amount, self.material_display, cost))
         log_msg = "%s has bought %s %s for %s silver." % (self.caller, self.amount, self.material_display, cost)
-        print("Haggle Log: %s" % log_msg)
+        log_info("Haggle Log: %s" % log_msg)
 
 
 class CmdHaggle(ArxCommand):
@@ -619,13 +623,14 @@ class CmdHaggle(ArxCommand):
             # resources are worth 500 each
             value_per_object = 500
         else:
-            value_per_object = material.value
+            value_per_object = round(pow(material.value, 1.05))
         value_we_found = roll * 5000.0
         value_for_amount = value_we_found / value_per_object
         if value_for_amount < 1.0:
             penalty = int((1.0 - value_for_amount) * -100)
             amount_found = 1
-            self.msg("You had trouble finding a deal for such a valuable item. Haggling rolls will have a penalty of %s." % penalty)
+            self.msg("You had trouble finding a deal for such a valuable item. "
+                     "Haggling rolls will have a penalty of %s." % penalty)
             return amount_found, penalty
         # minimum of 1
         amount_found = max(int(ceil(value_we_found / value_per_object)), 1)

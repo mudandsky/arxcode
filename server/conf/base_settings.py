@@ -41,7 +41,7 @@ IN_GAME_ERRORS = False
 IDLE_TIMEOUT = -1
 MAX_CHAR_LIMIT = 8000
 DEBUG = False
-CHANNEL_COMMAND_CLASS = "commands.commands.channels.ArxChannelCommand"
+CHANNEL_COMMAND_CLASS = "commands.base_commands.channels.ArxChannelCommand"
 BASE_ROOM_TYPECLASS = "typeclasses.rooms.ArxRoom"
 DEFAULT_HOME = "#13"
 MULTISESSION_MODE = 1
@@ -88,9 +88,13 @@ INSTALLED_APPS += ('world.dominion',
                    'web.help_topics',
                    'cloudinary',
                    'django.contrib.humanize',
-                   'markdown_deux',
                    'bootstrapform',
                    'crispy_forms',
+                   'world.weather',
+                   'world.templates.apps.TemplateConfig',
+                   'world.exploration',
+                   'web.admintools',
+                   'world.magic',
                    )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -100,8 +104,13 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 # Game Time setup
 ######################################################################
 TIME_FACTOR = 2.0
-INVESTIGATION_PROGRESS_RATE = 0.5
+INVESTIGATION_PROGRESS_RATE = config("INVESTIGATION_PROGRESS_RATE", cast=float, default=1.0)
 INVESTIGATION_DIFFICULTY_MOD = 5
+
+######################################################################
+# Magic setup
+######################################################################
+MAGIC_CONDITION_MODULES = ("world.magic.conditionals",)
 
 ######################################################################
 # Helpdesk settings
@@ -109,8 +118,8 @@ INVESTIGATION_DIFFICULTY_MOD = 5
 HELPDESK_CREATE_TICKET_HIDE_ASSIGNED_TO = True
 
 # Queue.id for our Requests. Should normally be 1, but can be changed if you move queues around
-REQUEST_QUEUE_ID = 1
-BUG_QUEUE_ID = 2
+REQUEST_QUEUE_SLUG = "Request"
+BUG_QUEUE_SLUG = "Bugs"
 
 ######################################################################
 # Dominion settings
@@ -121,11 +130,12 @@ LOG_FORMAT = "%(asctime)s: %(message)s"
 DATE_FORMAT = "%m/%d/%Y %I:%M:%S"
 GLOBAL_DOMAIN_INCOME_MOD = 0.75
 
-SECRET_KEY = config('SECRET_KEY')
-HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY')
+SECRET_KEY = config('SECRET_KEY', default="PLEASEREPLACEME12345")
+HOST_BLOCKER_API_KEY = config('HOST_BLOCKER_API_KEY', default="SOME_KEY")
 import cloudinary
-cloudinary.config(cloud_name=config('CLOUDINARY_NAME'),
-                  api_key=config('CLOUDINARY_API_KEY'), api_secret=config('CLOUDINARY_API_SECRET'))
+cloudinary.config(cloud_name=config('CLOUDINARY_NAME', default="SOME_NAME"),
+                  api_key=config('CLOUDINARY_API_KEY', default="SOME_KEY"), api_secret=config('CLOUDINARY_API_SECRET',
+                                                                                              default="SOME_KEY"))
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='localhost')
@@ -135,3 +145,4 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
 ADMINS = (config('ADMIN_NAME', default=''), config('ADMIN_EMAIL', default=''))
 SEND_GAME_INDEX = config('SEND_GAME_INDEX', cast=bool, default=False)
+ISSUES_URL = config('ISSUES_URL', default='')

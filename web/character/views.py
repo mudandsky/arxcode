@@ -9,23 +9,31 @@ import cloudinary.forms
 import cloudinary.uploader
 from cloudinary import api
 from cloudinary.forms import cl_init_js_callbacks
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
-from django.db.models import Q, F
+from django.db.models import Q
+from django import forms
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, CreateView
 from evennia.objects.models import ObjectDB
+from evennia.utils.ansi import strip_ansi
 
-from commands.commands import roster
+from collections import OrderedDict
+
+from commands.base_commands import roster
 from server.utils.name_paginator import NamePaginator
 from server.utils.view_mixins import LimitPageMixin
 from typeclasses.characters import Character
-from world.dominion.models import Organization, CrisisAction
+from world.dominion.models import Organization
+from world.dominion.plots.models import PlotAction, ActionSubmissionError
+
 from .forms import (PhotoForm, PhotoDirectForm, PhotoUnsignedDirectForm, PortraitSelectForm,
                     PhotoDeleteForm, PhotoEditForm, FlashbackPostForm, FlashbackCreateForm)
-from .models import Photo, Story, Episode, Chapter, Flashback, ClueDiscovery, DISCO_MULT
+from .models import Photo, Story, Episode, Chapter, Flashback, ClueDiscovery
 
 
 def get_character_from_ob(object_id):
@@ -37,7 +45,7 @@ def comment(request, object_id):
     """
     Makes an in-game comment on a character sheet.
     """
-    send_charob = request.user.db.char_ob
+    send_charob = request.user.char_ob
     rec_charob = get_character_from_ob(object_id)
     comment_txt = request.POST['comment']
     roster.create_comment(send_charob, rec_charob, comment_txt)
@@ -78,6 +86,9 @@ def sheet(request, object_id):
         family_org_id = Organization.objects.get(name__iexact=character.db.family)
     except Organization.DoesNotExist:
         family_org_id = None
+    clues = list(character.clues.all())
+    secrets = [ob.clue for ob in character.messages.secrets]
+    additional_notes = [ob for ob in clues if ob not in secrets]
     return render(request, 'character/sheet.html', {'character': character,
                                                     'show_hidden': show_hidden,
                                                     'can_comment': can_comment,
@@ -85,7 +96,9 @@ def sheet(request, object_id):
                                                     'pwidth': pwidth,
                                                     'fealty_org_id': fealty_org_id,
                                                     'family_org_id': family_org_id,
-                                                    'page_title': character.key})
+                                                    'page_title': character.key,
+                                                    'secrets': secrets,
+                                                    'additional_notes': additional_notes})
 
 
 def journals(request, object_id):
@@ -259,7 +272,7 @@ def gallery(request, object_id):
     character = get_character_from_ob(object_id)
     user = request.user
     can_upload = False
-    if user.is_authenticated() and (user.db.char_ob == character or user.is_staff):
+    if user.is_authenticated() and (user.char_ob == character or user.is_staff):
         can_upload = True
     photos = Photo.objects.filter(owner__id=object_id)
     portrait_form = PortraitSelectForm(object_id)
@@ -339,7 +352,7 @@ def upload(request, object_id):
     """View for uploading new photo resource to cloudinary and creating model"""
     user = request.user
     character = get_character_from_ob(object_id)
-    if not user.is_authenticated() or (user.db.char_ob != character and not user.is_staff):
+    if not user.is_authenticated() or (user.char_ob != character and not user.is_staff):
         raise Http404("You are not permitted to upload to this gallery.")
     unsigned = request.GET.get("unsigned") == "true"
 
@@ -418,8 +431,8 @@ class ChapterListView(ListView):
     @property
     def viewable_crises(self):
         """Gets queryset of crises visible to user"""
-        from world.dominion.models import Crisis
-        return Crisis.objects.viewable_by_player(self.request.user).filter(chapter__in=self.get_queryset())
+        from world.dominion.plots.models import Plot
+        return Plot.objects.viewable_by_player(self.request.user).filter(chapter__in=self.get_queryset())
 
     def get_context_data(self, **kwargs):
         """Gets context for our template. Stories, current story, and viewable_crises"""
@@ -445,7 +458,7 @@ def episode(request, ep_id):
 
 class ActionListView(ListView):
     """View for listing the CrisisActions of a given character"""
-    model = CrisisAction
+    model = PlotAction
     template_name = "character/actions.html"
 
     @property
@@ -470,6 +483,237 @@ class ActionListView(ListView):
         return context
 
 
+class NewActionListView(ListView, LimitPageMixin):
+    """View for listing the CrisisActions of a given character"""
+    model = PlotAction
+    template_name = "character/action_list.html"
+    paginate_by = 20
+
+    @property
+    def character(self):
+        """The main character of the actions"""
+        return get_object_or_404(Character, id=self.kwargs['object_id'])
+
+    def get_queryset(self):
+        """Display only public actions if we're not staff or a participant"""
+        qs = self.character.valid_actions.order_by('-id')
+        user = self.request.user
+        if not user or not user.is_authenticated():
+            return qs.filter(public=True).filter(status=PlotAction.PUBLISHED)
+        if user.is_staff or user.check_permstring("builders") or user.char_ob == self.character:
+            return qs
+        return qs.filter(public=True).filter(status=PlotAction.PUBLISHED)
+
+    def get_context_data(self, **kwargs):
+        """Gets context for the template"""
+        context = super(NewActionListView, self).get_context_data(**kwargs)
+        context['character'] = self.character
+        return context
+
+
+def new_action_view(request, object_id, action_id):
+
+    def character():
+        """The main character of the actions"""
+        return get_object_or_404(Character, id=object_id)
+
+    def action():
+        try:
+            return PlotAction.objects.get(id=action_id)
+        except (PlotAction.DoesNotExist, PlotAction.MultipleObjectsReturned):
+            raise Http404
+
+    if not request.user or not request.user.is_authenticated():
+        require_public = True
+    elif request.user.is_staff or request.user.check_permstring("builders") or request.user.char_ob == character():
+        require_public = False
+    else:
+        require_public = True
+
+    crisis_action = action()
+
+    # Make sure the crisis action has this character as a
+    # participant.
+    editable = False
+    if crisis_action.dompc.player.char_ob.id != int(object_id):
+        found = False
+        for assist in crisis_action.assisting_actions.all():
+            if assist.dompc.player.char_ob.id == int(object_id):
+                found = True
+                editable = assist.editable
+
+        if not found:
+            raise Http404
+    else:
+        editable = crisis_action.editable
+
+    if require_public and not crisis_action.public:
+        raise Http404
+
+    context = {'page_title': str(crisis_action), 'action': crisis_action, 'object_id': object_id, 'editable': editable}
+    return render(request, 'character/action_view.html', context)
+
+
+class AssistForm(forms.Form):
+
+    stats = (
+        ('strength', 'Strength'),
+        ('dexterity', 'Dexterity'),
+        ('stamina', 'Stamina'),
+        ('charm', 'Charm'),
+        ('command', 'Command'),
+        ('composure', 'Composure'),
+        ('intellect', 'Intellect'),
+        ('perception', 'Perception'),
+        ('wits', 'Wits'),
+        ('mana', 'Mana'),
+        ('luck', 'Luck'),
+        ('willpower', 'Willpower')
+    )
+
+    tldr = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'class': 'form-control'}), required=True,
+                           label='Provide a brief one-sentence summary of this action.')
+    action_text = forms.CharField(widget=forms.Textarea(attrs={'rows': 10, 'class': 'form-control'}), required=True, label='What are you doing in this action?')
+    secret_action = forms.CharField(widget=forms.Textarea(attrs={'rows': 10, 'class': 'form-control'}), required=False, label='What, if anything, are you doing secretly in this action?')
+    ooc_intent = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}), required=True, label="What do you want to achieve with this action?  This is so we know as GMs what you're hoping for.")
+    stat_choice = forms.ChoiceField(choices=stats, label='Stat to Roll')
+    skill_choice = forms.ChoiceField(choices=[], label='Skill to Roll')
+    attending = forms.BooleanField(label='I am physically present for this action.', required=False)
+    traitor = forms.BooleanField(label='I am trying to sabotage this action.', required=False)
+
+    def __init__(self, caller, *args, **kwargs):
+        super(AssistForm,self).__init__(*args, **kwargs)
+        skills = []
+        for k, v in caller.db.skills.iteritems():
+            skills.append((k, k.capitalize()))
+        self.fields['skill_choice'] = forms.ChoiceField(choices=skills, label='Skill to Roll')
+
+
+class ActionForm(AssistForm):
+
+    CATEGORY_CHOICES = PlotAction.CATEGORY_CHOICES
+
+    def __init__(self, caller, *args, **kwargs):
+        super(ActionForm,self).__init__(caller, *args, **kwargs)
+
+        # Do black magic to prepend the Category field
+        keys = self.fields.keys()
+        self.fields['category'] = forms.ChoiceField(choices=self.CATEGORY_CHOICES, label='What type of action is this?')
+        keys.insert(0, 'category')
+        new_fields = (OrderedDict)([k, self.fields[k]] for k in keys)
+        self.fields = new_fields
+
+
+@login_required
+def edit_action(request, object_id, action_id):
+    def character():
+        """The main character of the actions"""
+        return get_object_or_404(Character, id=object_id)
+
+    def action():
+        try:
+            return PlotAction.objects.get(id=action_id)
+        except (PlotAction.DoesNotExist, PlotAction.MultipleObjectsReturned):
+            raise Http404
+
+    if request.user.char_ob != character():
+        raise Http404
+
+    crisis_action = action()
+    real_action = crisis_action
+    # Make sure the crisis action has this character as a
+    # participant.
+    if crisis_action.dompc.player.char_ob.id != int(object_id):
+        found = False
+        for assist in crisis_action.assisting_actions.all():
+            if assist.dompc.player.char_ob.id == int(object_id):
+                found = True
+                real_action = assist
+
+        if not found:
+            raise Http404
+
+    if crisis_action.status == PlotAction.DRAFT:
+        if request.user.char_ob == character():
+            editable = crisis_action.editable
+        else:
+            editable = False
+            for assist in crisis_action.assistants.all():
+                if assist.dompc == character().Dominion:
+                    editable = assist.editable
+    else:
+        editable = False
+
+    if not editable:
+        raise Http404
+
+    form_errors = None
+
+    if request.method == "POST":
+        if real_action.main_action == real_action:
+            form = ActionForm(request.user.char_ob, request.POST)
+        else:
+            form = AssistForm(request.user.char_ob, request.POST)
+
+        if not form.is_valid():
+            raise Http404
+
+        real_action.topic = form.cleaned_data['tldr']
+
+        real_action.secret_actions = form.cleaned_data['secret_action']
+        real_action.stat_used = form.cleaned_data['stat_choice']
+        real_action.skill_used = form.cleaned_data['skill_choice']
+        real_action.attending = form.cleaned_data['attending']
+        real_action.traitor = form.cleaned_data['traitor']
+        real_action.set_ooc_intent(form.cleaned_data['ooc_intent'])
+
+        if real_action.main_action == real_action:
+            real_action.category = form.cleaned_data['category']
+            real_action.actions = form.cleaned_data['action_text']
+            real_action.save()
+        else:
+            try:
+                # charge for setting an assist's action
+                real_action.set_action(form.cleaned_data['action_text'])
+            except ActionSubmissionError as err:
+                form_errors = strip_ansi(str(err))
+        if not form_errors:
+            if "save" in request.POST:
+                return new_action_view(request, object_id, action_id)
+            # We're trying to submit the form!
+            try:
+                real_action.submit()
+                return new_action_view(request, object_id, action_id)
+            except ActionSubmissionError as err:
+                form_errors = strip_ansi(str(err))
+
+    ooc_intent_raw = real_action.ooc_intent
+    if not ooc_intent_raw:
+        ooc_intent = ""
+    else:
+        ooc_intent = ooc_intent_raw.text
+
+    initial = {'tldr': strip_ansi(real_action.topic),
+               'action_text': strip_ansi(real_action.actions),
+               'secret_action': strip_ansi(real_action.secret_actions),
+               'stat_choice': real_action.stat_used,
+               'skill_choice': real_action.skill_used,
+               'attending': real_action.attending,
+               'traitor': real_action.traitor,
+               'ooc_intent': ooc_intent}
+
+    if real_action.main_action == real_action:
+        initial['category'] = real_action.category
+        form = ActionForm(request.user.char_ob, initial=initial)
+    else:
+        form = AssistForm(request.user.char_ob, initial=initial)
+
+    context = {'page_title': 'Edit Action', 'form': form, 'action': crisis_action, 'object_id': object_id,
+               'form_errors': form_errors}
+
+    return render(request, 'character/action_edit.html', context)
+
+
 class CharacterMixin(object):
     """Mixin for adding self.character to flashback views"""
     @property
@@ -484,7 +728,7 @@ class CharacterMixin(object):
         return context
 
 
-class FlashbackListView(CharacterMixin, ListView):
+class FlashbackListView(LoginRequiredMixin, CharacterMixin, ListView):
     """View for listing flashbacks"""
     model = Flashback
     template_name = "character/flashback_list.html"
@@ -495,12 +739,12 @@ class FlashbackListView(CharacterMixin, ListView):
         if not user or not user.is_authenticated():
             raise PermissionDenied
         if user.char_ob != self.character and not (user.is_staff or user.check_permstring("builders")):
-            raise PermissionDenied
+            raise Http404
         entry = self.character.roster
-        return Flashback.objects.filter(Q(owner=entry) | Q(allowed=entry)).distinct()
+        return entry.flashbacks.all()
 
 
-class FlashbackCreateView(CharacterMixin, CreateView):
+class FlashbackCreateView(LoginRequiredMixin, CharacterMixin, CreateView):
     """View for creating a flashback"""
     model = Flashback
     template_name = "character/flashback_create_form.html"
@@ -526,15 +770,8 @@ class FlashbackCreateView(CharacterMixin, CreateView):
         """Gets the URL to redirect us to on a successful submission"""
         return reverse('character:list_flashbacks', kwargs={'object_id': self.character.id})
 
-    def form_valid(self, form):
-        """Update newly created flashback with our owner and return appropriate response"""
-        response = super(FlashbackCreateView, self).form_valid(form)
-        self.object.owner = self.character.roster
-        self.object.save()
-        return response
 
-
-class FlashbackAddPostView(CharacterMixin, DetailView):
+class FlashbackAddPostView(LoginRequiredMixin, CharacterMixin, DetailView):
     """View for an individual flashback or adding a post to it"""
     model = Flashback
     form_class = FlashbackPostForm
@@ -552,9 +789,19 @@ class FlashbackAddPostView(CharacterMixin, DetailView):
     def get_context_data(self, **kwargs):
         """Gets context for template, ensures we have permissions"""
         context = super(FlashbackAddPostView, self).get_context_data(**kwargs)
+        flashback = self.get_object()
         user = self.request.user
-        if user not in self.get_object().all_players and not (user.is_staff or user.check_permstring("builders")):
-            raise PermissionDenied
+        try:
+            user_is_staff = bool(user.is_staff or user.check_permstring("builders"))
+            timeline = flashback.get_post_timeline(player=user, is_staff=user_is_staff)
+        except AttributeError:
+            raise Http404
+        involvement = flashback.get_involvement(user.roster)
+        context['flashback_featuring'] = flashback.owners_and_contributors
+        context['flashback_timeline'] = timeline
+        context['allow_add_post'] = bool(user_is_staff or flashback.posts_allowed_by(user))
+        context['new_post_roll'] = involvement.roll if (context['allow_add_post'] and involvement) else ""
+        context['page_title'] = flashback.title
         context['form'] = FlashbackPostForm()
         return context
 
@@ -598,7 +845,7 @@ class KnownCluesView(CharacterMixin, LimitPageMixin, ListView):
         if user.char_ob != self.character and not (user.is_staff or user.check_permstring("builders")):
             raise PermissionDenied
         entry = self.character.roster
-        qs = entry.finished_clues.order_by('id')
+        qs = entry.clue_discoveries.all().order_by('id')
         return self.search_filters(qs)
 
     def get_context_data(self, **kwargs):

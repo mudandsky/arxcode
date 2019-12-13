@@ -3,7 +3,7 @@ Commands for rumormills.
 """
 
 from evennia import CmdSet
-from server.utils.arx_utils import ArxCommand
+from commands.base import ArxCommand
 from evennia.utils import evtable
 from server.utils.arx_utils import get_week, time_now
 from world.stats_and_skills import do_dice_check
@@ -271,7 +271,7 @@ class CmdRumor(CmdGossip):
         #     player = caller.player.search(self.lhs)
         #     if not player:
         #         return
-        #     if not player.db.char_ob:
+        #     if not player.char_ob:
         #         caller.msg("They have no character.")
         #         return
         #     rumor = create_message(caller, self.rhs, receivers=(loc, caller, player))
